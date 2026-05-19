@@ -1,0 +1,36 @@
+title: csdh-jnnp
+description: >-
+  Companion code for the JNNP submission "A calibrated and conformally-deployable
+  risk score for postoperative seizure after chronic subdural haematoma
+  evacuation: a proof-of-concept multi-database study with value-of-information
+  analysis."
+remote_theme: pages-themes/cayman@v0.2.0
+plugins:
+  - jekyll-remote-theme
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: false
+include:
+  - CALLGRAPH.md
+  - CODE_REVIEW.md
+  - docs/reviewer_access.md
+  - docs/imrad_plan.md
+  - docs/literature_review_imbalance_smallcohort.md
+exclude:
+  - "*.docx"
+  - "*.pdf"
+  - "*.csv"
+  - "*.npz"
+  - "*.pkl"
+  - scripts/
+  - figures/
+  - results/
+  - LICENSE
+  - .gitignore
+  - requirements.txt
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
