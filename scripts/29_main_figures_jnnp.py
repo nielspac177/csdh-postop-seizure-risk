@@ -110,6 +110,16 @@ def style_axis(ax, *, ygrid=True, xgrid=False):
     else:
         ax.xaxis.grid(False)
 
+def figure_legend_below(fig, handles, labels, *, ncol=None, y=0.02, fontsize=8):
+    """Place a single shared legend below the figure, centred horizontally.
+    Frees the panels of inline legends so they never overlap data."""
+    if ncol is None:
+        ncol = min(len(handles), 4)
+    fig.legend(handles, labels, loc="lower center",
+                bbox_to_anchor=(0.5, y), ncol=ncol, frameon=False,
+                fontsize=fontsize, handlelength=1.6, handletextpad=0.6,
+                columnspacing=1.6)
+
 
 # ─── F1 — Multi-database discrimination ─────────────────────
 def figure_1():
@@ -117,9 +127,10 @@ def figure_1():
     loho  = pd.read_csv(RES / "04_loho_summary.csv")
     leak  = pd.read_csv(RES / "05_leakage_audit.csv")
 
-    fig = plt.figure(figsize=(7.0, 6.5))
+    fig = plt.figure(figsize=(7.0, 7.0))
     gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 1.0],
-                            hspace=0.50, wspace=0.45)
+                            hspace=0.55, wspace=0.45,
+                            bottom=0.13, top=0.96, left=0.18, right=0.97)
 
     # Panel A: BIDMC primary (Firth + BRF, postop_A + B)
     axA = fig.add_subplot(gs[0, 0])
@@ -192,15 +203,24 @@ def figure_1():
         axC.set_xlabel("Cross-validated AUC (95% CI)")
         style_axis(axC, xgrid=True, ygrid=False)
         add_panel_label(axC, "C")
-        # legend for panel C
-        from matplotlib.lines import Line2D
-        leg = [Line2D([0],[0], marker="o", color="w",
+
+    # Shared legend below the figure, two colour categories + reference line
+    from matplotlib.lines import Line2D
+    handles = [Line2D([0],[0], marker="o", color="w",
                        markerfacecolor=COL["forest"], markeredgecolor="black",
-                       markersize=7, label="Strict pre-seizure features"),
+                       markersize=7),
                Line2D([0],[0], marker="o", color="w",
                        markerfacecolor=COL["navy"], markeredgecolor="black",
-                       markersize=7, label="Full feature set")]
-        axC.legend(handles=leg, loc="lower right", fontsize=8)
+                       markersize=7),
+               Line2D([0],[0], marker="D", color="w",
+                       markerfacecolor=COL["navy"], markeredgecolor="black",
+                       markersize=7),
+               Line2D([0],[0], color=COL["grey"], ls=":", lw=1)]
+    labels = ["Strict pre-seizure features (panel C)",
+               "Full feature set",
+               "Random-effects pooled (panel B)",
+               "Chance (AUC = 0.5)"]
+    figure_legend_below(fig, handles, labels, ncol=4, y=0.02, fontsize=8)
 
     plt.savefig(FIG / "F1_discrimination.png")
     plt.savefig(FIG / "F1_discrimination.pdf")
@@ -213,8 +233,8 @@ def figure_2():
     cal = pd.read_csv(RES / "02_calibration_metrics.csv")
     bins = json.loads((RES / "02_calibration_bins.json").read_text())
 
-    fig, axes = plt.subplots(1, 2, figsize=(7.0, 3.6))
-    plt.subplots_adjust(wspace=0.34)
+    fig, axes = plt.subplots(1, 2, figsize=(7.0, 4.2))
+    plt.subplots_adjust(wspace=0.34, bottom=0.28, top=0.92)
 
     # Panel A: calibration curves (BIDMC postop_A + eICU Set C)
     axA = axes[0]
@@ -235,8 +255,9 @@ def figure_2():
     axA.set_ylabel("Observed event rate")
     axA.set_title("Calibration after Platt scaling")
     style_axis(axA, ygrid=True, xgrid=True)
-    axA.legend(loc="upper left", fontsize=7.5)
     add_panel_label(axA, "A")
+    # legend collected for shared placement below the figure
+    axA_handles, axA_labels = axA.get_legend_handles_labels()
 
     # Panel B: decision-curve net benefit
     axB = axes[1]
@@ -268,8 +289,18 @@ def figure_2():
     axB.set_title("Decision-curve net benefit")
     style_axis(axB, ygrid=True, xgrid=False)
     axB.axhline(0, color=COL["grey"], lw=0.5)
-    axB.legend(loc="upper right", fontsize=7)
     add_panel_label(axB, "B")
+
+    # Shared legend below the figure
+    axB_handles, axB_labels = axB.get_legend_handles_labels()
+    # Combine, dedupe while preserving order
+    combined = list(zip(axA_handles + axB_handles, axA_labels + axB_labels))
+    seen = set(); merged = []
+    for h, l in combined:
+        if l not in seen:
+            seen.add(l); merged.append((h, l))
+    figure_legend_below(fig, [h for h, _ in merged], [l for _, l in merged],
+                         ncol=3, y=0.02, fontsize=7.5)
 
     plt.savefig(FIG / "F2_calibration_dca.png")
     plt.savefig(FIG / "F2_calibration_dca.pdf")
@@ -305,9 +336,9 @@ def figure_3():
     colors = [COL["rust"] if f else COL["navy"] if b else COL["soft"]
               for f, b in zip(is_firth, is_baseline)]
 
-    fig, axes = plt.subplots(1, 2, figsize=(7.5, 5.4),
+    fig, axes = plt.subplots(1, 2, figsize=(7.5, 6.4),
                               gridspec_kw={"width_ratios": [1.6, 1.0]})
-    plt.subplots_adjust(wspace=0.05)
+    plt.subplots_adjust(wspace=0.05, bottom=0.22, top=0.94)
 
     # Panel A: AUC + CI
     axA = axes[0]
@@ -326,30 +357,35 @@ def figure_3():
     axA.set_title("Discrimination")
     style_axis(axA, ygrid=False, xgrid=True)
     add_panel_label(axA, "A")
-    # legend
-    legend_handles = [
-        mpatches.Patch(facecolor=COL["rust"],
-                       label="Firth penalized LR (deployment)",
-                       edgecolor="black", linewidth=0.4),
-        mpatches.Patch(facecolor=COL["navy"],
-                       label="BalancedRandomForest (baseline)",
-                       edgecolor="black", linewidth=0.4),
-        mpatches.Patch(facecolor=COL["soft"], label="Other sensitivity models",
-                       edgecolor="black", linewidth=0.4),
-    ]
-    axA.legend(handles=legend_handles, loc="lower right", fontsize=7)
 
     # Panel B: Brier (calibration)
     axB = axes[1]
     axB.barh(pos, df["brier"], color=colors, edgecolor="black", linewidth=0.4)
     axB.set_yticks(pos); axB.set_yticklabels([])
-    axB.axvline(0.073, ls="--", color=COL["grey"], lw=0.7,
-                  label="Base-rate variance")
+    axB.axvline(0.073, ls="--", color=COL["grey"], lw=0.7)
     axB.set_xlabel("Brier score (lower = better)")
     axB.set_title("Calibration")
     style_axis(axB, ygrid=False, xgrid=True)
-    axB.legend(loc="lower right", fontsize=7)
     add_panel_label(axB, "B")
+
+    # Shared legend below both panels
+    from matplotlib.lines import Line2D
+    legend_handles = [
+        mpatches.Patch(facecolor=COL["rust"], edgecolor="black", linewidth=0.4),
+        mpatches.Patch(facecolor=COL["navy"], edgecolor="black", linewidth=0.4),
+        mpatches.Patch(facecolor=COL["soft"], edgecolor="black", linewidth=0.4),
+        Line2D([0],[0], color=COL["grey"], ls="--", lw=1.2),
+        Line2D([0],[0], color=COL["grey"], ls=":", lw=1.2),
+    ]
+    legend_labels = [
+        "Firth penalized LR (deployment)",
+        "BalancedRandomForest (baseline)",
+        "Other sensitivity models",
+        "Base-rate variance (0.073)",
+        "Chance (AUC = 0.5)",
+    ]
+    figure_legend_below(fig, legend_handles, legend_labels, ncol=3,
+                         y=0.02, fontsize=7.5)
 
     plt.savefig(FIG / "F3_method_battery.png")
     plt.savefig(FIG / "F3_method_battery.pdf")
@@ -361,8 +397,8 @@ def figure_3():
 def figure_4():
     out = pd.read_csv(RES / "25_conformal.csv")
 
-    fig, axes = plt.subplots(1, 2, figsize=(7.0, 3.6))
-    plt.subplots_adjust(wspace=0.34)
+    fig, axes = plt.subplots(1, 2, figsize=(7.0, 4.4))
+    plt.subplots_adjust(wspace=0.34, bottom=0.30, top=0.93)
 
     # Panel A: coverage validation
     axA = axes[0]
@@ -384,7 +420,6 @@ def figure_4():
     axA.set_ylabel("Empirical coverage")
     axA.set_title("Coverage validation")
     style_axis(axA, ygrid=True, xgrid=True)
-    axA.legend(loc="lower left", fontsize=7.5)
     add_panel_label(axA, "A")
 
     # Panel B: clinical utility
@@ -423,8 +458,31 @@ def figure_4():
     axB.set_ylabel("Fraction of patients")
     axB.set_title("Clinical utility — confident decisions")
     style_axis(axB, ygrid=True, xgrid=True)
-    axB.legend(loc="upper left", fontsize=7)
     add_panel_label(axB, "B")
+
+    # Shared legend below the figure — never overlaps the data or the
+    # working-point callout
+    from matplotlib.lines import Line2D
+    legend_handles = [
+        Line2D([0],[0], color=COL["grey"], ls="--", lw=1),
+        Line2D([0],[0], marker="o", color=COL["navy"], lw=1.6,
+                markeredgecolor="black", markeredgewidth=0.4,
+                markerfacecolor=COL["navy"]),
+        Line2D([0],[0], marker="s", color=COL["rust"], lw=1.6,
+                markeredgecolor="black", markeredgewidth=0.4,
+                markerfacecolor=COL["rust"]),
+        Line2D([0],[0], color=COL["slate"], lw=1.8),
+        Line2D([0],[0], color=COL["slate"], lw=1.2, ls=":"),
+    ]
+    legend_labels = [
+        "Target coverage (1−α)",
+        "postop_A",
+        "postop_B",
+        "Rule-out 'no seizure'",
+        "Rule-in 'seizure'",
+    ]
+    figure_legend_below(fig, legend_handles, legend_labels, ncol=5,
+                         y=0.04, fontsize=7.5)
 
     plt.savefig(FIG / "F4_conformal.png")
     plt.savefig(FIG / "F4_conformal.pdf")
@@ -479,9 +537,9 @@ def figure_6():
     # EVPI vs WTP — recompute from PSA file if available
     psa_file = RES / "16_voi_psa_tracked.csv"
 
-    fig, axes = plt.subplots(1, 2, figsize=(7.5, 4.4),
+    fig, axes = plt.subplots(1, 2, figsize=(7.5, 5.0),
                               gridspec_kw={"width_ratios": [1.4, 1.0]})
-    plt.subplots_adjust(wspace=0.30)
+    plt.subplots_adjust(wspace=0.30, bottom=0.28, top=0.93)
 
     # Panel A: EVPPI tornado
     axA = axes[0]
@@ -494,17 +552,10 @@ def figure_6():
               linewidth=0.4)
     axA.set_yticks(pos)
     axA.set_yticklabels(evppi["parameter"], fontsize=7.5)
-    axA.set_xlabel("Per-patient EVPPI ($) at WTP $100k/QALY")
+    axA.set_xlabel(r"Per-patient EVPPI (US\$) at WTP \$100k/QALY")
     axA.set_title("Research-priority ranking")
     style_axis(axA, ygrid=False, xgrid=True)
     add_panel_label(axA, "A")
-    # Annotation
-    axA.text(0.95, 0.05,
-              "Top-4 (highlighted): research-priority frontier\n"
-              "Population EVPI ≈ $190M / 10 yr",
-              transform=axA.transAxes, ha="right", va="bottom", fontsize=7,
-              bbox=dict(boxstyle="round,pad=0.3", facecolor="#fffaf0",
-                        edgecolor=COL["ochre"], linewidth=0.6))
 
     # Panel B: EVPI vs WTP
     axB = axes[1]
@@ -525,12 +576,28 @@ def figure_6():
             axB.axvline(w, color=COL["grey"], ls=":", lw=0.6)
             axB.text(w, max(evpis) * label_y, f"${w}k", ha="center",
                        fontsize=7, color=COL["grey"])
-    axB.set_xlabel("WTP threshold ($1000 / QALY)")
-    axB.set_ylabel("Per-patient EVPI ($)")
+    axB.set_xlabel(r"WTP threshold (\$1000 / QALY)")
+    axB.set_ylabel(r"Per-patient EVPI (US\$)")
     axB.set_title("Per-patient EVPI")
     axB.set_xlim(0, 200)
     style_axis(axB, ygrid=True, xgrid=True)
     add_panel_label(axB, "B")
+
+    # Shared legend / note below the figure
+    legend_handles = [
+        mpatches.Patch(facecolor=COL["rust"], edgecolor="black", linewidth=0.4),
+        mpatches.Patch(facecolor=COL["navy"], edgecolor="black", linewidth=0.4),
+    ]
+    legend_labels = [
+        "Top-4 EVPPI — research-priority frontier",
+        "Remaining parameters",
+    ]
+    figure_legend_below(fig, legend_handles, legend_labels, ncol=2,
+                         y=0.08, fontsize=7.5)
+    fig.text(0.5, 0.02,
+             "Population EVPI ≈ $190M over 10 years (40,000-patient annual operative cohort, 3% discount)",
+             ha="center", va="bottom", fontsize=7.5, style="italic",
+             color=COL["slate"])
 
     plt.savefig(FIG / "F6_voi.png")
     plt.savefig(FIG / "F6_voi.pdf")
