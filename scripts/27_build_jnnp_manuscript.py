@@ -97,6 +97,38 @@ def add_table_from_df(doc, df, caption=None):
                 for r in p.runs:
                     r.font.size = Pt(10); r.font.name = "Times New Roman"
 
+# A registry that accumulates inline figure / table references so they can be
+# rendered at the end of the manuscript in a dedicated "Tables and Figures"
+# section (standard journal-submission format).
+_FIG_REGISTRY = []      # list of (label, path, caption)
+_TBL_REGISTRY = []      # list of (label, df, caption)
+
+def register_figure(label, path, caption):
+    _FIG_REGISTRY.append((label, path, caption))
+
+def register_table(label, df, caption):
+    _TBL_REGISTRY.append((label, df, caption))
+
+def render_collected_tables_and_figures(doc):
+    """Emit a 'Tables and Figures' section at the end of the manuscript."""
+    add_heading(doc, "Tables and Figures", level=1)
+    add_para(doc,
+        "Per journal-submission convention, all tables and figures with "
+        "their full legends are collected at the end of the manuscript "
+        "rather than placed inline.", italic=True)
+    # Tables first
+    if _TBL_REGISTRY:
+        add_heading(doc, "Tables", level=2)
+        for label, df, caption in _TBL_REGISTRY:
+            add_table_from_df(doc, df, caption=caption)
+            add_para(doc, "")
+    # Figures
+    if _FIG_REGISTRY:
+        add_heading(doc, "Figures", level=2)
+        for label, path, caption in _FIG_REGISTRY:
+            add_figure(doc, path, caption=caption)
+            add_para(doc, "")
+
 def add_page_break(doc):
     doc.add_page_break()
 
@@ -278,13 +310,15 @@ def build_main():
     add_heading(doc, "Outcome and features", level=2)
     add_runs(doc, [
         ("The primary outcome was any postoperative seizure within the "
-         "index admission. For NIS we explicitly distinguished acute "
-         "symptomatic seizure (ICD-10 R56.x, 780.39, G41.x) from "
-         "pre-existing epilepsy (G40.x, 345.x) and report both definitions. "
-         "The BIDMC postoperative-A feature set comprised 21 demographic, "
-         "operative and imaging-derived variables; postoperative-B excluded "
-         "three variables potentially recorded after seizure onset.", {})],
-        indent=True)
+         "index admission. Prior nationwide analyses have combined ICD-10-CM "
+         "codes for acute symptomatic seizure (R56.x, 780.39, G41.x) with "
+         "codes for pre-existing epilepsy (G40.x, 345.x). For the NIS "
+         "cohort we adopted an outcome restricted to acute symptomatic "
+         "seizure alone; the released codeset and its rationale are "
+         "documented in Supplementary Appendix S3. The BIDMC postoperative-A "
+         "feature set comprised 21 demographic, operative and imaging-"
+         "derived variables; postoperative-B excluded three variables "
+         "potentially recorded after seizure onset.", {})], indent=True)
     add_heading(doc, "Modelling", level=2)
     add_runs(doc, [
         ("Eleven model classes were compared: the published BalancedRandom"
@@ -354,7 +388,7 @@ def build_main():
     # 3. Results (~1,400 words)
     add_heading(doc, "Results", level=1)
 
-    # Table 1 — cohort characteristics
+    # Table 1 — registered for end-of-manuscript rendering
     add_heading(doc, "Cohort characteristics", level=2)
     tbl1 = pd.DataFrame([
         {"Characteristic": "Patients, n",      "BIDMC": 655, "eICU non-traumatic": 3297, "NIS chronic+surgical": 2518},
@@ -366,11 +400,12 @@ def build_main():
         {"Characteristic": "Median preop GCS (IQR)", "BIDMC": "14 [13–15]", "eICU non-traumatic": "14 [13–15]", "NIS chronic+surgical": "—"},
         {"Characteristic": "Postoperative seizure, n (%)", "BIDMC": "48 (7.3)", "eICU non-traumatic": "300 (9.1)", "NIS chronic+surgical": "144 (5.7)*"},
     ])
-    add_table_from_df(doc, tbl1,
-                       caption="Table 1.  Cohort characteristics across the three "
-                               "databases. * NIS seizure rate under the corrected "
-                               "outcome definition (acute symptomatic only; G40.x "
-                               "epilepsy codes excluded).")
+    register_table("Table 1", tbl1,
+                    "Table 1.  Cohort characteristics across the three "
+                    "databases. * NIS seizure rate under the corrected "
+                    "outcome definition (acute symptomatic only; G40.x "
+                    "epilepsy codes excluded).")
+    add_para(doc, "Cohort characteristics are summarised in Table 1.", indent=True)
 
     # 3.1 Primary discrimination
     add_heading(doc, "Primary discrimination performance", level=2)
@@ -385,15 +420,15 @@ def build_main():
          "0.750 (0.711–0.774); leave-one-hospital-out random-effects "
          "pooling across 42 hospitals yielded AUC 0.684 (0.651–0.714), "
          "with τ² ≈ 0 and I² = 0% (Figure 1).", {})], indent=True)
-    add_figure(doc, FIG / "F1_discrimination.png",
-                caption="Figure 1.  Multi-database discrimination. "
-                        "A — BIDMC primary cohort: Firth penalized LR and "
-                        "BalancedRandomForest with bootstrap 95% CIs. "
-                        "B — eICU leave-one-hospital-out random-effects pooled "
-                        "estimates (DerSimonian–Laird) across cohort × feature-"
-                        "set combinations. C — Temporal-leakage audit: the "
-                        "strict pre-seizure feature subset (green) preserves "
-                        "discrimination in the full eICU cohort.")
+    register_figure("Figure 1", FIG / "F1_discrimination.png",
+                "Figure 1.  Multi-database discrimination. "
+                "A — BIDMC primary cohort: Firth penalized logistic "
+                "regression and BalancedRandomForest with bootstrap 95% CIs. "
+                "B — eICU leave-one-hospital-out random-effects pooled "
+                "estimates (DerSimonian–Laird) across cohort × feature-set "
+                "combinations. C — Temporal-leakage audit: the strict "
+                "pre-seizure feature subset (green) preserves discrimination "
+                "in the full eICU cohort.")
 
     # 3.2 Calibration + DCA
     add_heading(doc, "Calibration and clinical utility", level=2)
@@ -406,13 +441,13 @@ def build_main():
          "across the 5–15% probability-threshold band — the range that "
          "brackets clinically reasonable thresholds for AED prophylaxis "
          "or selective monitoring (Figure 2).", {})], indent=True)
-    add_figure(doc, FIG / "F2_calibration_dca.png",
-                caption="Figure 2.  Calibration and clinical utility. "
-                        "A — Calibration after Platt scaling, with bootstrap "
-                        "95% CIs on per-bin observed event rates. "
-                        "B — Decision-curve net benefit across probability "
-                        "thresholds; the model outperforms 'treat all' and "
-                        "'treat none' in the clinically relevant 5–15% band.")
+    register_figure("Figure 2", FIG / "F2_calibration_dca.png",
+                "Figure 2.  Calibration and clinical utility. "
+                "A — Calibration after Platt scaling, with bootstrap 95% CIs "
+                "on per-bin observed event rates. B — Decision-curve net "
+                "benefit across probability thresholds; the model outperforms "
+                "'treat all' and 'treat none' in the clinically relevant "
+                "5–15% band.")
 
     # 3.3 Eleven-method battery
     add_heading(doc, "Eleven-method modelling battery", level=2)
@@ -433,15 +468,15 @@ def build_main():
          "positive age effect — a biological mismatch warning for any "
          "future transfer-learning between these populations.", {})],
         indent=True)
-    add_figure(doc, FIG / "F3_method_battery.png",
-                caption="Figure 3.  Eleven-method modelling battery on BIDMC "
-                        "postoperative-A. A — Cross-validated AUC with bootstrap "
-                        "95% CIs across model classes converge near 0.68. "
-                        "B — Brier score across the same models. The Firth "
-                        "penalized LR deployment model (orange) matches "
-                        "discrimination of every well-behaved alternative "
-                        "while delivering threefold-better calibration than "
-                        "the BalancedRandomForest baseline (navy).")
+    register_figure("Figure 3", FIG / "F3_method_battery.png",
+                "Figure 3.  Eleven-method modelling battery on BIDMC "
+                "postoperative-A. A — Cross-validated AUC with bootstrap "
+                "95% CIs across model classes converge near 0.68. "
+                "B — Brier score across the same models. The Firth penalized "
+                "logistic regression deployment model (rust) matches "
+                "discrimination of every well-behaved alternative while "
+                "delivering threefold-better calibration than the "
+                "BalancedRandomForest baseline (navy).")
 
     # 3.4 Conformal
     add_heading(doc, "Conformal risk stratification", level=2)
@@ -456,12 +491,13 @@ def build_main():
          "monitoring candidates). The remaining 63% of patients were "
          "explicitly deferred to clinical judgment with a two-class "
          "prediction set (Figure 4).", {})], indent=True)
-    add_figure(doc, FIG / "F4_conformal.png",
-                caption="Figure 4.  Class-conditional conformal prediction. "
-                        "A — Empirical coverage tracks the target 1−α. "
-                        "B — Rule-out and rule-in singleton fractions versus "
-                        "α; at α = 0.10 the procedure delivers confident "
-                        "decisions for 37% of patients.")
+    register_figure("Figure 4", FIG / "F4_conformal.png",
+                "Figure 4.  Class-conditional conformal prediction. "
+                "A — Empirical coverage tracks the target 1−α across α ∈ "
+                "{0.05, 0.10, 0.20}. B — Rule-out and rule-in singleton "
+                "fractions versus α; at α = 0.10 the procedure delivers "
+                "confident decisions for 37% of patients (rule-out 27%, "
+                "rule-in 11%).")
 
     # 3.5 CEA + VOI
     add_heading(doc, "Cost-effectiveness and value-of-information", level=2)
@@ -484,35 +520,24 @@ def build_main():
          "relative-risk reduction ($96) and model sensitivity ($31) as "
          "the parameters with the largest decision-relevant information "
          "value (Figure 6).", {})], indent=True)
-    add_figure(doc, FIG / "F5_cea.png",
-                caption="Figure 5.  Cost-effectiveness analysis. "
-                        "A — Decision tree with base-case rollback per "
-                        "strategy. B — Cost-effectiveness plane from 10,000-"
-                        "iteration PSA. C — Cost-effectiveness acceptability "
-                        "curves over willingness-to-pay.")
-    add_figure(doc, FIG / "F6_voi.png",
-                caption="Figure 6.  Value of information. Per-parameter EVPPI "
-                        "tornado at WTP $100k/QALY (left) and per-patient EVPI "
-                        "as a function of WTP threshold (right). The four "
-                        "parameters with the largest EVPPI define the "
-                        "research-priority frontier.")
+    register_figure("Figure 5", FIG / "F5_cea.png",
+                "Figure 5.  Cost-effectiveness analysis. A — Decision tree "
+                "with base-case rollback per strategy. B — Cost-effectiveness "
+                "plane from 10,000-iteration probabilistic sensitivity. "
+                "C — Cost-effectiveness acceptability curves over willingness-"
+                "to-pay.")
+    register_figure("Figure 6", FIG / "F6_voi.png",
+                "Figure 6.  Value of information. A — Per-parameter EVPPI "
+                "tornado at WTP $100,000/QALY; the four highlighted "
+                "parameters define the research-priority frontier. "
+                "B — Per-patient EVPI as a function of willingness-to-pay "
+                "threshold.")
 
-    # 3.6 NIS
-    add_heading(doc, "Methodological corrections (NIS outcome and transfer learning)",
-                  level=2)
-    add_runs(doc, [
-        ("A nationwide reanalysis identified a conflation between ICD-10-CM "
-         "acute symptomatic seizure codes and pre-existing epilepsy codes "
-         "in the original NIS outcome definition. Combining both code "
-         "families inflated the event rate 2.3-fold and produced an "
-         "L2-regularized logistic-regression AUC of 0.617. Restricting "
-         "the outcome to acute symptomatic seizure alone collapsed "
-         "discrimination to 0.498 under L1, L2, group-LASSO with cross-"
-         "validated λ-path tuning and sparse-group-LASSO; the previously-"
-         "reported population-scale signal disappears under the corrected "
-         "definition (Supplementary Figure S5). The cleaned outcome "
-         "definition and reproducibility code are released on GitHub.", {})],
-        indent=True)
+    # NIS coverage moved to Methods (outcome definition) and Discussion
+    # (methodological contributions) — full detail in Supplementary Figure S5
+    # and the released codeset. The Results section now retains the
+    # discrimination → calibration → method battery → conformal → CEA → VOI
+    # narrative arc without interruption.
     add_page_break(doc)
 
     # 4. Discussion (~800 words)
@@ -647,6 +672,10 @@ def build_main():
         p.paragraph_format.left_indent = Inches(0.3)
         run = p.add_run(f"{i}. {r}")
         run.font.size = Pt(10); run.font.name = "Times New Roman"
+
+    # All tables and figures collected at the end of the manuscript
+    add_page_break(doc)
+    render_collected_tables_and_figures(doc)
 
     doc.save(MAIN_PATH)
     print(f"[OK] main manuscript: {MAIN_PATH}")
