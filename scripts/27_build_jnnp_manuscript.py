@@ -154,12 +154,10 @@ def build_main():
                     "value-of-information analysis")
     tr.bold = True; tr.font.size = Pt(15); tr.font.name = "Times New Roman"
     add_para(doc, "")
-    add_para(doc, "Niels Pacheco-Barrios MD¹  ·  [Co-author 2]²  ·  "
-                   "[Co-author 3]³  ·  [Senior author]¹",
+    add_para(doc, "Niels Pacheco-Barrios MD",
               alignment=WD_ALIGN_PARAGRAPH.CENTER, size=12)
-    add_para(doc, "¹ Department of Neurosurgery, Beth Israel Deaconess Medical "
-                   "Center, Harvard Medical School, Boston, MA, USA\n"
-                   "² [Affiliation 2]   ·   ³ [Affiliation 3]",
+    add_para(doc, "Department of Neurosurgery, Beth Israel Deaconess Medical "
+                   "Center, Harvard Medical School, Boston, MA, USA",
               alignment=WD_ALIGN_PARAGRAPH.CENTER, size=10, italic=True)
     add_para(doc, "")
     add_para(doc, "Correspondence: Niels Pacheco-Barrios MD · Department of "
