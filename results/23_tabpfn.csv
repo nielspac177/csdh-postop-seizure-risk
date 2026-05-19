@@ -1,0 +1,5 @@
+feature_set,model,auc,ci_lo,ci_hi,brier,prauc,delong_p
+postop_A,BalancedRF (baseline),0.6757619439868204,0.595262771721743,0.7599972289873755,0.2278946819301233,0.13689716426475035,
+postop_A,TabPFN v2 (FAILED: TabPFNLicenseError),,,,,,
+postop_B,BalancedRF (baseline),0.6583264689730917,0.5679492901729739,0.7509302410655342,0.22814953323283962,0.14234058771304917,
+postop_B,TabPFN v2 (FAILED: TabPFNLicenseError),,,,,,

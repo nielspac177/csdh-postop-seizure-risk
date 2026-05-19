@@ -1,0 +1,5 @@
+strategy,E_cost_USD,E_QALY,n_leaves,delta_cost_vs_obs,delta_QALY_vs_obs,ICER_vs_obs
+"Observation (no AED, no cEEG)",5844.0,7.362,3,0.0,0.0,
+Universal AED prophylaxis,5362.0,7.4205,3,-482.0,0.05849999999999955,-8239.316239316302
+ML-guided AED (targeted prophylaxis),4365.0,7.4318,6,-1479.0,0.06979999999999986,-21189.111747851046
+ML-guided cEEG + targeted AED,7685.0,7.3947,6,1841.0,0.03270000000000017,56299.694189602145

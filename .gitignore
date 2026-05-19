@@ -1,0 +1,50 @@
+# Patient-level data — NEVER commit
+data/
+csdh_clean.csv
+eicu_csdh_cohort_final.csv
+nis_*.csv
+nis_*.parquet
+mimic*.csv
+mimic*.db
+*.duckdb
+*.sqlite
+*.xlsx
+
+# Top-level raw data drops
+/*.csv
+/*.parquet
+/*.h5
+
+# Aggregate result CSVs are tracked; patient-level cache is not
+cache/
+*.npz
+*.pkl
+*.joblib
+
+# Reviewer-access materials are held on a separate private branch
+# (see docs/reviewer_access.md). Never commit to main.
+reviewer_data/
+*reviewer-access*
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+.env
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Logs and temporary files
+*.log
+/tmp/

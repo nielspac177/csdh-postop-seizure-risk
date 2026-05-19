@@ -1,0 +1,14 @@
+parameter,column,evppi_per_patient,evppi_population
+Cost: cEEG monitoring/day,c_ceeg,195.44487761182245,68687999.31683213
+Seizure prevalence,p_sz,127.48649959044997,44804410.85883157
+AED relative risk reduction,rrr,95.54980015696492,33580438.065715
+ML model sensitivity,sens,30.536200709058903,10731775.41960614
+Cost: AED adverse events,c_aed_a,16.591454823501408,5830973.170068793
+ML model specificity,spec,1.4373556196223944,505150.52133909555
+P(clinical detection),pd_clin,1.038469881634228,364964.37968516914
+Cost: late status epilepticus,c_se_l,0.6611686279065907,232363.9832206665
+QALY decrement per seizure,u_dec,1.6530975699424744e-08,0.005809718123203297
+P(cEEG detection),pd_ceeg,1.3969838619232178e-09,0.0004909620949185885
+Cost: early status epilepticus,c_se_e,6.984919309616089e-10,0.00024548104745929423
+P(status epilepticus | seizure),p_se,0.0,0.0
+Cost: annual epilepsy care,c_epi,0.0,0.0

@@ -1,0 +1,122 @@
+cohort,feature,n,n_missing,pct_missing
+BIDMC,sex,655,0,0.0
+BIDMC,age,655,0,0.0
+BIDMC,blood_type,655,0,0.0
+BIDMC,sdh_type,655,0,0.0
+BIDMC,sdh_thickness,655,0,0.0
+BIDMC,csdh_size_change,655,0,0.0
+BIDMC,mid_shift,655,0,0.0
+BIDMC,hematoma_lat,655,0,0.0
+BIDMC,collection_density,655,0,0.0
+BIDMC,preop_gcs,655,0,0.0
+BIDMC,epilepsy_hx,655,0,0.0
+BIDMC,num_prev_sdh,655,0,0.0
+BIDMC,demographic,655,63,9.618320610687023
+BIDMC,procedures,655,56,8.549618320610687
+BIDMC,surg_decompression,655,0,0.0
+BIDMC,mma_embo,655,0,0.0
+BIDMC,drainage,655,0,0.0
+BIDMC,postop_gcs,655,0,0.0
+eICU pure,age,3255,0,0.0
+eICU pure,sex,3255,1,0.030721966205837174
+eICU pure,gcs_admission,3255,36,1.1059907834101383
+eICU pure,prior_seizures,3255,0,0.0
+eICU pure,craniotomy,3255,0,0.0
+eICU pure,burr_hole,3255,0,0.0
+eICU pure,prophylactic_aed,3255,0,0.0
+eICU pure,pre_admission_aed,3255,0,0.0
+eICU pure,apache_score,3255,443,13.609831029185868
+eICU pure,apache_gcs,3255,188,5.775729646697389
+eICU pure,any_anticoagulant,3255,0,0.0
+eICU pure,any_antiplatelet,3255,0,0.0
+eICU pure,any_steroid,3255,0,0.0
+eICU pure,mechanical_ventilation,3255,0,0.0
+eICU pure,icp_monitor,3255,0,0.0
+eICU pure,blood_transfusion,3255,0,0.0
+eICU pure,comorbidity_count,3255,0,0.0
+eICU pure,hx_hypertension,3255,0,0.0
+eICU pure,hx_diabetes,3255,0,0.0
+eICU pure,hx_stroke,3255,0,0.0
+eICU pure,hx_dementia,3255,0,0.0
+eICU pure,hx_afib,3255,0,0.0
+eICU pure,hx_alcohol,3255,0,0.0
+eICU pure,pupil_abnormality,3255,3000,92.16589861751152
+eICU pure,icp_available,3255,36,1.1059907834101383
+eICU pure,n_labs_24h,3255,290,8.90937019969278
+eICU pure,n_vitals_24h,3255,36,1.1059907834101383
+eICU pure,Hgb_first,3255,565,17.357910906298002
+eICU pure,PT___INR_first,3255,1817,55.82181259600615
+eICU pure,WBC_x_1000_first,3255,552,16.958525345622117
+eICU pure,albumin_first,3255,2246,69.0015360983103
+eICU pure,calcium_first,3255,614,18.863287250384026
+eICU pure,creatinine_first,3255,479,14.715821812596005
+eICU pure,glucose_first,3255,489,15.023041474654377
+eICU pure,lactate_first,3255,3050,93.70199692780338
+eICU pure,magnesium_first,3255,1891,58.0952380952381
+eICU pure,platelets_x_1000_first,3255,575,17.665130568356375
+eICU pure,potassium_first,3255,460,14.132104454685098
+eICU pure,sodium_first,3255,466,14.316436251920123
+eICU pure,total_bilirubin_first,3255,2341,71.92012288786482
+eICU pure,temperature_mean,3255,3061,94.0399385560676
+eICU pure,sao2_mean,3255,57,1.7511520737327189
+eICU pure,heartrate_mean,3255,39,1.19815668202765
+eICU pure,respiration_mean,3255,176,5.407066052227343
+eICU pure,systemicsystolic_mean,3255,2793,85.80645161290322
+eICU pure,systemicdiastolic_mean,3255,2793,85.80645161290322
+eICU pure,systemicmean_mean,3255,2791,85.74500768049155
+eICU pure,gcs_24h,3255,837,25.71428571428571
+eICU pure,gcs_min_24h,3255,837,25.71428571428571
+eICU pure,gcs_max_24h,3255,837,25.71428571428571
+eICU pure,gcs_delta,3255,837,25.71428571428571
+eICU pure,n_gcs_assessments,3255,837,25.71428571428571
+eICU pure,sodium_slope_48h,3255,1152,35.39170506912443
+eICU pure,sodium_delta_48h,3255,1151,35.36098310291859
+eICU pure,sodium_cv_48h,3255,1151,35.36098310291859
+eICU pure,potassium_slope_48h,3255,1097,33.70199692780338
+eICU pure,potassium_delta_48h,3255,1096,33.67127496159754
+eICU pure,potassium_cv_48h,3255,1096,33.67127496159754
+eICU pure,glucose_slope_48h,3255,1193,36.65130568356375
+eICU pure,glucose_delta_48h,3255,1192,36.62058371735791
+eICU pure,glucose_cv_48h,3255,1192,36.62058371735791
+eICU pure,creatinine_slope_48h,3255,1187,36.466973886328724
+eICU pure,creatinine_delta_48h,3255,1186,36.436251920122885
+eICU pure,creatinine_cv_48h,3255,1186,36.436251920122885
+eICU pure,platelets_x_1000_slope_48h,3255,1345,41.321044546851
+eICU pure,platelets_x_1000_delta_48h,3255,1344,41.29032258064516
+eICU pure,platelets_x_1000_cv_48h,3255,1344,41.29032258064516
+eICU pure,lactate_slope_48h,3255,3191,98.03379416282641
+eICU pure,lactate_delta_48h,3255,3191,98.03379416282641
+eICU pure,lactate_cv_48h,3255,3191,98.03379416282641
+eICU pure,WBC_x_1000_slope_48h,3255,1335,41.013824884792626
+eICU pure,WBC_x_1000_delta_48h,3255,1335,41.013824884792626
+eICU pure,WBC_x_1000_cv_48h,3255,1335,41.013824884792626
+eICU pure,Hgb_slope_48h,3255,1321,40.583717357910906
+eICU pure,Hgb_delta_48h,3255,1321,40.583717357910906
+eICU pure,Hgb_cv_48h,3255,1321,40.583717357910906
+eICU pure,heartrate_slope_48h,3255,33,1.0138248847926268
+eICU pure,heartrate_delta_48h,3255,33,1.0138248847926268
+eICU pure,heartrate_cv_48h,3255,33,1.0138248847926268
+eICU pure,systemicsystolic_slope_48h,3255,2740,84.17818740399386
+eICU pure,systemicsystolic_delta_48h,3255,2740,84.17818740399386
+eICU pure,systemicsystolic_cv_48h,3255,2740,84.17818740399386
+eICU pure,systemicmean_slope_48h,3255,2738,84.11674347158218
+eICU pure,systemicmean_delta_48h,3255,2738,84.11674347158218
+eICU pure,systemicmean_cv_48h,3255,2738,84.11674347158218
+eICU pure,temperature_slope_48h,3255,3051,93.73271889400921
+eICU pure,temperature_delta_48h,3255,3051,93.73271889400921
+eICU pure,temperature_cv_48h,3255,3051,93.73271889400921
+eICU pure,sao2_slope_48h,3255,49,1.5053763440860215
+eICU pure,sao2_delta_48h,3255,49,1.5053763440860215
+eICU pure,sao2_cv_48h,3255,49,1.5053763440860215
+eICU pure,temperature_min,3255,3061,94.0399385560676
+eICU pure,temperature_max,3255,3061,94.0399385560676
+eICU pure,temperature_std,3255,3064,94.13210445468509
+eICU pure,sao2_min,3255,57,1.7511520737327189
+eICU pure,sao2_max,3255,57,1.7511520737327189
+eICU pure,sao2_std,3255,57,1.7511520737327189
+eICU pure,heartrate_min,3255,39,1.19815668202765
+eICU pure,heartrate_max,3255,39,1.19815668202765
+eICU pure,heartrate_std,3255,39,1.19815668202765
+eICU pure,systemicsystolic_min,3255,2793,85.80645161290322
+eICU pure,systemicsystolic_max,3255,2793,85.80645161290322
+eICU pure,systemicsystolic_std,3255,2797,85.92933947772657

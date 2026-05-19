@@ -1,0 +1,4 @@
+analysis,n,events,auc_mean,auc_sd
+7-day discrete-time LR (postop_B feats),655,35,0.5989400921658986,0.13072471346442868
+"Cause-specific Cox (10 covars, penalized)",655,35,0.7062279670975323,
+Fine-Gray approx (IPCW-weighted Cox),655,35,0.7058258129972766,

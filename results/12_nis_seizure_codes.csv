@@ -1,0 +1,6 @@
+category,n,rate
+any_R56_or_78039 (acute symptomatic),12646,0.05794431920236066
+any_G40_or_345_excl_345.3 (pre-existing epilepsy),17558,0.08045123806381847
+any_G41_or_345.3 (status epilepticus),607,0.0027812906654936676
+acute OR SE (corrected outcome),13251,0.06071644581294331
+original collapsed flag (paper),30647,0.14042539542896942

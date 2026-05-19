@@ -1,0 +1,9 @@
+field,n,n_correct,accuracy
+acute_component,8,8,1.0
+density,8,8,1.0
+herniation,8,8,1.0
+laterality,8,6,0.75
+locations,8,6,0.75
+mass_effect,8,7,0.875
+mid_shift_mm,8,8,1.0
+sdh_thickness_mm,8,7,0.875
