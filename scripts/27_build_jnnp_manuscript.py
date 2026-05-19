@@ -1,7 +1,8 @@
-"""Task 27 — JNNP-format manuscript build (proof-of-concept framing).
+"""Task 27 — Journal-format manuscript build (proof-of-concept framing).
 
-Target journal: Journal of Neurology, Neurosurgery and Psychiatry (JNNP).
-Author guidelines (2026):
+Target: a high-impact neurology/neurosurgery journal accepting Original
+Research articles with the following conventional limits (most BMJ-family
+and similar journals):
   • Original Research: 4,000 words main text
   • Structured abstract: 250 words
   • Maximum 6 figures/tables in main text
@@ -10,9 +11,9 @@ Author guidelines (2026):
   • Supplementary material accepted separately
 
 Outputs:
-  manuscript/JNNP_main_manuscript.docx     (≤4000 words, F1–F6, Table 1)
-  manuscript/JNNP_supplementary.docx       (Figures S1–S7, Tables S1–S5,
-                                             TRIPOD-AI checklist)
+  manuscript/main_manuscript.docx     (≤4000 words, F1–F6, Table 1)
+  manuscript/supplementary.docx       (Figures S1–S7, Tables S1–S5,
+                                       TRIPOD-AI checklist)
 """
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
@@ -27,8 +28,8 @@ from docx.oxml import OxmlElement
 from _shared import OUT, RES, FIG
 
 MANUS_DIR = OUT / "manuscript"
-MAIN_PATH = MANUS_DIR / "JNNP_main_manuscript.docx"
-SUPP_PATH = MANUS_DIR / "JNNP_supplementary.docx"
+MAIN_PATH = MANUS_DIR / "main_manuscript.docx"
+SUPP_PATH = MANUS_DIR / "supplementary.docx"
 
 # ─── Doc helpers ─────────────────────────────────────────────
 def add_heading(doc, text, level=1):
@@ -170,9 +171,22 @@ def build_main():
                    "Figures: 6 · Tables: 1 · Supplementary: yes · "
                    "References: 38", size=10)
     add_para(doc, "Reporting: TRIPOD-AI (checklist in Supplementary Appendix S1).", size=10)
-    add_para(doc, "Data availability: code released at github.com/<author>/csdh-jnnp; "
-                   "raw data restricted (BIDMC IRB, eICU CRD credentialing, NIS HCUP).",
-              size=10)
+    add_para(doc, "Code and data availability:  The analysis code, six "
+                   "main figures, seven supplementary figures, TRIPOD-AI "
+                   "reporting checklist and reproducibility appendix are "
+                   "released at github.com/nielspac177/csdh-postop-seizure-risk (tagged "
+                   "release v1.0-JNNP-submission, DOI to be assigned by "
+                   "Zenodo on acceptance). An interactive companion site at "
+                   "nielspac177.github.io/csdh-jnnp provides a calibrated "
+                   "risk calculator, a population cost-savings tool, and an "
+                   "interactive code callgraph. Raw patient-level data are "
+                   "restricted by the BIDMC IRB, the eICU Collaborative "
+                   "Research Database data-use agreement and the HCUP "
+                   "Nationwide Inpatient Sample data-use agreement; filtered "
+                   "working subsets are released to authorised peer "
+                   "reviewers via the reviewer-access protocol documented "
+                   "at github.com/nielspac177/csdh-postop-seizure-risk/tree/"
+                   "reviewer-access-template.", size=10)
     add_para(doc, "Conflicts: None.", size=10)
     add_page_break(doc)
 
@@ -381,7 +395,7 @@ def build_main():
     add_runs(doc, [
         ("All scikit-learn and lifelines computations used n_jobs = 1. "
          "Code, figure scripts and the TRIPOD-AI checklist are released "
-         "at github.com/<author>/csdh-jnnp (Supplementary Appendix S2).", {})],
+         "at github.com/nielspac177/csdh-postop-seizure-risk (Supplementary Appendix S2).", {})],
         indent=True)
     add_page_break(doc)
 
@@ -603,10 +617,11 @@ def build_main():
          "institution, partly mitigated by external evaluation across 139 "
          "eICU hospitals with zero between-site heterogeneity. The "
          "structured electronic medical record lacks imaging features "
-         "known to inform seizure risk; we release a regex-pattern "
-         "radiology NLP feature pipeline (macro-averaged accuracy 91% on "
-         "a validation set) ready for institutional radiology corpora. "
-         "Outcome ascertainment is administrative rather than EEG-"
+         "known to inform seizure risk (sulcal effacement, midline shift "
+         "magnitude, density heterogeneity); future work could augment "
+         "the deployment model with imaging-derived covariates extracted "
+         "from radiology free-text or directly from CT scans. Outcome "
+         "ascertainment is administrative rather than EEG-"
          "adjudicated; sensitivity analyses across four time-window cuts "
          "preserved the primary AUC. Cost inputs adopt the US-payer "
          "perspective; the VOI analysis explicitly identifies per-day "
@@ -724,21 +739,20 @@ def build_supplementary():
     # Appendix S2 — Reproducibility
     add_heading(doc, "Appendix S2.  Reproducibility statement", level=1)
     add_para(doc,
-        "All scripts are released at github.com/<author>/csdh-jnnp under a "
+        "All scripts are released at github.com/nielspac177/csdh-postop-seizure-risk under a "
         "permissive license. Computational environment: Python 3.9.6, "
         "scikit-learn 1.5.2, pandas 2.3.3, lifelines 0.30.0, XGBoost 2.1.4, "
         "LightGBM 4.6.0, firthlogist 0.5.0, mapie 1.4.0, imbalanced-learn "
         "0.12.4, python-docx 1.2.0. All analyses used n_jobs = 1 for "
         "Apple-Silicon stability and SEED = 42 for reproducibility. The "
         "commit hash of the analyses corresponding to this manuscript is "
-        "tagged JNNP-v1.0.")
+        "tagged v1.0-submission.")
     add_para(doc,
         "Raw patient data are restricted by IRB / data-use agreements. The "
         "following derived assets are released: (a) the 21-variable BIDMC "
         "feature schema with categorical encoders; (b) the corrected NIS "
-        "ICD-10 outcome codeset; (c) the regex-pattern radiology NLP "
-        "extractor with its validation set; (d) the CEA decision-tree "
-        "Python implementation and parameter file; and (e) Firth coefficient "
+        "ICD-10 outcome codeset; (c) the CEA decision-tree Python "
+        "implementation and parameter file; and (d) Firth coefficient "
         "estimates with confidence intervals.")
     add_page_break(doc)
 

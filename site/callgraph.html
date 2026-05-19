@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Interactive callgraph — csdh-postop-seizure-risk</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<style>
+  :root {
+    --navy: #1F3D5C;
+    --rust: #B5532C;
+    --forest: #2E6B45;
+    --ochre: #B58A2E;
+    --soft: #F4EFE6;
+    --grey: #6E6E6E;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    background: var(--soft);
+    color: #1a1a1a;
+    margin: 0;
+    line-height: 1.5;
+  }
+  header { background: var(--navy); color: #fff; padding: 24px 32px; }
+  header h1 { margin: 0; font-size: 22px; font-weight: 600; }
+  header p { margin: 6px 0 0; opacity: 0.9; font-size: 14px; }
+  nav { background: #fff; padding: 10px 32px; border-bottom: 1px solid #ddd; }
+  nav a {
+    color: var(--navy);
+    text-decoration: none;
+    font-size: 13px;
+    margin-right: 20px;
+    font-weight: 600;
+  }
+  nav a:hover { text-decoration: underline; }
+  main {
+    max-width: 1400px;
+    margin: 24px auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  .panel {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+  .panel h2 {
+    margin: 0 0 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--navy);
+    border-bottom: 2px solid var(--navy);
+    padding-bottom: 8px;
+  }
+  #network {
+    width: 100%;
+    height: 640px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: #fafafa;
+  }
+  .legend {
+    display: flex;
+    gap: 18px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--grey);
+  }
+  .legend .dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .side h3 {
+    margin: 0 0 6px;
+    font-size: 14px;
+    color: var(--navy);
+  }
+  .side h3 .pill {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    color: #fff;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .side ul {
+    margin: 6px 0 14px;
+    padding-left: 18px;
+    font-size: 13px;
+  }
+  .side ul li { margin-bottom: 4px; }
+  .side .args {
+    color: var(--grey);
+    font-family: "SFMono-Regular","Monaco","Menlo",monospace;
+    font-size: 11px;
+  }
+  .side .doc {
+    color: #444;
+    font-size: 12px;
+  }
+  .controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: var(--grey);
+  }
+  .controls label { display: inline-flex; align-items: center; gap: 6px; }
+  footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 12px;
+    color: var(--grey);
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Interactive callgraph</h1>
+  <p>Click any node to see its function inventory. Drag to rearrange · scroll to zoom.</p>
+</header>
+<nav>
+  <a href="../index.html">← Home</a>
+  <a href="calculator.html">Patient calculator</a>
+  <a href="savings.html">Population savings</a>
+  <a href="https://github.com/nielspac177/csdh-postop-seizure-risk" target="_blank" rel="noopener">GitHub</a>
+</nav>
+
+<main>
+  <section class="panel">
+    <h2>Module dependency graph</h2>
+    <div class="controls">
+      <label><input type="checkbox" id="physics" checked> Live physics</label>
+      <label><input type="checkbox" id="show-edges" checked> Show edges</label>
+    </div>
+    <div id="network"></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <aside class="panel side">
+    <h2>Inspector</h2>
+    <div id="inspector">
+      <em style="color: var(--grey); font-size: 13px;">Select a script in the graph to see its functions.</em>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  Code · github.com/nielspac177/csdh-postop-seizure-risk · MIT licensed.
+</footer>
+
+<script>
+async function init() {
+  const resp = await fetch("callgraph.json");
+  const data = await resp.json();
+  const palette = data.categories;
+  const nodes = data.nodes.map(n => ({
+    id: n.id,
+    label: n.label,
+    title: n.title,
+    color: { background: palette[n.category].color, border: "#000" },
+    font: { color: "#fff", size: 13, face: "Helvetica" },
+    shape: "box",
+    margin: 8,
+    widthConstraint: { minimum: 70, maximum: 180 },
+    _funcs: n.functions,
+    _cat: n.category,
+    _label_full: n.label,
+    _ncat_label: palette[n.category].label,
+  }));
+  const edges = data.edges.map(e => ({
+    from: e.from,
+    to: e.to,
+    arrows: "to",
+    color: { color: "#bbb", opacity: 0.6 },
+    smooth: { type: "cubicBezier", roundness: 0.3 },
+  }));
+  const container = document.getElementById("network");
+  const network = new vis.Network(container,
+    { nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges) },
+    {
+      layout: { improvedLayout: true },
+      physics: {
+        enabled: true,
+        solver: "forceAtlas2Based",
+        forceAtlas2Based: {
+          gravitationalConstant: -60,
+          springLength: 90,
+          springConstant: 0.08,
+          avoidOverlap: 0.7,
+        },
+        stabilization: { iterations: 250, fit: true },
+      },
+      interaction: { hover: true, tooltipDelay: 200 },
+      edges: { width: 1.4 },
+    }
+  );
+
+  // Legend
+  const legend = document.getElementById("legend");
+  for (const cat in palette) {
+    const span = document.createElement("span");
+    span.innerHTML = `<span class="dot" style="background:${palette[cat].color}"></span>` +
+                     palette[cat].label;
+    legend.appendChild(span);
+  }
+
+  // Inspector
+  const inspector = document.getElementById("inspector");
+  network.on("selectNode", (params) => {
+    const id = params.nodes[0];
+    const n = nodes.find(x => x.id === id);
+    if (!n) return;
+    const color = palette[n._cat].color;
+    let html = `<h3>${n._label_full}<span class="pill" style="background:${color};">${n._ncat_label}</span></h3>`;
+    if (n._funcs && n._funcs.length) {
+      html += `<ul>`;
+      n._funcs.forEach(f => {
+        html += `<li><strong>${f.name}</strong> <span class="args">(${f.args.join(", ")})</span>`;
+        if (f.doc) html += `<br><span class="doc">${f.doc}</span>`;
+        html += `</li>`;
+      });
+      html += `</ul>`;
+    } else {
+      html += `<p style="color: var(--grey); font-size: 12px;">No top-level functions.</p>`;
+    }
+    inspector.innerHTML = html;
+  });
+
+  document.getElementById("physics").addEventListener("change", e => {
+    network.setOptions({ physics: { enabled: e.target.checked } });
+  });
+  document.getElementById("show-edges").addEventListener("change", e => {
+    const allEdges = new vis.DataSet(e.target.checked ? edges : []);
+    network.setData({ nodes: new vis.DataSet(nodes), edges: allEdges });
+  });
+}
+
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>

@@ -21,8 +21,8 @@ All files are de-identified per the source-database protocols: BIDMC entries hav
 
 ## Access protocol
 
-1. Reviewer requests access by emailing the corresponding author from a peer-reviewer correspondence address, citing the JNNP submission ID.
-2. Corresponding author confirms reviewer status with the JNNP editorial office.
+1. Reviewer requests access by emailing the corresponding author from a peer-reviewer correspondence address, citing the manuscript ID.
+2. Corresponding author confirms reviewer status with the journal editorial office.
 3. A time-limited (30-day) personal access token is issued for the private branch.
 4. The reviewer pulls the branch and follows the reproduction protocol in the main `README.md`.
 5. Access is revoked at the end of the review cycle; a fresh branch (`reviewer-access-v(N+1)`) is created if a second-round review is requested.

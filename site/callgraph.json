@@ -1,0 +1,1932 @@
+{
+  "nodes": [
+    {
+      "id": "02_calibration.py",
+      "label": "02_calibration",
+      "title": "02_calibration.py\n3 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 3,
+      "functions": [
+        {
+          "name": "bootstrap_calibration_ci",
+          "args": [
+            "y",
+            "p",
+            "n_boot",
+            "seed"
+          ],
+          "doc": "Fix F: paired-bootstrap 95% CI for Brier, CITL, slope/intercept, AUC."
+        },
+        {
+          "name": "run_one",
+          "args": [
+            "name",
+            "make_pipe",
+            "X",
+            "y",
+            "n_splits",
+            "n_repeats"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "03_dca.py",
+      "label": "03_dca",
+      "title": "03_dca.py\n3 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 3,
+      "functions": [
+        {
+          "name": "net_benefit",
+          "args": [
+            "y",
+            "p",
+            "t"
+          ],
+          "doc": "Net benefit at threshold t."
+        },
+        {
+          "name": "treat_all_nb",
+          "args": [
+            "y",
+            "t"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "04_loho.py",
+      "label": "04_loho",
+      "title": "04_loho.py\n7 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 7,
+      "functions": [
+        {
+          "name": "make_pipe_light",
+          "args": [
+            "features"
+          ],
+          "doc": "Lighter pipeline (200 trees) for LOHO speed."
+        },
+        {
+          "name": "loho_for",
+          "args": [
+            "df",
+            "features",
+            "set_name",
+            "cohort_name",
+            "ckpt_path"
+          ],
+          "doc": "Returns a DataFrame; supports incremental checkpointing."
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "hanley_mcneil_var",
+          "args": [
+            "auc",
+            "n1",
+            "n0"
+          ],
+          "doc": "Approximate variance of AUC (Hanley & McNeil 1982)."
+        },
+        {
+          "name": "logit",
+          "args": [
+            "p"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "invlogit",
+          "args": [
+            "x"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "random_effects_pool",
+          "args": [
+            "g"
+          ],
+          "doc": "DerSimonian\u2013Laird pooling on logit-AUC scale."
+        }
+      ]
+    },
+    {
+      "id": "05_temporal_leakage.py",
+      "label": "05_temporal_leakage",
+      "title": "05_temporal_leakage.py\n3 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 3,
+      "functions": [
+        {
+          "name": "auc_with_ci",
+          "args": [
+            "y",
+            "p",
+            "n_boot",
+            "seed"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "is_leakage_suspect_feature",
+          "args": [
+            "c"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "06_overfitting.py",
+      "label": "06_overfitting",
+      "title": "06_overfitting.py\n7 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 7,
+      "functions": [
+        {
+          "name": "make_rf",
+          "args": [
+            "features",
+            "min_leaf"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "make_lr",
+          "args": [
+            "features"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "make_selectk_rf",
+          "args": [
+            "features",
+            "k",
+            "min_leaf"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "cv_auc",
+          "args": [
+            "make_fn",
+            "X",
+            "y",
+            "n_splits",
+            "n_repeats"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "variable_importance_stability",
+          "args": [
+            "X",
+            "y",
+            "n_splits",
+            "n_repeats",
+            "top"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "learning_curve_plot",
+          "args": [
+            "X",
+            "y",
+            "ax"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "07_missing_data.py",
+      "label": "07_missing_data",
+      "title": "07_missing_data.py\n6 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 6,
+      "functions": [
+        {
+          "name": "missingness_vs_outcome",
+          "args": [
+            "df",
+            "features",
+            "outcome_col"
+          ],
+          "doc": "Chi-square (or Fisher) test: does missingness of each feature"
+        },
+        {
+          "name": "littles_mcar_test",
+          "args": [
+            "df",
+            "features"
+          ],
+          "doc": "Simplified Little's MCAR test (Little 1988)."
+        },
+        {
+          "name": "rubin_pool_auc",
+          "args": [
+            "aucs",
+            "ses"
+          ],
+          "doc": "Rubin's rules pooling: combine point estimates and SEs across M imputations."
+        },
+        {
+          "name": "make_pipe",
+          "args": [
+            "imputer",
+            "features",
+            "model"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "cv_auc",
+          "args": [
+            "pipe_fn",
+            "X",
+            "y",
+            "n_splits",
+            "n_repeats"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "08_eicu_cohort.py",
+      "label": "08_eicu_cohort",
+      "title": "08_eicu_cohort.py\n2 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 2,
+      "functions": [
+        {
+          "name": "cv_auc",
+          "args": [
+            "make_fn",
+            "X",
+            "y",
+            "n_splits",
+            "n_repeats"
+          ],
+          "doc": "Repeated CV AUC + bootstrap 95% CI on first-repeat OOF predictions."
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "09_competing_risks.py",
+      "label": "09_competing_risks",
+      "title": "09_competing_risks.py\n5 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 5,
+      "functions": [
+        {
+          "name": "make_event_time_data",
+          "args": [
+            "df",
+            "horizon_days",
+            "missing_strategy"
+          ],
+          "doc": "status: 1 = seizure, 2 = death, 0 = censored."
+        },
+        {
+          "name": "discrete_time_auc",
+          "args": [
+            "d",
+            "n_splits",
+            "n_repeats"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "cox_concordance",
+          "args": [
+            "d",
+            "ph_test"
+          ],
+          "doc": "Cause-specific Cox via lifelines, treating death as censoring for seizure."
+        },
+        {
+          "name": "fine_gray",
+          "args": [
+            "d"
+          ],
+          "doc": "Fine-Gray subdistribution-hazard model via IPCW weighting."
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "10_11_cea_pairwise.py",
+      "label": "10_11_cea_pairwise",
+      "title": "10_11_cea_pairwise.py\n7 functions\ncategory: cea",
+      "category": "cea",
+      "n_functions": 7,
+      "functions": [
+        {
+          "name": "beta_params_from_ci",
+          "args": [
+            "mean",
+            "ci_lo",
+            "ci_hi"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "gamma_params",
+          "args": [
+            "mean",
+            "se"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "run_markov",
+          "args": [
+            "initial_state",
+            "p",
+            "p_recurrence",
+            "p_epilepsy",
+            "p_death_base",
+            "p_death_excess",
+            "extra_initial_cost"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "run_strategy",
+          "args": [
+            "strategy",
+            "p"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "run_psa",
+          "args": [
+            "escalation_cost",
+            "escalation_qaly",
+            "n_psa",
+            "seed"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "summarize",
+          "args": [
+            "psa_df",
+            "label",
+            "wtps"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "12_nis_seizure_reclassify.py",
+      "label": "12_nis_seizure_reclassify",
+      "title": "12_nis_seizure_reclassify.py\n6 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 6,
+      "functions": [
+        {
+          "name": "flag_from_codes",
+          "args": [
+            "df",
+            "dx_cols"
+          ],
+          "doc": "Return three boolean Series: acute_symptomatic, pre_existing_epilepsy, status_epil."
+        },
+        {
+          "name": "cv_auc",
+          "args": [
+            "make_fn",
+            "X",
+            "y",
+            "n_splits",
+            "n_repeats",
+            "n_jobs"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "make_lr",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "make_rf",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "engineer",
+          "args": [
+            "cohort"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "13_nis_grouped_lasso.py",
+      "label": "13_nis_grouped_lasso",
+      "title": "13_nis_grouped_lasso.py\n15 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 15,
+      "functions": [
+        {
+          "name": "group_lasso_logistic",
+          "args": [
+            "X",
+            "y",
+            "groups",
+            "lam",
+            "alpha",
+            "max_iter",
+            "tol"
+          ],
+          "doc": "alpha=1.0 \u2192 pure group lasso; alpha=0.5 \u2192 sparse-group lasso."
+        },
+        {
+          "name": "predict_proba",
+          "args": [
+            "w",
+            "b",
+            "X"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "cv_eval",
+          "args": [
+            "fit_fn",
+            "X",
+            "y",
+            "n_splits",
+            "n_repeats"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "sigmoid",
+          "args": [
+            "z"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "loss",
+          "args": [
+            "w_",
+            "b_"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "grad",
+          "args": [
+            "w_",
+            "b_"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "prox_group",
+          "args": [
+            "v",
+            "lam_eff"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "prox_l1",
+          "args": [
+            "v",
+            "lam_eff"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "fit_l2",
+          "args": [
+            "Xtr",
+            "ytr"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "fit_l1",
+          "args": [
+            "Xtr",
+            "ytr"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "_balance",
+          "args": [
+            "Xtr",
+            "ytr"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "select_lambda",
+          "args": [
+            "Xtr",
+            "ytr",
+            "alpha",
+            "n_inner"
+          ],
+          "doc": "Fix J: inner-CV \u03bb selection on the log-spaced grid."
+        },
+        {
+          "name": "fit_glasso_tuned",
+          "args": [
+            "Xtr",
+            "ytr"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "fit_sgl_tuned",
+          "args": [
+            "Xtr",
+            "ytr"
+          ],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "14_decision_tree.py",
+      "label": "14_decision_tree",
+      "title": "14_decision_tree.py\n4 functions\ncategory: cea",
+      "category": "cea",
+      "n_functions": 4,
+      "functions": [
+        {
+          "name": "rollback_strategy",
+          "args": [
+            "name"
+          ],
+          "doc": "Return list of leaves: (path_label, prob, cost, qaly)."
+        },
+        {
+          "name": "compute_ev",
+          "args": [
+            "leaves"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "draw_node",
+          "args": [
+            "ax",
+            "x",
+            "y",
+            "kind",
+            "size"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "render_tree",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "15_radiology_nlp.py",
+      "label": "15_radiology_nlp",
+      "title": "15_radiology_nlp.py\n5 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 5,
+      "functions": [
+        {
+          "name": "_search_first",
+          "args": [
+            "text",
+            "patterns",
+            "flags"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "extract_features",
+          "args": [
+            "text"
+          ],
+          "doc": "Returns dict of features with span audit info."
+        },
+        {
+          "name": "validate",
+          "args": [],
+          "doc": "Run extractor on synthetic reports, compute precision/recall per field."
+        },
+        {
+          "name": "apply_to_corpus",
+          "args": [
+            "input_csv",
+            "text_col",
+            "id_col"
+          ],
+          "doc": "Run extraction on a full radiology-report CSV."
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "16_voi_evpi.py",
+      "label": "16_voi_evpi",
+      "title": "16_voi_evpi.py\n4 functions\ncategory: cea",
+      "category": "cea",
+      "n_functions": 4,
+      "functions": [
+        {
+          "name": "run_psa_tracked",
+          "args": [
+            "n",
+            "seed"
+          ],
+          "doc": "Re-run the existing PSA but also persist the sampled parameters so"
+        },
+        {
+          "name": "compute_evpi",
+          "args": [
+            "psa",
+            "wtp"
+          ],
+          "doc": "EVPI(\u03bb) per patient and population-scaled."
+        },
+        {
+          "name": "evppi_strong_oakley",
+          "args": [
+            "psa",
+            "wtp",
+            "focal_col",
+            "n_knots"
+          ],
+          "doc": "EVPPI for a single parameter via the Strong & Oakley (2014) GAM-like"
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "17_build_slides.py",
+      "label": "17_build_slides",
+      "title": "17_build_slides.py\n4 functions\ncategory: doc",
+      "category": "doc",
+      "n_functions": 4,
+      "functions": [
+        {
+          "name": "_set_run",
+          "args": [
+            "run",
+            "size",
+            "color",
+            "bold",
+            "italic",
+            "font"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "title_slide",
+          "args": [
+            "prs",
+            "title",
+            "subtitle",
+            "authors"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "section_slide",
+          "args": [
+            "prs",
+            "header",
+            "bullets",
+            "notes",
+            "footer",
+            "image_path",
+            "image_caption"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "build_deck",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "18_bidmc_optimize.py",
+      "label": "18_bidmc_optimize",
+      "title": "18_bidmc_optimize.py\n14 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 14,
+      "functions": [
+        {
+          "name": "make_prep",
+          "args": [
+            "features"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "cv_oof",
+          "args": [
+            "make_pipe_fn",
+            "X",
+            "y",
+            "n_splits",
+            "n_repeats"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "bootstrap_auc",
+          "args": [
+            "y",
+            "p",
+            "n_boot",
+            "seed"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "tune_xgb",
+          "args": [
+            "X",
+            "y",
+            "features"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "tune_lgbm",
+          "args": [
+            "X",
+            "y",
+            "features"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "obj",
+          "args": [
+            "trial"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "obj",
+          "args": [
+            "trial"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "mk_brf",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "mk_xgb",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "mk_lgb",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "mk_lr",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "mk_stack",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "mk_iso",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "19_transfer_learning.py",
+      "label": "19_transfer_learning",
+      "title": "19_transfer_learning.py\n8 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 8,
+      "functions": [
+        {
+          "name": "build_bidmc_transfer_X",
+          "args": [
+            "df_b"
+          ],
+          "doc": "Build BIDMC view that matches eICU TRANSFER_FEATURES."
+        },
+        {
+          "name": "delong_test",
+          "args": [
+            "y",
+            "p1",
+            "p2"
+          ],
+          "doc": "Returns z-stat and two-sided p-value for paired DeLong (Sun & Xu 2014)."
+        },
+        {
+          "name": "make_brf_pipe",
+          "args": [
+            "features"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "make_xgb_pipe",
+          "args": [
+            "features",
+            "scale_pos_weight"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "cv_oof",
+          "args": [
+            "make_pipe_fn",
+            "X",
+            "y",
+            "n_splits",
+            "n_repeats"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "bootstrap_auc",
+          "args": [
+            "y",
+            "p",
+            "n_boot",
+            "seed"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "aucs_and_struct",
+          "args": [
+            "scores"
+          ],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "20_build_manuscript.py",
+      "label": "20_build_manuscript",
+      "title": "20_build_manuscript.py\n6 functions\ncategory: doc",
+      "category": "doc",
+      "n_functions": 6,
+      "functions": [
+        {
+          "name": "add_heading",
+          "args": [
+            "doc",
+            "text",
+            "level"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "add_para",
+          "args": [
+            "doc",
+            "text"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "add_figure",
+          "args": [
+            "doc",
+            "path"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "add_table_from_df",
+          "args": [
+            "doc",
+            "df",
+            "caption",
+            "fmt"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "add_page_break",
+          "args": [
+            "doc"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "build",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "21_imbalance_sweep.py",
+      "label": "21_imbalance_sweep",
+      "title": "21_imbalance_sweep.py\n14 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 14,
+      "functions": [
+        {
+          "name": "make_prep",
+          "args": [
+            "features"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "pipe_balrf",
+          "args": [
+            "features"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "pipe_rf_balanced",
+          "args": [
+            "features"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "pipe_with_sampler",
+          "args": [
+            "features",
+            "sampler"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "pipe_xgb_costsensitive",
+          "args": [
+            "features",
+            "scale_pos_weight"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "focal_obj",
+          "args": [
+            "gamma"
+          ],
+          "doc": "Returns custom (grad, hess) function for binary focal loss."
+        },
+        {
+          "name": "pipe_xgb_focal",
+          "args": [
+            "features",
+            "scale_pos_weight",
+            "gamma"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "delong_test",
+          "args": [
+            "y",
+            "p1",
+            "p2"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "cv_oof",
+          "args": [
+            "make_pipe_fn",
+            "X",
+            "y",
+            "n_splits",
+            "n_repeats"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "bootstrap_auc",
+          "args": [
+            "y",
+            "p",
+            "n_boot",
+            "seed"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "net_benefit",
+          "args": [
+            "y",
+            "p",
+            "threshold"
+          ],
+          "doc": "Vickers net benefit: (TP/n) - (FP/n) * (t/(1-t))."
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "obj",
+          "args": [
+            "y_pred",
+            "y_true"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "aucs_and_struct",
+          "args": [
+            "scores"
+          ],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "22_diverse_stacking.py",
+      "label": "22_diverse_stacking",
+      "title": "22_diverse_stacking.py\n8 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 8,
+      "functions": [
+        {
+          "name": "make_prep",
+          "args": [
+            "features"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "cv_oof",
+          "args": [
+            "make_pipe_fn",
+            "X",
+            "y",
+            "n_splits",
+            "n_repeats"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "bootstrap_auc",
+          "args": [
+            "y",
+            "p",
+            "n_boot",
+            "seed"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "delong_test",
+          "args": [
+            "y",
+            "p1",
+            "p2"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "make_diverse_stack",
+          "args": [
+            "features",
+            "isotonic"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "struct",
+          "args": [
+            "s"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "mk_brf",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "23_tabpfn_eval.py",
+      "label": "23_tabpfn_eval",
+      "title": "23_tabpfn_eval.py\n8 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 8,
+      "functions": [
+        {
+          "name": "make_prep",
+          "args": [
+            "features"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "cv_oof",
+          "args": [
+            "make_pipe_fn",
+            "X",
+            "y",
+            "n_splits",
+            "n_repeats"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "bootstrap_auc",
+          "args": [
+            "y",
+            "p",
+            "n_boot",
+            "seed"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "delong_test",
+          "args": [
+            "y",
+            "p1",
+            "p2"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "struct",
+          "args": [
+            "s"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "mk_brf",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "mk_tabpfn",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "24_firth_bayes_lr.py",
+      "label": "24_firth_bayes_lr",
+      "title": "24_firth_bayes_lr.py\n14 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 14,
+      "functions": [
+        {
+          "name": "make_prep",
+          "args": [
+            "features"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "cv_oof",
+          "args": [
+            "make_pipe_fn",
+            "X",
+            "y",
+            "n_splits",
+            "n_repeats"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "bootstrap_auc",
+          "args": [
+            "y",
+            "p",
+            "n_boot",
+            "seed"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "delong_test",
+          "args": [
+            "y",
+            "p1",
+            "p2"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "derive_eicu_priors",
+          "args": [
+            "features_bidmc"
+          ],
+          "doc": "Fit elastic-net LR on eICU shared features, return prior means and sds"
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "struct",
+          "args": [
+            "s"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "__init__",
+          "args": [
+            "self",
+            "prior_means",
+            "prior_sds",
+            "max_iter",
+            "tol"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "fit",
+          "args": [
+            "self",
+            "X",
+            "y"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "predict_proba",
+          "args": [
+            "self",
+            "X"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "mk_brf",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "mk_firth",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "mk_bayes",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "mk_bayes_weak",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "25_conformal_prediction.py",
+      "label": "25_conformal_prediction",
+      "title": "25_conformal_prediction.py\n5 functions\ncategory: model",
+      "category": "model",
+      "n_functions": 5,
+      "functions": [
+        {
+          "name": "make_prep",
+          "args": [
+            "features"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "make_brf",
+          "args": [
+            "features"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "class_conditional_conformal",
+          "args": [
+            "p_cal",
+            "y_cal",
+            "p_test",
+            "alpha"
+          ],
+          "doc": "Mondrian conformal: separate calibration per class."
+        },
+        {
+          "name": "evaluate_conformal",
+          "args": [
+            "make_pipe_fn",
+            "features",
+            "X",
+            "y",
+            "alphas",
+            "n_splits",
+            "n_repeats"
+          ],
+          "doc": "Cross-conformal: split \u2192 fit on train, calibrate on val, predict on test."
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "26_main_figures.py",
+      "label": "26_main_figures",
+      "title": "26_main_figures.py\n7 functions\ncategory: doc",
+      "category": "doc",
+      "n_functions": 7,
+      "functions": [
+        {
+          "name": "figure_1",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "figure_2",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "figure_3",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "figure_4",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "figure_5",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "figure_6",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "27_build_jnnp_manuscript.py",
+      "label": "27_build_jnnp_manuscript",
+      "title": "27_build_jnnp_manuscript.py\n13 functions\ncategory: doc",
+      "category": "doc",
+      "n_functions": 13,
+      "functions": [
+        {
+          "name": "add_heading",
+          "args": [
+            "doc",
+            "text",
+            "level"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "add_para",
+          "args": [
+            "doc",
+            "text"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "add_runs",
+          "args": [
+            "doc",
+            "runs"
+          ],
+          "doc": "runs = list of (text, dict-of-formatting)."
+        },
+        {
+          "name": "add_figure",
+          "args": [
+            "doc",
+            "path"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "add_table_from_df",
+          "args": [
+            "doc",
+            "df",
+            "caption"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "register_figure",
+          "args": [
+            "label",
+            "path",
+            "caption"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "register_table",
+          "args": [
+            "label",
+            "df",
+            "caption"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "render_collected_tables_and_figures",
+          "args": [
+            "doc"
+          ],
+          "doc": "Emit a 'Tables and Figures' section at the end of the manuscript."
+        },
+        {
+          "name": "add_page_break",
+          "args": [
+            "doc"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "setup_document",
+          "args": [
+            "doc"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "build_main",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "build_supplementary",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "28_make_callgraph.py",
+      "label": "28_make_callgraph",
+      "title": "28_make_callgraph.py\n3 functions\ncategory: doc",
+      "category": "doc",
+      "n_functions": 3,
+      "functions": [
+        {
+          "name": "parse_script",
+          "args": [
+            "path"
+          ],
+          "doc": "Returns dict with: imports (list), functions (list of (name, args, docstring1))."
+        },
+        {
+          "name": "make_mermaid",
+          "args": [
+            "scripts"
+          ],
+          "doc": "Build a Mermaid graph: nodes are scripts, edges are imports between them."
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "29_main_figures_jnnp.py",
+      "label": "29_main_figures_jnnp",
+      "title": "29_main_figures_jnnp.py\n10 functions\ncategory: doc",
+      "category": "doc",
+      "n_functions": 10,
+      "functions": [
+        {
+          "name": "add_panel_label",
+          "args": [
+            "ax",
+            "label"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "style_axis",
+          "args": [
+            "ax"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "figure_legend_below",
+          "args": [
+            "fig",
+            "handles",
+            "labels"
+          ],
+          "doc": "Place a single shared legend below the figure, centred horizontally."
+        },
+        {
+          "name": "figure_1",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "figure_2",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "figure_3",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "figure_4",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "figure_5",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "figure_6",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "30_export_calculator_assets.py",
+      "label": "30_export_calculator_assets",
+      "title": "30_export_calculator_assets.py\n1 functions\ncategory: doc",
+      "category": "doc",
+      "n_functions": 1,
+      "functions": [
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "31_export_callgraph_json.py",
+      "label": "31_export_callgraph_json",
+      "title": "31_export_callgraph_json.py\n2 functions\ncategory: doc",
+      "category": "doc",
+      "n_functions": 2,
+      "functions": [
+        {
+          "name": "parse_script",
+          "args": [
+            "path"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "args": [],
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "_shared.py",
+      "label": "_shared",
+      "title": "_shared.py\n9 functions\ncategory: shared",
+      "category": "shared",
+      "n_functions": 9,
+      "functions": [
+        {
+          "name": "load_bidmc",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "load_eicu_pure",
+          "args": [
+            "filter_post_seizure"
+          ],
+          "doc": "Pure cSDH cohort: no prior seizures, no pre-admission AED, no mechanical ventilation."
+        },
+        {
+          "name": "load_eicu",
+          "args": [
+            "filter_postop_csdh",
+            "filter_post_seizure"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "make_pipeline_postopA",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "make_pipeline_postopB",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "make_pipeline_preop",
+          "args": [],
+          "doc": ""
+        },
+        {
+          "name": "make_pipeline_eicu",
+          "args": [
+            "features",
+            "model"
+          ],
+          "doc": ""
+        },
+        {
+          "name": "oof_predictions",
+          "args": [
+            "make_pipe_fn",
+            "X",
+            "y",
+            "n_splits",
+            "n_repeats",
+            "groups"
+          ],
+          "doc": "Return mean OOF probability for each row across repeats."
+        },
+        {
+          "name": "calibration_metrics",
+          "args": [
+            "y",
+            "p",
+            "n_bins"
+          ],
+          "doc": "Return dict with brier, citl, slope, intercept, ece, mce, hl_p."
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "02_calibration.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "03_dca.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "04_loho.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "05_temporal_leakage.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "06_overfitting.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "07_missing_data.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "08_eicu_cohort.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "09_competing_risks.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "10_11_cea_pairwise.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "12_nis_seizure_reclassify.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "13_nis_grouped_lasso.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "14_decision_tree.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "15_radiology_nlp.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "16_voi_evpi.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "17_build_slides.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "18_bidmc_optimize.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "19_transfer_learning.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "20_build_manuscript.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "21_imbalance_sweep.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "22_diverse_stacking.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "23_tabpfn_eval.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "24_firth_bayes_lr.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "25_conformal_prediction.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "26_main_figures.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "27_build_jnnp_manuscript.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "29_main_figures_jnnp.py",
+      "to": "_shared.py"
+    },
+    {
+      "from": "30_export_calculator_assets.py",
+      "to": "_shared.py"
+    }
+  ],
+  "categories": {
+    "shared": {
+      "color": "#B58A2E",
+      "label": "Shared utilities"
+    },
+    "model": {
+      "color": "#1F3D5C",
+      "label": "Modelling"
+    },
+    "cea": {
+      "color": "#B5532C",
+      "label": "Cost-effectiveness / VOI"
+    },
+    "doc": {
+      "color": "#2E6B45",
+      "label": "Manuscript / figures / dashboards"
+    }
+  }
+}

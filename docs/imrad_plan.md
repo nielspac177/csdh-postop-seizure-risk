@@ -1,7 +1,7 @@
-# Manuscript plan — JNNP submission
+# Manuscript plan — manuscript submission
 
 ## Target journal
-**Journal of Neurology, Neurosurgery and Psychiatry** (JNNP). Author guidelines (2026): Original Research max 4,000 words main text; structured abstract 250 words; max 6 figures/tables combined in main paper; Vancouver references typically 30–50; TRIPOD-AI reporting for prediction models; supplementary material allowed.
+**Journal of Neurology, Neurosurgery and Psychiatry** (the target journal). Author guidelines (2026): Original Research max 4,000 words main text; structured abstract 250 words; max 6 figures/tables combined in main paper; Vancouver references typically 30–50; TRIPOD-AI reporting for prediction models; supplementary material allowed.
 
 ---
 
@@ -44,7 +44,7 @@
 
 ---
 
-## IMRAD skeleton (JNNP word budget 4,000 main text)
+## IMRAD skeleton (the target journal word budget 4,000 main text)
 
 ### Introduction (~600 words)
 - Para 1: cSDH as one of the most common neurosurgical diseases of ageing populations; rising incidence; mortality and disability burden.
@@ -91,7 +91,7 @@
 
 ## Figure & table allocation
 
-### Main paper (6 maximum per JNNP guidelines)
+### Main paper (6 maximum per the target journal guidelines)
 1. **Figure 1** — Multi-database discrimination forest plot (BIDMC Firth, eICU Set C, LOHO pooled).
 2. **Figure 2** — Calibration curves (after Platt scaling) + decision-curve net benefit.
 3. **Figure 3** — Eleven-model AUC + Brier comparison (combines current Figures 7 + 8).

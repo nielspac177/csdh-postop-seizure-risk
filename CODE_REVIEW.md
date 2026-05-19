@@ -1,4 +1,4 @@
-# Code review — csdh-jnnp
+# Code review — csdh-postop-seizure-risk
 
 This document summarises a structured review of the 27 analysis scripts (~3,800 LOC) supporting the manuscript. It is organised by review category (correctness, reproducibility, performance, readability, security/safety) and ranked by severity. The goal is a punch list a maintainer can work through pre-publication, not a full rewrite. Items marked **must-fix** should be addressed before public release; items marked **should-fix** improve maintainability; items marked **nice-to-have** are stylistic.
 

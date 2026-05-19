@@ -1,0 +1,163 @@
+{
+  "model": {
+    "type": "Firth penalized logistic regression",
+    "fit_on": "BIDMC postoperative-A, n=655, 48 events",
+    "intercept": -2.776162802999835,
+    "features": [
+      "sex",
+      "age",
+      "blood_type",
+      "sdh_type",
+      "sdh_thickness",
+      "csdh_size_change",
+      "mid_shift",
+      "hematoma_lat",
+      "collection_density",
+      "preop_gcs",
+      "epilepsy_hx",
+      "num_prev_sdh",
+      "demographic",
+      "procedures",
+      "surg_decompression",
+      "mma_embo",
+      "drainage",
+      "postop_gcs",
+      "aed_timing_recoded",
+      "prop_aed",
+      "ab_eeg"
+    ],
+    "coefficients": [
+      0.22571025931654848,
+      0.0036122703680543265,
+      0.040352954510717534,
+      -0.05536873544264406,
+      0.01770956864794251,
+      -0.07958969502455933,
+      0.23668121864604943,
+      -0.1404031727216888,
+      0.17444756678695134,
+      -0.028369295096251447,
+      -0.08794008302593127,
+      0.14921575213787708,
+      3.8183567635866056e-16,
+      -1.7291199824538055e-15,
+      -0.7864059542428954,
+      -0.3636384289160306,
+      0.36136465637282933,
+      -0.11766739452411629,
+      -0.3990614571084292,
+      0.9041627291397937,
+      -0.1253772256712583
+    ],
+    "feature_means": [
+      0.7801526717557252,
+      74.11297709923664,
+      0.7312977099236642,
+      1.3877862595419848,
+      17.701083969465646,
+      0.6,
+      5.975099236641222,
+      1.5251908396946565,
+      1.7114503816793893,
+      14.316030534351144,
+      0.02748091603053435,
+      0.2732824427480916,
+      1.0,
+      1.0,
+      1.2259541984732825,
+      0.48396946564885496,
+      0.07786259541984733,
+      14.374045801526718,
+      0.8839694656488549,
+      0.9022900763358779,
+      0.025954198473282442
+    ],
+    "feature_sds": [
+      0.4141430676808788,
+      13.181622627975122,
+      0.8602399780094785,
+      0.48724539654307786,
+      6.672485297577226,
+      0.48989794855663565,
+      4.638002065339236,
+      0.49936501839383796,
+      0.4530880003792206,
+      1.774966585811418,
+      0.16348001493961603,
+      0.44905743992080954,
+      1.0,
+      1.0,
+      0.7662327577985649,
+      0.49974295589674583,
+      0.2679552418862757,
+      2.326534223708181,
+      0.3202615328904375,
+      0.2969220343485366,
+      0.15899867312305443
+    ],
+    "feature_medians_for_imputation": [
+      1.0,
+      75.0,
+      1.0,
+      1.0,
+      17.0,
+      1.0,
+      5.0,
+      2.0,
+      2.0,
+      15.0,
+      0.0,
+      0.0,
+      1.0,
+      1.0,
+      1.0,
+      0.0,
+      0.0,
+      15.0,
+      1.0,
+      1.0,
+      0.0
+    ]
+  },
+  "conformal": {
+    "method": "class-conditional (Mondrian) split conformal",
+    "calibration_split": "75% train / 25% calibration, 5-fold pooled",
+    "nonconformity_quantiles_positive": {
+      "alpha_0.05": 0.9823684210200189,
+      "alpha_0.10": 0.9792811811458582,
+      "alpha_0.20": 0.9722410567730732
+    },
+    "nonconformity_quantiles_negative": {
+      "alpha_0.05": 0.278341130692301,
+      "alpha_0.10": 0.1911013844706257,
+      "alpha_0.20": 0.12566525098500342
+    }
+  },
+  "cea": {
+    "wtp_threshold_usd_per_qaly": 100000,
+    "discount_rate": 0.03,
+    "horizon_years": 10,
+    "strategies": {
+      "E_cost_USD": {
+        "Observation (no AED, no cEEG)": 5844.0,
+        "Universal AED prophylaxis": 5362.0,
+        "ML-guided AED (targeted prophylaxis)": 4365.0,
+        "ML-guided cEEG + targeted AED": 7685.0
+      },
+      "E_QALY": {
+        "Observation (no AED, no cEEG)": 7.362,
+        "Universal AED prophylaxis": 7.4205,
+        "ML-guided AED (targeted prophylaxis)": 7.4318,
+        "ML-guided cEEG + targeted AED": 7.3947
+      }
+    }
+  },
+  "metadata": {
+    "n_features": 21,
+    "n_patients": 655,
+    "n_events": 48,
+    "prevalence": 0.0732824427480916,
+    "manuscript_release_tag": "v1.0-JNNP-submission",
+    "generated_by": "scripts/30_export_calculator_assets.py"
+  }
+}

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>cSDH postoperative-seizure risk calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --navy: #1F3D5C;
+    --rust: #B5532C;
+    --forest: #2E6B45;
+    --ochre: #B58A2E;
+    --soft: #F4EFE6;
+    --grey: #6E6E6E;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    background: var(--soft);
+    color: #1a1a1a;
+    margin: 0;
+    line-height: 1.5;
+  }
+  header {
+    background: var(--navy);
+    color: #fff;
+    padding: 24px 32px;
+  }
+  header h1 { margin: 0; font-size: 22px; font-weight: 600; }
+  header p { margin: 6px 0 0; opacity: 0.9; font-size: 14px; }
+  main {
+    max-width: 1100px;
+    margin: 24px auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 800px) { main { grid-template-columns: 1fr; } }
+  .panel {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+  .panel h2 {
+    margin: 0 0 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--navy);
+    border-bottom: 2px solid var(--navy);
+    padding-bottom: 8px;
+  }
+  label {
+    display: block;
+    font-size: 12px;
+    color: var(--grey);
+    margin-top: 12px;
+    margin-bottom: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  input, select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--navy);
+    box-shadow: 0 0 0 3px rgba(31,61,92,0.15);
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .result-card {
+    background: var(--soft);
+    border-left: 4px solid var(--navy);
+    padding: 16px 20px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+  .result-card.rust  { border-left-color: var(--rust); }
+  .result-card.forest { border-left-color: var(--forest); }
+  .big {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--navy);
+    display: block;
+    margin-top: 4px;
+  }
+  .big.rust  { color: var(--rust); }
+  .big.forest { color: var(--forest); }
+  .meta {
+    font-size: 12px;
+    color: var(--grey);
+    margin-top: 4px;
+  }
+  .alpha-bar {
+    width: 100%;
+    height: 6px;
+    background: #ccc;
+    border-radius: 3px;
+    margin-top: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .alpha-bar > .fill {
+    height: 100%;
+    background: var(--navy);
+    transition: width 0.2s ease;
+  }
+  .disclaimer {
+    font-size: 11px;
+    color: var(--grey);
+    line-height: 1.5;
+    margin-top: 16px;
+    padding: 12px;
+    background: #fff8e1;
+    border-radius: 4px;
+    border-left: 3px solid var(--ochre);
+  }
+  nav { background: #fff; padding: 10px 32px; border-bottom: 1px solid #ddd; }
+  nav a {
+    color: var(--navy);
+    text-decoration: none;
+    font-size: 13px;
+    margin-right: 20px;
+    font-weight: 600;
+  }
+  nav a:hover { text-decoration: underline; }
+  footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 12px;
+    color: var(--grey);
+  }
+  .recommendation {
+    padding: 16px;
+    border-radius: 6px;
+    margin-top: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .recommendation.ruleout {
+    background: #e8f5e9;
+    border-left: 4px solid var(--forest);
+  }
+  .recommendation.rulein {
+    background: #ffebee;
+    border-left: 4px solid var(--rust);
+  }
+  .recommendation.indeterminate {
+    background: #fff8e1;
+    border-left: 4px solid var(--ochre);
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>cSDH postoperative-seizure risk calculator</h1>
+  <p>Firth penalized logistic regression · class-conditional conformal prediction · all computation runs locally in your browser</p>
+</header>
+<nav>
+  <a href="../index.html">← Home</a>
+  <a href="savings.html">Population savings</a>
+  <a href="callgraph.html">Code callgraph</a>
+  <a href="https://github.com/nielspac177/csdh-postop-seizure-risk" target="_blank" rel="noopener">GitHub</a>
+</nav>
+
+<main>
+  <section class="panel">
+    <h2>Patient features</h2>
+    <p style="font-size: 13px; color: var(--grey); margin: -8px 0 16px;">
+      All 21 BIDMC postoperative-A features. Defaults are the dataset median; any field can be left at default if unknown.
+    </p>
+    <form id="form">
+      <div class="grid2">
+        <div>
+          <label for="age">Age (years)</label>
+          <input type="number" id="age" value="73" min="0" max="120">
+        </div>
+        <div>
+          <label for="sex">Sex</label>
+          <select id="sex">
+            <option value="1">Male</option>
+            <option value="0">Female</option>
+          </select>
+        </div>
+        <div>
+          <label for="preop_gcs">Preop GCS</label>
+          <input type="number" id="preop_gcs" value="14" min="3" max="15">
+        </div>
+        <div>
+          <label for="postop_gcs">Postop GCS (OR exit)</label>
+          <input type="number" id="postop_gcs" value="15" min="3" max="15">
+        </div>
+        <div>
+          <label for="sdh_thickness">SDH thickness (mm)</label>
+          <input type="number" id="sdh_thickness" value="12" min="0" max="60" step="0.5">
+        </div>
+        <div>
+          <label for="mid_shift">Midline shift (mm)</label>
+          <input type="number" id="mid_shift" value="3" min="0" max="30" step="0.5">
+        </div>
+        <div>
+          <label for="hematoma_lat">Laterality</label>
+          <select id="hematoma_lat">
+            <option value="1">Left</option>
+            <option value="2">Right</option>
+            <option value="3">Bilateral</option>
+          </select>
+        </div>
+        <div>
+          <label for="collection_density">Density</label>
+          <select id="collection_density">
+            <option value="0">Hypodense</option>
+            <option value="1" selected>Isodense</option>
+            <option value="2">Hyperdense</option>
+            <option value="3">Mixed</option>
+          </select>
+        </div>
+        <div>
+          <label for="sdh_type">SDH type</label>
+          <select id="sdh_type">
+            <option value="0">Chronic</option>
+            <option value="1">Acute</option>
+            <option value="2">Mixed</option>
+            <option value="3">Unknown</option>
+          </select>
+        </div>
+        <div>
+          <label for="csdh_size_change">Size change pre→post</label>
+          <select id="csdh_size_change">
+            <option value="-1">Smaller</option>
+            <option value="0" selected>Equal</option>
+            <option value="1">Larger</option>
+          </select>
+        </div>
+        <div>
+          <label for="epilepsy_hx">Epilepsy history</label>
+          <select id="epilepsy_hx">
+            <option value="0" selected>No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+        <div>
+          <label for="num_prev_sdh">Prior SDH episodes</label>
+          <input type="number" id="num_prev_sdh" value="0" min="0" max="10">
+        </div>
+        <div>
+          <label for="surg_decompression">Decompressive craniectomy</label>
+          <select id="surg_decompression">
+            <option value="0" selected>No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+        <div>
+          <label for="mma_embo">MMA embolisation</label>
+          <select id="mma_embo">
+            <option value="0" selected>No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+        <div>
+          <label for="drainage">Drain placed</label>
+          <select id="drainage">
+            <option value="0">No</option>
+            <option value="1" selected>Yes</option>
+          </select>
+        </div>
+        <div>
+          <label for="blood_type">Blood type (0–8)</label>
+          <input type="number" id="blood_type" value="4" min="0" max="8">
+        </div>
+        <div>
+          <label for="demographic">Demographic stratum (0–4)</label>
+          <input type="number" id="demographic" value="2" min="0" max="4">
+        </div>
+        <div>
+          <label for="procedures">Procedure class (0–4)</label>
+          <input type="number" id="procedures" value="2" min="0" max="4">
+        </div>
+        <div>
+          <label for="aed_timing_recoded">AED timing</label>
+          <select id="aed_timing_recoded">
+            <option value="0" selected>Not given</option>
+            <option value="1">Postop / preop given</option>
+          </select>
+        </div>
+        <div>
+          <label for="prop_aed">Prophylactic AED</label>
+          <select id="prop_aed">
+            <option value="0" selected>No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+        <div>
+          <label for="ab_eeg">Abnormal EEG documented</label>
+          <select id="ab_eeg">
+            <option value="0" selected>No / not done</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="alpha" style="margin-top: 18px;">
+        Conformal target miscoverage α (controls the prediction-set confidence)
+      </label>
+      <input type="range" id="alpha" min="0.05" max="0.20" step="0.05" value="0.10">
+      <div class="alpha-bar"><div class="fill" id="alpha-fill" style="width:50%;"></div></div>
+      <div class="meta" id="alpha-meta">α = 0.10 → coverage guarantee 90%</div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>Prediction</h2>
+
+    <div class="result-card">
+      <span class="meta">Seizure probability (Firth penalized LR)</span>
+      <span class="big" id="prob">—</span>
+      <span class="meta" id="prob-meta">Logit: —</span>
+    </div>
+
+    <div class="result-card forest">
+      <span class="meta">Conformal prediction set</span>
+      <span class="big forest" id="pred-set">—</span>
+      <span class="meta" id="pred-set-meta">Computed at the selected α.</span>
+    </div>
+
+    <div id="recommendation" class="recommendation indeterminate">
+      <strong>Recommendation —</strong>
+      <span id="rec-text">enter patient features and adjust α to see a recommendation.</span>
+    </div>
+
+    <div class="disclaimer">
+      <strong>Research-prototype only.</strong> This calculator is intended for
+      methodological reproduction of the manuscript's deployment model and
+      conformal layer. It is <em>not</em> a clinical decision-support device,
+      is not regulated by FDA / CE / MHRA, and must not be used to make
+      patient-level decisions. All computation is performed locally in your
+      browser; no data are transmitted to any server.
+    </div>
+  </section>
+</main>
+
+<footer>
+  Code · github.com/nielspac177/csdh-postop-seizure-risk · MIT licensed · all computation client-side.
+</footer>
+
+<script>
+const FIRTH_FEATURES_ORDER = [
+  "sex","age","blood_type","sdh_type","sdh_thickness","csdh_size_change",
+  "mid_shift","hematoma_lat","collection_density","preop_gcs",
+  "epilepsy_hx","num_prev_sdh","demographic","procedures",
+  "surg_decompression","mma_embo","drainage","postop_gcs",
+  "aed_timing_recoded","prop_aed","ab_eeg"
+];
+
+let MODEL = null;
+
+async function loadModel() {
+  const r = await fetch("model_assets.json");
+  MODEL = await r.json();
+  recompute();
+}
+
+function getInputValue(id) {
+  const el = document.getElementById(id);
+  return parseFloat(el.value);
+}
+
+function recompute() {
+  if (!MODEL) return;
+  // Build raw vector in feature order
+  const raw = FIRTH_FEATURES_ORDER.map(f => getInputValue(f));
+  const means = MODEL.model.feature_means;
+  const sds   = MODEL.model.feature_sds;
+  const coefs = MODEL.model.coefficients;
+  const intercept = MODEL.model.intercept;
+  // z-scale
+  let z = 0;
+  for (let i = 0; i < raw.length; i++) {
+    const v = (raw[i] - means[i]) / sds[i];
+    z += v * coefs[i];
+  }
+  z += intercept;
+  const p = 1 / (1 + Math.exp(-z));
+  document.getElementById("prob").textContent = (p * 100).toFixed(1) + "%";
+  document.getElementById("prob-meta").textContent =
+    "Logit = " + z.toFixed(3) + " · ratio vs prevalence (7.3%): " +
+    (p / 0.073).toFixed(2) + "×";
+
+  // Conformal sets
+  const alpha = parseFloat(document.getElementById("alpha").value);
+  const aKey = "alpha_" + alpha.toFixed(2);
+  const qPos = MODEL.conformal.nonconformity_quantiles_positive[aKey];
+  const qNeg = MODEL.conformal.nonconformity_quantiles_negative[aKey];
+  const incPos = (1 - p) <= qPos;       // include "seizure"
+  const incNeg = (1 - (1 - p)) <= qNeg; // include "no seizure"  i.e.  p <= qNeg
+  let setLabel, recClass, recText;
+  if (incPos && !incNeg) {
+    setLabel = "{ seizure }";
+    recClass = "rulein";
+    recText = "RULE-IN. At the selected confidence level, this patient is "
+             + "classified as high-risk for postoperative seizure. Consider "
+             + "AED prophylaxis and/or continuous EEG monitoring.";
+  } else if (!incPos && incNeg) {
+    setLabel = "{ no seizure }";
+    recClass = "ruleout";
+    recText = "RULE-OUT. At the selected confidence level, postoperative "
+             + "seizure can be confidently ruled out. AED prophylaxis may "
+             + "be safely omitted, with routine clinical observation.";
+  } else if (incPos && incNeg) {
+    setLabel = "{ seizure, no seizure }";
+    recClass = "indeterminate";
+    recText = "INDETERMINATE. The model cannot provide a confident "
+             + "singleton prediction at this α. Clinical judgment should "
+             + "guide the AED-vs-monitoring decision.";
+  } else {
+    setLabel = "{ ∅ }";
+    recClass = "indeterminate";
+    recText = "NULL SET. Neither class is supported at this α — interpret "
+             + "as an outlier relative to the calibration set.";
+  }
+  const ps = document.getElementById("pred-set");
+  ps.textContent = setLabel;
+  ps.parentElement.className = "result-card " +
+    (recClass === "ruleout" ? "forest" : recClass === "rulein" ? "rust" : "");
+  document.getElementById("pred-set").className = "big " +
+    (recClass === "ruleout" ? "forest" : recClass === "rulein" ? "rust" : "");
+  document.getElementById("pred-set-meta").textContent =
+    "α = " + alpha.toFixed(2) + " → " + ((1 - alpha) * 100).toFixed(0) + "% coverage";
+
+  const rec = document.getElementById("recommendation");
+  rec.className = "recommendation " + recClass;
+  document.getElementById("rec-text").textContent = recText;
+
+  document.getElementById("alpha-fill").style.width =
+    ((alpha - 0.05) / 0.15 * 100) + "%";
+  document.getElementById("alpha-meta").textContent =
+    "α = " + alpha.toFixed(2) + " → coverage guarantee " +
+    ((1 - alpha) * 100).toFixed(0) + "%";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("form").addEventListener("input", recompute);
+  loadModel();
+});
+</script>
+</body>
+</html>
