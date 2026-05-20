@@ -12,7 +12,7 @@ Companion code, interactive tools and documentation for the manuscript:
 [![Release](https://img.shields.io/github/v/release/nielspac177/csdh-postop-seizure-risk.svg)](https://github.com/nielspac177/csdh-postop-seizure-risk/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-![Graphical abstract](figures/F0_graphical_abstract.png)
+![Graphical abstract](site/F0_graphical_abstract.png)
 
 ## Interactive tools (run in your browser, no data leaves the machine)
 
@@ -24,10 +24,7 @@ Companion code, interactive tools and documentation for the manuscript:
 
 - **[Full README](README.html)** — quickstart, repository layout, dependencies, and reproducibility instructions.
 - **[Module dependency graph and function inventory](CALLGRAPH.html)** — 187 functions across 28 modules with their arguments and one-line purpose.
-- **[Code review notes](CODE_REVIEW.html)** — prioritised review covering correctness, reproducibility, performance, readability, and safety. No must-fix blockers identified.
 - **[Reviewer access protocol](docs/reviewer_access.html)** — procedure for accessing filtered working data subsets under IRB / CRD / HCUP control.
-- **[Manuscript plan](docs/imrad_plan.html)** — IMRAD outline, five main messages, and critical-thinking review of common reviewer concerns.
-- **[Literature review on small-cohort clinical ML](docs/literature_review_imbalance_smallcohort.html)** — 2022–2026 evidence base for the modelling choices.
 
 ## What this repository contains
 

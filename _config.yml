@@ -13,14 +13,13 @@ relative_links:
   collections: false
 include:
   - CALLGRAPH.md
-  - CODE_REVIEW.md
   - docs/reviewer_access.md
-  - docs/imrad_plan.md
-  - docs/literature_review_imbalance_smallcohort.md
   - site/calculator.html
   - site/savings.html
   - site/callgraph.html
   - site/model_assets.json
+  - site/callgraph.json
+  - site/F0_graphical_abstract.png
 exclude:
   - "*.docx"
   - "*.pdf"
