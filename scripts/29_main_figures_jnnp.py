@@ -147,8 +147,10 @@ def figure_1():
         axA.scatter(primary["auc"].iloc[i], pos[i], color=c, s=42, zorder=3,
                      edgecolor="black", linewidth=0.5)
     axA.set_yticks(pos)
-    axA.set_yticklabels([f"{r.feature_set} · {r.model.replace('penalized', 'pen.')}"
-                          for r in primary.itertuples()], fontsize=8)
+    axA.set_yticklabels(
+        [f"{r.feature_set} · "
+         f"{r.model.replace('penalized', 'pen.').replace(' (baseline)', '')}"
+         for r in primary.itertuples()], fontsize=8)
     axA.invert_yaxis()
     axA.axvline(0.5, ls=":", color=COL["grey"], lw=0.7)
     axA.set_xlim(0.45, 0.85)
@@ -411,7 +413,7 @@ def figure_3():
     ]
     legend_labels = [
         "Firth penalized LR (deployment)",
-        "BalancedRandomForest (baseline)",
+        "BalancedRandomForest",
         "Other sensitivity models",
         "Base-rate variance (0.073)",
         "Chance (AUC = 0.5)",

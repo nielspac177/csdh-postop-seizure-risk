@@ -185,10 +185,9 @@ def build_main():
                    "interactive code callgraph; all computation runs "
                    "client-side in the browser so that no patient "
                    "information is transmitted. Raw patient-level data are "
-                   "restricted by the BIDMC Institutional Review Board, the "
-                   "eICU Collaborative Research Database data-use "
-                   "agreement, and the HCUP Nationwide Inpatient Sample "
-                   "data-use agreement; filtered, de-identified working "
+                   "restricted by the BIDMC Institutional Review Board and "
+                   "the eICU Collaborative Research Database data-use "
+                   "agreement; filtered, de-identified working "
                    "subsets are released to authorised peer reviewers via "
                    "the reviewer-access protocol documented at "
                    "github.com/nielspac177/csdh-postop-seizure-risk/tree/"
@@ -208,10 +207,9 @@ def build_main():
     add_runs(doc, [("Methods. ", {"bold": True}),
         ("We developed and externally evaluated a machine-learning risk "
          "score for postoperative seizure in 655 cSDH evacuations at "
-         "BIDMC (development; 48 events), 5,376 SDH ICU stays across 139 "
-         "hospitals in the eICU Collaborative Research Database (external), "
-         "and 218,244 SDH admissions in the Nationwide Inpatient Sample "
-         "(population). Eleven model classes were compared, including six "
+         "BIDMC (development; 48 events) and 5,376 SDH ICU stays across "
+         "139 hospitals in the eICU Collaborative Research Database "
+         "(external validation). Eleven model classes were compared, including six "
          "SMOTE-family oversamplers, Optuna-tuned XGBoost and LightGBM, a "
          "diverse-base stacking ensemble, Bayesian logistic regression with "
          "eICU-informed priors, and Firth penalized logistic regression. "
@@ -222,8 +220,8 @@ def build_main():
     add_runs(doc, [("Results. ", {"bold": True}),
         ("Firth penalized logistic regression — selected as the deployment "
          "model — discriminated at AUC 0.681 (95% CI 0.609–0.753), "
-         "equivalent to the BalancedRandomForest baseline (DeLong "
-         "p = 0.81), with 3.3-fold better calibration (Brier 0.069 vs 0.228). "
+         "equivalent to BalancedRandomForest (DeLong p = 0.81), with "
+         "3.3-fold better calibration (Brier 0.069 vs 0.228). "
          "Eleven-method comparison confirmed an AUC ceiling near 0.68 "
          "consistent with 2022–2025 meta-evidence. eICU external AUC was "
          "0.750 (0.711–0.774); random-effects pooled AUC across 42 hospitals "
@@ -297,11 +295,9 @@ def build_main():
          "(iii) class-conditional conformal prediction for individual-"
          "patient decisions with distribution-free coverage guarantees, "
          "(iv) cost-effectiveness analysis with value-of-information "
-         "scaling to the annual operative population, and (v) two "
-         "methodological corrections for the field — a refined ICD-10 "
-         "outcome definition for nationwide analyses and a documented "
-         "transfer-learning failure between mixed-acuity intensive-care "
-         "and pure operative cSDH cohorts.", {})], indent=True)
+         "scaling to the annual operative population, and (v) a "
+         "documented transfer-learning failure between mixed-acuity "
+         "intensive-care and pure operative cSDH cohorts.", {})], indent=True)
     add_runs(doc, [
         ("Conformal prediction adds distribution-free, finite-sample "
          "coverage guarantees that probability calibration alone does "
@@ -326,8 +322,7 @@ def build_main():
         ("²²", {"superscript": True}),
         (" The BIDMC analysis was approved by the institutional review "
          "board (Protocol 2024P000XXX); the eICU Collaborative Research "
-         "Database v2.0 and Nationwide Inpatient Sample (NIS) were "
-         "accessed under their respective data-use agreements.", {})],
+         "Database v2.0 was accessed under its data-use agreement.", {})],
         indent=True)
     add_heading(doc, "Cohort assembly", level=2)
     add_runs(doc, [
@@ -337,21 +332,16 @@ def build_main():
          "seizures). The eICU non-traumatic SDH stratum served as the "
          "primary external-validation cohort (n = 3,297; 300 seizures), "
          "with sensitivity to four cohort definitions reported in the "
-         "Supplement. The NIS 2016–2019 yielded 2,518 admissions with "
-         "chronic-SDH coding and a craniotomy or burr-hole procedure in "
-         "the same admission.", {})], indent=True)
+         "Supplement.", {})], indent=True)
     add_heading(doc, "Outcome and features", level=2)
     add_runs(doc, [
         ("The primary outcome was any postoperative seizure within the "
-         "index admission. Prior nationwide analyses have combined ICD-10-CM "
-         "codes for acute symptomatic seizure (R56.x, 780.39, G41.x) with "
-         "codes for pre-existing epilepsy (G40.x, 345.x). For the NIS "
-         "cohort we adopted an outcome restricted to acute symptomatic "
-         "seizure alone; the released codeset and its rationale are "
-         "documented in Supplementary Appendix S3. The BIDMC postoperative-A "
-         "feature set comprised 21 demographic, operative and imaging-"
-         "derived variables; postoperative-B excluded three variables "
-         "potentially recorded after seizure onset.", {})], indent=True)
+         "index admission, ascertained from chart documentation at BIDMC "
+         "and from the structured seizure flag in eICU. The BIDMC "
+         "postoperative-A feature set comprised 21 demographic, operative "
+         "and imaging-derived variables; postoperative-B excluded three "
+         "variables potentially recorded after seizure onset. The full "
+         "feature dictionary is in Supplementary Appendix S3.", {})], indent=True)
     add_heading(doc, "Modelling", level=2)
     add_runs(doc, [
         ("Eleven model classes were compared: the prior version's BalancedRandom"
@@ -366,7 +356,7 @@ def build_main():
          "5×5 repeated stratified cross-validation with bootstrap 95% "
          "confidence intervals on AUC, Brier score, calibration-in-the-"
          "large, calibration slope and intercept. Paired comparisons "
-         "against the BRF baseline used the DeLong test.", {})], indent=True)
+         "against BRF used the DeLong test.", {})], indent=True)
     add_heading(doc, "Robustness battery", level=2)
     add_runs(doc, [
         ("Pre-specified analyses included a temporal-leakage audit "
@@ -442,20 +432,19 @@ def build_main():
     # Table 1 — registered for end-of-manuscript rendering
     add_heading(doc, "Cohort characteristics", level=2)
     tbl1 = pd.DataFrame([
-        {"Characteristic": "Patients, n",      "BIDMC": 655, "eICU non-traumatic": 3297, "NIS chronic+surgical": 2518},
-        {"Characteristic": "Median age (y, IQR)", "BIDMC": "73 [64–81]", "eICU non-traumatic": "74 [65–82]", "NIS chronic+surgical": "73 [64–81]"},
-        {"Characteristic": "Male sex, %",      "BIDMC": "68", "eICU non-traumatic": "63", "NIS chronic+surgical": "66"},
-        {"Characteristic": "Anticoagulant on admission, %", "BIDMC": "27", "eICU non-traumatic": "21", "NIS chronic+surgical": "24"},
-        {"Characteristic": "Burr-hole evacuation, %", "BIDMC": "71", "eICU non-traumatic": "—", "NIS chronic+surgical": "54"},
-        {"Characteristic": "Craniotomy, %",    "BIDMC": "29", "eICU non-traumatic": "—", "NIS chronic+surgical": "46"},
-        {"Characteristic": "Median preop GCS (IQR)", "BIDMC": "14 [13–15]", "eICU non-traumatic": "14 [13–15]", "NIS chronic+surgical": "—"},
-        {"Characteristic": "Postoperative seizure, n (%)", "BIDMC": "48 (7.3)", "eICU non-traumatic": "300 (9.1)", "NIS chronic+surgical": "144 (5.7)*"},
+        {"Characteristic": "Patients, n",      "BIDMC": 655, "eICU non-traumatic": 3297},
+        {"Characteristic": "Median age (y, IQR)", "BIDMC": "73 [64–81]", "eICU non-traumatic": "74 [65–82]"},
+        {"Characteristic": "Male sex, %",      "BIDMC": "68", "eICU non-traumatic": "63"},
+        {"Characteristic": "Anticoagulant on admission, %", "BIDMC": "27", "eICU non-traumatic": "21"},
+        {"Characteristic": "Burr-hole evacuation, %", "BIDMC": "71", "eICU non-traumatic": "—"},
+        {"Characteristic": "Craniotomy, %",    "BIDMC": "29", "eICU non-traumatic": "—"},
+        {"Characteristic": "Median preop GCS (IQR)", "BIDMC": "14 [13–15]", "eICU non-traumatic": "14 [13–15]"},
+        {"Characteristic": "Postoperative seizure, n (%)", "BIDMC": "48 (7.3)", "eICU non-traumatic": "300 (9.1)"},
     ])
     register_table("Table 1", tbl1,
-                    "Table 1.  Cohort characteristics across the three "
-                    "databases. * NIS seizure rate under the corrected "
-                    "outcome definition (acute symptomatic only; G40.x "
-                    "epilepsy codes excluded).")
+                    "Table 1.  Cohort characteristics across the BIDMC "
+                    "development cohort and the eICU external-validation "
+                    "cohort (non-traumatic SDH stratum).")
     add_para(doc, "Cohort characteristics are summarised in Table 1.", indent=True)
 
     # 3.1 Primary discrimination
@@ -513,14 +502,14 @@ def build_main():
     add_heading(doc, "Eleven-method modelling battery", level=2)
     add_runs(doc, [
         ("Across eleven model classes, AUC was insensitive to method "
-         "selection (range 0.62–0.69; all DeLong tests against baseline "
+         "selection (range 0.62–0.69; all DeLong tests against BRF "
          "p > 0.05 or p < 0.05 with worse discrimination), confirming the "
          "discrimination ceiling at n = 48 events implied by the Bernoulli "
          "noise floor and consistent with recent meta-evidence.", {}),
         ("¹⁷⁻¹⁹", {"superscript": True}),
         (" Calibration, by contrast, varied substantially across methods: "
          "Brier score ranged from 0.067 (Firth and stacking) to 0.228 "
-         "(BalancedRandomForest baseline) — a more-than-threefold "
+         "(BalancedRandomForest) — a more-than-threefold "
          "difference (Figure 3). Bayesian regression with eICU-informed "
          "priors significantly degraded discrimination (AUC 0.515, "
          "DeLong p = 0.001) because the eICU age coefficient is negative "
@@ -535,8 +524,8 @@ def build_main():
                 "B — Brier score across the same models. The Firth penalized "
                 "logistic regression deployment model (rust) matches "
                 "discrimination of every well-behaved alternative while "
-                "delivering threefold-better calibration than the "
-                "BalancedRandomForest baseline (navy).")
+                "delivering threefold-better calibration than "
+                "BalancedRandomForest (navy).")
 
     # 3.4 Conformal
     add_heading(doc, "Conformal risk stratification", level=2)
@@ -593,9 +582,11 @@ def build_main():
                 "B — Per-patient EVPI as a function of willingness-to-pay "
                 "threshold.")
 
-    # NIS coverage moved to Methods (outcome definition) and Discussion
-    # (methodological contributions) — full detail in Supplementary Figure S5
-    # and the released codeset. The Results section now retains the
+    # NIS results are not reported in the main manuscript. The cohort was
+    # excluded from the primary analysis because available ICD-10 coding
+    # cannot separate acute symptomatic seizure from pre-existing epilepsy
+    # — see Supplementary Appendix S4 (and Figures S5, S7). The Results
+    # section here retains the
     # discrimination → calibration → method battery → conformal → CEA → VOI
     # narrative arc without interruption.
     add_page_break(doc)
@@ -608,20 +599,19 @@ def build_main():
          "evacuation can be deployable when calibration and "
          "individual-patient decision support — not discrimination — are "
          "treated as the optimisation target. Firth penalized logistic "
-         "regression matches the BalancedRandomForest baseline "
-         "on AUC, delivers three-fold better calibration, and supports "
+         "regression matches BalancedRandomForest on AUC, delivers "
+         "three-fold better calibration, and supports "
          "class-conditional conformal prediction sets that confidently "
          "rule out seizure in approximately one quarter of patients at a "
-         "90% coverage guarantee. Multi-database evaluation across BIDMC, "
-         "eICU and NIS confirms low between-hospital heterogeneity "
-         "(I² = 0%) and identifies a corrected outcome definition for "
-         "future nationwide analyses.", {})], indent=True)
+         "90% coverage guarantee. External validation across BIDMC and "
+         "the eICU Collaborative Research Database confirms low "
+         "between-hospital heterogeneity (I² = 0%).", {})], indent=True)
     add_runs(doc, [
         ("The eleven-method modelling battery — spanning six SMOTE-family "
          "oversamplers, Optuna-tuned gradient boosting, diverse-base "
          "stacking, and Bayesian regression with multiple prior "
          "specifications — produced no statistically significant "
-         "discrimination improvement over the baseline. This null result "
+         "discrimination improvement over BalancedRandomForest. This null result "
          "is concordant with three independent 2022–2025 meta-analyses "
          "showing that class-imbalance corrections do not raise AUC in "
          "clinical risk models,", {}),
@@ -646,13 +636,8 @@ def build_main():
          "addressable through prospective data collection or focused "
          "trials.", {})], indent=True)
     add_runs(doc, [
-        ("Two methodological observations bear on future cSDH research. "
-         "First, the originally-reported NIS signal for postoperative "
-         "seizure is driven by outcome misclassification between acute "
-         "symptomatic seizure and pre-existing epilepsy; under the "
-         "corrected definition, no population-scale signal remains. We "
-         "release the cleaned codeset for replication. Second, cross-"
-         "cohort transfer learning from eICU to BIDMC failed not for "
+        ("One methodological observation bears on future cSDH research: "
+         "cross-cohort transfer learning from eICU to BIDMC failed not for "
          "statistical reasons but because the underlying age-coefficient "
          "signs differ between mixed-acuity ICU SDH and pure post-"
          "craniotomy cSDH. Any future transfer-learning attempt in this "
@@ -766,10 +751,10 @@ def build_supplementary():
         ("1", "Title", "Identifies study as developing or evaluating an ML prediction model.", "Yes"),
         ("2", "Abstract", "Structured summary with sample size, outcome, performance metric.", "Yes"),
         ("3a–b", "Background and objectives", "Rationale, intended use, target population.", "Yes — Introduction §1."),
-        ("4–6", "Source of data", "Multi-database; BIDMC/eICU/NIS; eligibility criteria.", "Yes — Methods §2.2."),
-        ("7", "Outcome", "Defined a priori; ICD-10 codes; NIS reclassification documented.", "Yes — Methods §2.3."),
+        ("4–6", "Source of data", "Two databases (BIDMC, eICU); eligibility criteria. NIS analysis attempted but excluded — see Appendix S4.", "Yes — Methods §2.2."),
+        ("7", "Outcome", "Defined a priori; chart-documented seizure (BIDMC); structured seizure flag (eICU).", "Yes — Methods §2.3."),
         ("8", "Predictors", "21 features (postop_A); 18 (postop_B); standardisation.", "Yes — Methods §2.3."),
-        ("9", "Sample size", "655 (BIDMC), 3,297 (eICU primary), 2,518 (NIS chronic+surgical).", "Yes — Methods §2.2."),
+        ("9", "Sample size", "655 (BIDMC, 48 events); 3,297 (eICU primary, 300 events).", "Yes — Methods §2.2."),
         ("10", "Missing data", "Median imputation + missing indicator (sensitivity)", "Yes — Supplement S4."),
         ("11", "Statistical methods", "11-method battery; repeated stratified CV; bootstrap.", "Yes — Methods §2.5."),
         ("12", "Risk groups", "Class-conditional conformal sets (rule-out, rule-in).", "Yes — Results §3.4."),
@@ -800,10 +785,11 @@ def build_supplementary():
     add_para(doc,
         "Raw patient data are restricted by IRB / data-use agreements. The "
         "following derived assets are released: (a) the 21-variable BIDMC "
-        "feature schema with categorical encoders; (b) the corrected NIS "
-        "ICD-10 outcome codeset; (c) the CEA decision-tree Python "
-        "implementation and parameter file; and (d) Firth coefficient "
-        "estimates with confidence intervals.")
+        "feature schema with categorical encoders; (b) the CEA decision-tree "
+        "Python implementation and parameter file; and (c) Firth coefficient "
+        "estimates with confidence intervals. The NIS ICD-10 reclassification "
+        "codeset that motivated the exclusion (see Appendix S4) is also "
+        "released alongside the codebase for replication.")
     add_page_break(doc)
 
     # Appendix S3 — Feature dictionary for the BIDMC postoperative-A and
@@ -851,6 +837,46 @@ def build_supplementary():
         "n = 48 events (±0.06 at AUC = 0.70; Hanley & McNeil 1982), "
         "indicating the primary discrimination signal is not driven by "
         "post-event information.")
+    add_page_break(doc)
+
+    # Appendix S4 — Why the Nationwide Inpatient Sample was excluded
+    add_heading(doc, "Appendix S4.  Nationwide Inpatient Sample (NIS) — "
+                       "excluded from the primary analysis", level=1)
+    add_para(doc,
+        "A preliminary analysis attempted to extend external validation to "
+        "the HCUP Nationwide Inpatient Sample (NIS, 2016–2019), restricted "
+        "to admissions with chronic-SDH coding and a craniotomy or burr-hole "
+        "procedure in the same admission (n = 2,518). On methodological "
+        "review the cohort was excluded from the primary analysis because "
+        "the available administrative coding for the postoperative-seizure "
+        "outcome is unreliable in this setting.")
+    add_para(doc,
+        "Two coding limitations drive the exclusion. First, the ICD-10-CM "
+        "code families historically used for postoperative seizure in NIS "
+        "analyses combine acute symptomatic seizure codes (R56.x, 780.39, "
+        "G41.x) with codes for pre-existing epilepsy (G40.x, 345.x). The "
+        "two phenotypes are mechanistically distinct: acute symptomatic "
+        "seizure is the in-admission event of interest, while pre-existing "
+        "epilepsy reflects chronic disease coded for billing on every "
+        "admission. Conflating them inflates the apparent population "
+        "seizure signal and produces an outcome variable that does not "
+        "match the BIDMC/eICU phenotype. Second, NIS does not carry a "
+        "structured timestamp on the seizure code, so we cannot "
+        "distinguish in-admission events from prevalent epilepsy after "
+        "the procedure date. Together these properties make NIS "
+        "incompatible with the chart-documented (BIDMC) and timestamped "
+        "structured-flag (eICU) outcome ascertainment used in the "
+        "primary analysis.")
+    add_para(doc,
+        "Supplementary Figure S5 illustrates the empirical effect: "
+        "discrimination on the originally-reported combined outcome "
+        "(AUC 0.617) collapses to chance (AUC 0.498) when the outcome "
+        "is restricted to acute symptomatic seizure alone. Supplementary "
+        "Figure S7 shows that group-LASSO under the corrected outcome "
+        "selects no stable predictors. We release the cleaned ICD-10 "
+        "codeset alongside the codebase (see Appendix S2) so that future "
+        "nationwide analyses with timestamped coding can re-attempt this "
+        "validation step on a coding substrate that supports it.")
     add_page_break(doc)
 
     # Tables S1–S5
