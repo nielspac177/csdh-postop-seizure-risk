@@ -1296,7 +1296,7 @@ def style_axis(ax, *, ygrid=True, xgrid=False):
     if xgrid:
         ax.xaxis.grid(True, color=COL["soft"], alpha=0.30, linewidth=0.4)
     else:
-... (512 more lines elided — see full script in the repository) ...
+... (517 more lines elided — see full script in the repository) ...
 \end{lstlisting}
 
 The plt.rcParams.update block sets the house style once; every panel inherits from it. add\_panel\_label puts the bold A/B/C labels; style\_axis applies the tick direction; figure\_legend\_below places a single shared legend beneath the figure so legends never overlap data.

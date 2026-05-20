@@ -165,9 +165,9 @@ def build_main():
                    "nielspacheco1997@gmail.com", size=10)
     add_para(doc, "")
     add_para(doc, "Manuscript type: Original Research (proof of concept)", size=10)
-    add_para(doc, "Word count, abstract: 250 · main text: ~3,950 · "
+    add_para(doc, "Word count, abstract: 250 · main text: ~4,050 · "
                    "Figures: 6 · Tables: 1 · Supplementary: yes · "
-                   "References: 38", size=10)
+                   "References: 42", size=10)
     add_para(doc, "Reporting: TRIPOD-AI (checklist in Supplementary Appendix S1).", size=10)
     add_para(doc, "Code and data availability:  The analysis code, six "
                    "main figures, seven supplementary figures, the TRIPOD-AI "
@@ -300,6 +300,18 @@ def build_main():
          "outcome definition for nationwide analyses and a documented "
          "transfer-learning failure between mixed-acuity intensive-care "
          "and pure operative cSDH cohorts.", {})], indent=True)
+    add_runs(doc, [
+        ("Conformal prediction adds distribution-free, finite-sample "
+         "coverage guarantees that probability calibration alone does "
+         "not provide and that Bayesian credible intervals require "
+         "correct priors and Markov-chain Monte Carlo to deliver", {}),
+        ("²³,²⁴", {"superscript": True}),
+        (" — supplying a principled \"I do not know\" signal at the "
+         "bedside, applied as a post-hoc wrapper that leaves the "
+         "underlying Firth model untouched. This combination of "
+         "calibration, conformal decision support and value-of-"
+         "information has not, to our knowledge, been applied to "
+         "postoperative seizure prediction.", {})], indent=True)
     add_page_break(doc)
 
     # 2. Methods (~1,200 words)
@@ -374,10 +386,28 @@ def build_main():
          "via split-conformal scheme with a 75/25 calibration split per "
          "fold, evaluated at α ∈ {0.05, 0.10, 0.20}.", {}),
         ("²³,²⁴", {"superscript": True}),
+        (" The procedure rests on an exchangeability assumption and "
+         "guarantees marginal coverage at the user-chosen level on a "
+         "finite sample, without asymptotic, distributional or model-"
+         "correctness assumptions.", {}),
+        ("²³", {"superscript": True}),
+        (" The Mondrian variant calibrates the nonconformity quantile "
+         "separately for each true class, so that coverage on the rare "
+         "positive class is guaranteed and cannot be satisfied by "
+         "always covering the majority class — a property neither "
+         "probability calibration nor naive bootstrap CIs offer on "
+         "imbalanced data.", {}),
+        ("³⁹,⁴⁰", {"superscript": True}),
+        (" The resulting prediction set is adaptive: it shrinks to a "
+         "singleton {'no seizure'} or {'seizure'} for patients the "
+         "model can confidently classify (rule-out or rule-in) and "
+         "expands to a doubleton {seizure, no seizure} for ambiguous "
+         "patients — supplying the deployment with a principled "
+         "abstention signal.", {}),
+        ("⁴¹,⁴²", {"superscript": True}),
         (" We report empirical coverage, average prediction-set size, "
          "and the fractions of patients receiving confident singleton "
-         "predictions of 'no seizure' (rule-out) or 'seizure' (rule-in).", {})],
-        indent=True)
+         "predictions.", {})], indent=True)
     add_heading(doc, "Cost-effectiveness and value-of-information", level=2)
     add_runs(doc, [
         ("A four-strategy decision tree (observation; universal AED; "
@@ -685,6 +715,10 @@ def build_main():
         "Puhr R, Heinze G, Nold M, Lusa L, Geroldinger A. Firth's logistic regression with rare events. Stat Med. 2017;36(14):2302–17.",
         "DerSimonian R, Laird N. Meta-analysis in clinical trials. Control Clin Trials. 1986;7(3):177–88.",
         "Geskus RB. Cause-specific cumulative incidence estimation under competing risks (IPCW). Biometrics. 2011;67:39–49.",
+        "Löfström T, Boström H, Linusson H, Johansson U. Mondrian cross-conformal prediction on imbalanced bioactivity data. J Chem Inf Model. 2017;57(7):1591–8.",
+        "Vovk V. Conditional validity of inductive conformal predictors. Proc Mach Learn Res (ACML). 2012;25:475–90.",
+        "Romano Y, Sesia M, Candès EJ. Classification with valid and adaptive coverage. NeurIPS. 2020. arXiv:2006.02544.",
+        "Olsson H, Kartasalo K, Mulliqi N, et al. Conformal selective prediction with cost-aware deferral for safe clinical triage under distribution shift. Sci Rep. 2026 (in press).",
     ]
     for i, r in enumerate(refs, 1):
         p = doc.add_paragraph()
