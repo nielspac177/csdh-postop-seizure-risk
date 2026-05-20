@@ -488,16 +488,14 @@ def figure_4():
                                  edgecolor=COL["ochre"], linewidth=0.8),
                        arrowprops=dict(arrowstyle="->", lw=0.8,
                                        color=COL["ochre"]))
-    axB.set_xlim(0, 0.30); axB.set_ylim(0, 0.55)
+    axB.set_xlim(0, 0.30); axB.set_ylim(0, 0.50)
     axB.set_xlabel("α (target miscoverage)")
     axB.set_ylabel("Fraction of patients")
     axB.set_title("Clinical utility — confident decisions")
     style_axis(axB, ygrid=True, xgrid=True)
     add_panel_label(axB, "B")
 
-    # Panel-local legend in the upper-left (where the data lines are at
-    # their lower values — keeps the legend away from the working-point
-    # callout in the lower-right).
+    # Panel-local legend in the upper-left.
     from matplotlib.lines import Line2D
     legend_handles = [
         Line2D([0],[0], color=COL["navy"], marker="o", lw=1.8,
@@ -519,19 +517,24 @@ def figure_4():
                 loc="upper left", fontsize=7.0, frameon=False,
                 handlelength=2.0, handletextpad=0.5)
 
-    # Inset explaining the three prediction-set categories — small
-    # legend-style block placed in the lower-left empty region.
-    inset = (
-        "Prediction-set categories\n"
-        "  • {no seizure}          → rule-out (skip AED)\n"
-        "  • {seizure}             → rule-in  (target cEEG)\n"
-        "  • {seizure, no seizure} → defer to clinical judgment"
-    )
-    axB.text(0.014, 0.005, inset, transform=axB.transAxes,
-              fontsize=6.8, fontfamily="monospace",
-              va="bottom", ha="left",
-              bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
-                        edgecolor=COL["soft"], linewidth=0.6))
+    # Move the prediction-set explanation and the postop_A/B difference note
+    # below the figure (as figure-level text) so they no longer compete with
+    # the working-point callout for space inside the panel.
+    fig.text(0.04, 0.02,
+             "Prediction-set categories:  "
+             "{no seizure} → rule-out (skip AED)   ·   "
+             "{seizure} → rule-in (target cEEG)   ·   "
+             "{seizure, no seizure} → defer to clinical judgment.",
+             fontsize=7.5, color="#262320", ha="left",
+             family="DejaVu Sans")
+    fig.text(0.04, -0.02,
+             "postop_A and postop_B differ only in the postop_B set omitting "
+             "three variables (AED timing, prophylactic AED, abnormal EEG) "
+             "that could in principle be charted after seizure onset; both "
+             "achieve the same coverage and similar rule-out fractions.",
+             fontsize=7.0, color=COL["grey"], style="italic", ha="left",
+             family="DejaVu Sans")
+    plt.subplots_adjust(bottom=0.30)
 
     plt.savefig(FIG / "F4_conformal.png")
     plt.savefig(FIG / "F4_conformal.pdf")

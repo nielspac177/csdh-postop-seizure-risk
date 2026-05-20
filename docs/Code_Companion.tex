@@ -1296,7 +1296,7 @@ def style_axis(ax, *, ygrid=True, xgrid=False):
     if xgrid:
         ax.xaxis.grid(True, color=COL["soft"], alpha=0.30, linewidth=0.4)
     else:
-... (517 more lines elided — see full script in the repository) ...
+... (564 more lines elided — see full script in the repository) ...
 \end{lstlisting}
 
 The plt.rcParams.update block sets the house style once; every panel inherits from it. add\_panel\_label puts the bold A/B/C labels; style\_axis applies the tick direction; figure\_legend\_below places a single shared legend beneath the figure so legends never overlap data.
@@ -1385,7 +1385,7 @@ def add_figure(doc, path, *, caption, width=Inches(6.5)):
 
 def add_table_from_df(doc, df, caption=None):
     if caption:
-... (785 more lines elided — see full script in the repository) ...
+... (794 more lines elided — see full script in the repository) ...
 \end{lstlisting}
 
 The structure mirrors a normal Word workflow: setup\_document sets page margins; add\_heading, add\_para, add\_runs handle text; register\_figure and register\_table accumulate figures and tables; render\_collected\_tables\_and\_figures emits them all in a single Tables-and-Figures section at the end.

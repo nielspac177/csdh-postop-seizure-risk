@@ -485,11 +485,20 @@ def build_main():
         ("Pre-recalibration, class-rebalanced classifiers assigned "
          "probabilities that were too extreme (eICU Set C: Brier 0.071, "
          "calibration slope 1.51). Cross-validated Platt scaling brought "
-         "slope to within 0.99–1.04 in every model and calibration-in-the-"
-         "large to |CITL| ≤ 0.03. Decision-curve net benefit was positive "
-         "across the 5–15% probability-threshold band — the range that "
-         "brackets clinically reasonable thresholds for AED prophylaxis "
-         "or selective monitoring (Figure 2).", {})], indent=True)
+         "slope to within 0.99–1.04 in every model and calibration-in-"
+         "the-large to |CITL| ≤ 0.03 (Figure 2A). On decision-curve "
+         "analysis (Figure 2B) the eICU Set C model showed positive "
+         "net benefit across the 5–15% probability-threshold band — "
+         "the range that brackets clinically reasonable thresholds for "
+         "AED prophylaxis or selective monitoring. The BIDMC "
+         "postoperative-A model achieved positive net benefit only at "
+         "the lowest thresholds (below approximately 5%) and crossed "
+         "below zero through the clinical threshold band, consistent "
+         "with its more modest discrimination ceiling at n=48 events; "
+         "the manuscript's clinical-deployment case for BIDMC "
+         "therefore rests on the calibrated conformal layer (§3.4) "
+         "rather than on raw decision-curve performance.",
+         {})], indent=True)
     register_figure("Figure 2", FIG / "F2_calibration_dca.png",
                 "Figure 2.  Calibration and clinical utility. "
                 "A — Calibration after Platt scaling, with bootstrap 95% CIs "
