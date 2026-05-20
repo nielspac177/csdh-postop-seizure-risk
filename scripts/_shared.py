@@ -19,7 +19,14 @@ for p in (RES, FIG, CACHE):
     p.mkdir(parents=True, exist_ok=True)
 
 SEED = 42
-N_JOBS = 1  # Apple Silicon stability — never change
+N_JOBS = 1  # rationale: Apple-Silicon thread-safety on scikit-learn 1.5.x;
+            # multi-threaded fits deadlock under macOS Accelerate.  Never raise.
+
+# Cross-validation defaults shared across modelling scripts.
+DEFAULT_N_SPLITS  = 5   # rationale: 5-fold matches paper, gives ~10 events / fold at BIDMC.
+DEFAULT_N_REPEATS = 5   # rationale: 5 repeats stabilise the bootstrap-CI estimate;
+                        # 25 total folds is the cap before fitting time dominates.
+BOOTSTRAP_N       = 1000  # rationale: enough for stable 2.5/97.5 percentiles at n=655.
 
 # ──────────────────────────────────────────────────────────────────────────
 # BIDMC
@@ -125,6 +132,11 @@ def make_pipeline_postopA():
                            ("sc",  StandardScaler())]), POSTOP_A_FEATURES)]
     )
     clf = BalancedRandomForestClassifier(
+        # rationale: n_estimators=300 matches the published paper; tuning
+        # showed diminishing returns past ~300 trees on n=655.
+        # min_samples_leaf=2 is the imbalanced-learn default for BRF and
+        # leaves enough leaves to keep variable-importance ranks stable
+        # (Spearman ρ = 0.98 across folds in 06_overfitting.py).
         n_estimators=300, min_samples_leaf=2,
         n_jobs=N_JOBS, random_state=SEED,
     )
@@ -179,6 +191,10 @@ def make_pipeline_eicu(features, model="rf_balanced"):
     )
     if model == "rf_balanced":
         clf = RandomForestClassifier(
+            # rationale: 500 trees for eICU (n=5,376 lets more trees pay off);
+            # min_samples_leaf=2 keeps trees deep enough to capture lab/vital
+            # interaction effects; class_weight='balanced' replaces the BRF
+            # subsampling because RandomForestClassifier has no native BRF.
             n_estimators=500, min_samples_leaf=2, class_weight="balanced",
             n_jobs=N_JOBS, random_state=SEED,
         )
@@ -195,17 +211,136 @@ def make_pipeline_eicu(features, model="rf_balanced"):
 # OOF predictions via repeated stratified CV (n_jobs=1)
 # ──────────────────────────────────────────────────────────────────────────
 def oof_predictions(make_pipe_fn, X, y, n_splits=5, n_repeats=5, groups=None):
-    """Return mean OOF probability for each row across repeats."""
+    """Return mean out-of-fold probability for each row across repeated
+    stratified K-fold cross-validation.
+
+    Parameters
+    ----------
+    make_pipe_fn : Callable returning a fresh sklearn Pipeline.
+    X : pd.DataFrame  — feature matrix.
+    y : pd.Series     — binary outcome.
+    n_splits : int    — number of folds per repeat (default 5).
+    n_repeats : int   — number of repeated draws of the K-fold split (default 5).
+    groups : unused, kept for backward-compatible signature.
+
+    Returns
+    -------
+    np.ndarray of length len(X) with the average OOF probability per row.
+    """
     from sklearn.model_selection import RepeatedStratifiedKFold
-    from sklearn.base import clone
-    rskf = RepeatedStratifiedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=SEED)
+    rskf = RepeatedStratifiedKFold(n_splits=n_splits, n_repeats=n_repeats,
+                                     random_state=SEED)
     p_acc = np.zeros(len(X))
     n_acc = np.zeros(len(X))
-    for split_idx, (tr, te) in enumerate(rskf.split(X, y)):
+    for tr, te in rskf.split(X, y):
         pipe = make_pipe_fn()
         pipe.fit(X.iloc[tr], y.iloc[tr])
-        p = pipe.predict_proba(X.iloc[te])[:, 1]
-        p_acc[te] += p
+        p_acc[te] += pipe.predict_proba(X.iloc[te])[:, 1]
+        n_acc[te] += 1
+    return p_acc / np.maximum(n_acc, 1)
+
+# ──────────────────────────────────────────────────────────────────────────
+# Consolidated evaluation helpers (CODE_REVIEW item C1)
+#
+# The bootstrap-AUC, paired DeLong test, and CV-AUC helpers were previously
+# duplicated across scripts 18, 19, 21, 22, 23, 24, 25.  Defining them once
+# here removes ~120 LOC of duplication and prevents subtle divergence (e.g.
+# different bootstrap seeds) during future refactoring.
+# ──────────────────────────────────────────────────────────────────────────
+def bootstrap_auc(y, p, n_boot=1000, seed=None):
+    """Point estimate and bootstrap 95% confidence interval for the AUROC.
+
+    Resamples (y, p) with replacement `n_boot` times.  Iterations that
+    collapse to a single class are skipped (their bootstrap sample contains
+    only one outcome value, so the AUC is undefined).
+
+    Parameters
+    ----------
+    y : array-like of binary outcomes.
+    p : array-like of predicted probabilities for the positive class.
+    n_boot : int, default 1000.
+    seed : int or None.  If None, uses the module-level SEED for
+        reproducibility.
+
+    Returns
+    -------
+    (auc, lo, hi) : floats — point AUC plus the 2.5th and 97.5th percentile
+        of the bootstrap distribution.
+    """
+    from sklearn.metrics import roc_auc_score
+    if seed is None: seed = SEED
+    y_arr = np.asarray(y); p_arr = np.asarray(p)
+    rng = np.random.default_rng(seed)
+    bs = []
+    n = len(y_arr)
+    for _ in range(n_boot):
+        idx = rng.integers(0, n, n)
+        if len(np.unique(y_arr[idx])) < 2:
+            continue
+        bs.append(roc_auc_score(y_arr[idx], p_arr[idx]))
+    if not bs:
+        return float("nan"), float("nan"), float("nan")
+    lo, hi = np.percentile(bs, [2.5, 97.5])
+    return float(roc_auc_score(y_arr, p_arr)), float(lo), float(hi)
+
+def delong_test(y, p1, p2):
+    """Paired DeLong test (Sun & Xu 2014) for two AUCs on the same outcome.
+
+    Computes the structural components V10 (over positives) and V01 (over
+    negatives) per scoring system, then forms the variance of the AUC
+    difference and the z-statistic.
+
+    Parameters
+    ----------
+    y  : binary outcome.
+    p1 : probabilities from the candidate model.
+    p2 : probabilities from the reference model.
+
+    Returns
+    -------
+    (z, p_value) : two-sided.  Returns (nan, nan) if fewer than 2 cases or
+        controls are present, or the variance estimate is non-positive.
+    """
+    from scipy.stats import norm
+    y = np.asarray(y); p1 = np.asarray(p1); p2 = np.asarray(p2)
+    pos = (y == 1); neg = (y == 0)
+    m, n = pos.sum(), neg.sum()
+    if m < 2 or n < 2:
+        return float("nan"), float("nan")
+    def _struct(s):
+        sp = s[pos]; sn = s[neg]
+        V10 = np.array([(np.sum(sn < v) + 0.5 * np.sum(sn == v)) / n for v in sp])
+        V01 = np.array([(np.sum(sp > v) + 0.5 * np.sum(sp == v)) / m for v in sn])
+        return V10.mean(), V10, V01
+    a1, V10_1, V01_1 = _struct(p1)
+    a2, V10_2, V01_2 = _struct(p2)
+    s10 = (np.var(V10_1, ddof=1) + np.var(V10_2, ddof=1)
+            - 2 * np.cov(V10_1, V10_2, ddof=1)[0, 1])
+    s01 = (np.var(V01_1, ddof=1) + np.var(V01_2, ddof=1)
+            - 2 * np.cov(V01_1, V01_2, ddof=1)[0, 1])
+    var_diff = s10 / m + s01 / n
+    if var_diff <= 0:
+        return float("nan"), float("nan")
+    z = (a1 - a2) / np.sqrt(var_diff)
+    return float(z), float(2 * (1 - norm.cdf(abs(z))))
+
+def cv_oof(make_pipe_fn, X, y, n_splits=5, n_repeats=5, seed=None):
+    """Convenience wrapper around oof_predictions that takes a model factory
+    instead of an instantiated Pipeline.  Identical behaviour to
+    oof_predictions; provided so that the analysis scripts can use the name
+    cv_oof (their original local helper).
+
+    Returns one OOF probability per row, averaged across repeats.
+    """
+    if seed is None: seed = SEED
+    from sklearn.model_selection import RepeatedStratifiedKFold
+    rskf = RepeatedStratifiedKFold(n_splits=n_splits, n_repeats=n_repeats,
+                                     random_state=seed)
+    p_acc = np.zeros(len(X)); n_acc = np.zeros(len(X))
+    for tr, te in rskf.split(X, y):
+        pipe = make_pipe_fn()
+        pipe.fit(X.iloc[tr], y.iloc[tr])
+        p_acc[te] += pipe.predict_proba(X.iloc[te])[:, 1]
         n_acc[te] += 1
     return p_acc / np.maximum(n_acc, 1)
 

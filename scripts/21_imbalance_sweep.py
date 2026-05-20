@@ -112,13 +112,24 @@ def focal_obj(gamma=2.0):
         return grad, np.maximum(hess, 1e-6)
     return obj
 
-def pipe_xgb_focal(features, scale_pos_weight, gamma=2.0):
+def pipe_xgb_focal(features, scale_pos_weight, gamma=2.0, base_rate=0.073):
+    """XGBoost with a custom focal-loss objective.
+
+    CODE_REVIEW item R1: XGBoost's `base_score` must be set explicitly when
+    a custom objective is supplied because XGBoost cannot infer the
+    prior-mean prediction from the objective.  Without this argument the
+    initial predictions are 0.5 and the focal-loss gradient drives every
+    leaf toward the negative class (AUC ≈ 0.5).  Setting `base_score` to
+    the empirical event rate gives the gradient a sensible starting point
+    and lets the focal-loss training proceed normally.
+    """
     clf = xgb.XGBClassifier(
         n_estimators=400, max_depth=4, learning_rate=0.04,
         subsample=0.8, colsample_bytree=0.8, reg_lambda=2.0,
         scale_pos_weight=scale_pos_weight, tree_method="hist",
         objective=focal_obj(gamma),
-        n_jobs=1, random_state=SEED, verbosity=0, base_score=0.07)
+        n_jobs=1, random_state=SEED, verbosity=0,
+        base_score=float(np.clip(base_rate, 1e-3, 1 - 1e-3)))
     return Pipeline([("prep", make_prep(features)), ("clf", clf)])
 
 # ── DeLong paired test ──────────────────────────────────────

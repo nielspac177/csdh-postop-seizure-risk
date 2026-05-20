@@ -65,10 +65,39 @@ def make_brf(features):
                           random_state=SEED))])
 
 def class_conditional_conformal(p_cal, y_cal, p_test, alpha):
-    """Mondrian conformal: separate calibration per class.
-    Returns prediction-set membership: shape (n_test, 2) booleans.
-    For each class c, q_c = (1-α) empirical quantile of (1 - p_c) on calibration
-    examples of class c. Prediction set includes y if (1 - p_y) ≤ q_y.
+    """Class-conditional (Mondrian) split-conformal prediction.
+
+    For each class c separately, the nonconformity score is
+    s_i = 1 − P(y_i = c | x_i), evaluated on the calibration set.  The
+    (1−α)(n_c+1)/n_c empirical quantile q_c (with finite-sample correction)
+    becomes the threshold.  A test point's prediction set includes class c
+    iff its nonconformity for c does not exceed q_c.
+
+    By construction the marginal coverage within each true class is at
+    least 1 − α — the Mondrian guarantee.
+
+    Parameters
+    ----------
+    p_cal : array of P(y=1) on the calibration set.
+    y_cal : binary calibration outcomes.
+    p_test : array of P(y=1) on the test set.
+    alpha : target miscoverage in (0, 1).
+
+    Returns
+    -------
+    np.ndarray of shape (n_test, 2) of booleans.  Column 0 is whether class
+    'no seizure' (y=0) is included in the prediction set; column 1 is
+    whether class 'seizure' (y=1) is included.
+
+    References
+    ----------
+    Vovk V, Gammerman A, Shafer G.  Algorithmic Learning in a Random World.
+        Springer, 2005.  (Foundational conformal-prediction reference.)
+    Angelopoulos AN, Bates S.  A gentle introduction to conformal prediction.
+        arXiv:2107.07511, 2021.  (Modern tutorial including Mondrian.)
+    García-Cremades S et al.  Class-conditional conformal prediction for MACE
+        rule-out.  PMLR 252, 2024.  (Clinical application — rule-out fraction
+        as the headline metric, exactly as we use it here.)
     """
     p_cal = np.clip(p_cal, 1e-6, 1 - 1e-6)
     p_test = np.clip(p_test, 1e-6, 1 - 1e-6)
