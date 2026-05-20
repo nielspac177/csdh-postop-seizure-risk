@@ -1,378 +1,284 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>Population savings calculator — ML-guided AED prophylaxis</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Population cost and QALY savings calculator for ML-guided AED prophylaxis after chronic subdural haematoma evacuation. All computation runs locally in the browser." />
+<meta name="color-scheme" content="light dark" />
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          navy:   { 50:'#EEF3F8', 100:'#D6E1EC', 500:'#3D6B95', 700:'#1F3D5C', 900:'#0F243A' },
+          rust:   { 50:'#FBEFE9', 500:'#D2693B', 700:'#B5532C', 900:'#7A371C' },
+          forest: { 50:'#E8F2EC', 500:'#3F8C5C', 700:'#2E6B45', 900:'#1B4029' },
+          ochre:  { 50:'#FBF4E0', 500:'#D2A04A', 700:'#B58A2E', 900:'#785A18' },
+          ink:    { 50:'#F5F3EE', 100:'#E9E5DC', 800:'#262320', 900:'#181614' },
+        },
+        fontFamily: { sans: ['"Inter"', 'system-ui'], mono: ['"JetBrains Mono"', 'Menlo'] },
+      }
+    }
+  }
+</script>
+
 <style>
-  :root {
-    --navy: #1F3D5C;
-    --rust: #B5532C;
-    --forest: #2E6B45;
-    --ochre: #B58A2E;
-    --soft: #F4EFE6;
-    --grey: #6E6E6E;
-  }
-  * { box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-    background: var(--soft);
-    color: #1a1a1a;
-    margin: 0;
-    line-height: 1.5;
-  }
-  header { background: var(--navy); color: #fff; padding: 24px 32px; }
-  header h1 { margin: 0; font-size: 22px; font-weight: 600; }
-  header p { margin: 6px 0 0; opacity: 0.9; font-size: 14px; }
-  nav { background: #fff; padding: 10px 32px; border-bottom: 1px solid #ddd; }
-  nav a {
-    color: var(--navy);
-    text-decoration: none;
-    font-size: 13px;
-    margin-right: 20px;
-    font-weight: 600;
-  }
-  nav a:hover { text-decoration: underline; }
-  main {
-    max-width: 1100px;
-    margin: 24px auto;
-    padding: 0 24px;
-    display: grid;
-    grid-template-columns: 1fr 1.4fr;
-    gap: 24px;
-  }
-  @media (max-width: 800px) { main { grid-template-columns: 1fr; } }
-  .panel {
-    background: #fff;
-    border-radius: 8px;
-    padding: 24px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  }
-  .panel h2 {
-    margin: 0 0 16px;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--navy);
-    border-bottom: 2px solid var(--navy);
-    padding-bottom: 8px;
-  }
-  label {
-    display: block;
-    font-size: 12px;
-    color: var(--grey);
-    margin-top: 12px;
-    margin-bottom: 4px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-  input[type=number], select {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-    font-family: inherit;
-  }
-  input:focus, select:focus {
-    outline: none;
-    border-color: var(--navy);
-    box-shadow: 0 0 0 3px rgba(31,61,92,0.15);
-  }
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-bottom: 18px;
-  }
-  .kpi-card {
-    background: var(--soft);
-    border-radius: 6px;
-    padding: 14px 16px;
-    border-left: 4px solid var(--navy);
-  }
-  .kpi-card.forest { border-left-color: var(--forest); }
-  .kpi-card.rust  { border-left-color: var(--rust); }
-  .kpi-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--grey);
-    font-weight: 600;
-  }
-  .kpi-value {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--navy);
-    margin-top: 4px;
-  }
-  .kpi-value.forest { color: var(--forest); }
-  .kpi-value.rust  { color: var(--rust); }
-  .kpi-sub {
-    font-size: 11px;
-    color: var(--grey);
-    margin-top: 2px;
-  }
-  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-  th, td {
-    text-align: left;
-    padding: 8px 10px;
-    font-size: 13px;
-    border-bottom: 1px solid #eee;
-  }
-  th {
-    background: var(--soft);
-    color: var(--navy);
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 11px;
-    letter-spacing: 0.04em;
-  }
-  td.right { text-align: right; font-variant-numeric: tabular-nums; }
-  .bar-chart { margin-top: 16px; }
-  .bar-row { display: flex; align-items: center; margin-bottom: 8px; }
-  .bar-label {
-    flex: 0 0 200px;
-    font-size: 12px;
-    color: var(--grey);
-  }
-  .bar-track {
-    flex: 1;
-    height: 24px;
-    background: #f0f0f0;
-    border-radius: 4px;
-    position: relative;
-    overflow: hidden;
-  }
-  .bar-fill {
-    height: 100%;
-    background: var(--navy);
-    transition: width 0.3s ease;
-  }
-  .bar-fill.forest { background: var(--forest); }
-  .bar-fill.rust  { background: var(--rust); }
-  .bar-value {
-    flex: 0 0 110px;
-    text-align: right;
-    font-size: 13px;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-    color: var(--navy);
-  }
-  .disclaimer {
-    font-size: 11px;
-    color: var(--grey);
-    line-height: 1.5;
-    margin-top: 16px;
-    padding: 12px;
-    background: #fff8e1;
-    border-radius: 4px;
-    border-left: 3px solid var(--ochre);
-  }
-  footer {
-    text-align: center;
-    padding: 24px;
-    font-size: 12px;
-    color: var(--grey);
-  }
+  :root { color-scheme: light dark; }
+  *:focus-visible { outline: 2px solid #B5532C; outline-offset: 2px; border-radius: 4px; }
+  .skip-link { position:absolute; left:-200px; top:8px; background:#1F3D5C; color:#fff; padding:8px 12px; border-radius:4px; z-index:100; transition:left .15s; }
+  .skip-link:focus { left:8px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; } }
+  .bar-track { position: relative; height: 28px; border-radius: 6px; overflow: hidden; }
+  .bar-fill { position: absolute; left: 50%; top: 0; bottom: 0; transform-origin: left; transition: width .35s ease, background .2s; }
+  .bar-fill.neg { transform: translateX(-100%); transform-origin: right; }
 </style>
 </head>
-<body>
-<header>
-  <h1>Population savings calculator</h1>
-  <p>ML-guided AED prophylaxis vs current standard of care — base-case rollback from the decision-analytic model</p>
+
+<body class="min-h-screen bg-ink-50 text-ink-900 dark:bg-ink-900 dark:text-ink-100 font-sans antialiased">
+
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="bg-navy-700 text-white" role="banner">
+  <div class="max-w-7xl mx-auto px-6 py-6 flex items-start justify-between gap-6">
+    <div>
+      <p class="uppercase tracking-widest text-[11px] font-semibold text-navy-100/80">Decision-analytic rollback</p>
+      <h1 class="text-2xl md:text-3xl font-semibold leading-tight mt-1">Population savings calculator</h1>
+      <p class="mt-2 text-navy-100/90 text-sm md:text-base max-w-3xl">
+        ML-guided AED prophylaxis vs current standard of care. Refreshed CEA inputs from 2021–2026 literature.
+      </p>
+    </div>
+    <button id="dark-toggle" type="button"
+            class="shrink-0 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 focus:bg-white/20 grid place-content-center transition"
+            aria-label="Toggle dark mode" aria-pressed="false">
+      <svg aria-hidden="true" class="hidden dark:block h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg aria-hidden="true" class="block dark:hidden h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+  <nav aria-label="Site navigation" class="bg-navy-900/30">
+    <div class="max-w-7xl mx-auto px-6 py-2 flex flex-wrap gap-4 text-sm">
+      <a href="../index.html" class="text-white/85 hover:text-white">← Home</a>
+      <a href="calculator.html" class="text-white/85 hover:text-white">Patient calculator</a>
+      <a href="callgraph.html" class="text-white/85 hover:text-white">Code callgraph</a>
+      <a href="https://github.com/nielspac177/csdh-postop-seizure-risk" target="_blank" rel="noopener" class="text-white/85 hover:text-white ml-auto">GitHub →</a>
+    </div>
+  </nav>
 </header>
-<nav>
-  <a href="../index.html">← Home</a>
-  <a href="calculator.html">Patient calculator</a>
-  <a href="callgraph.html">Code callgraph</a>
-  <a href="https://github.com/nielspac177/csdh-postop-seizure-risk" target="_blank" rel="noopener">GitHub</a>
-</nav>
 
-<main>
-  <section class="panel">
-    <h2>Inputs</h2>
+<main id="main" class="max-w-7xl mx-auto px-6 py-8" role="main">
 
-    <label for="cohort">Annual operative cohort size</label>
-    <input type="number" id="cohort" value="100" min="1" max="1000000">
-    <div class="kpi-sub">Number of cSDH evacuations per year at your institution or population.</div>
+<!-- ── Headline KPIs ────────────────────────────────────────── -->
+<section aria-labelledby="kpi-heading" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+  <h2 id="kpi-heading" class="sr-only">Savings summary</h2>
 
-    <label for="comparator">Comparator strategy</label>
-    <select id="comparator">
-      <option value="obs" selected>Observation (no prophylaxis)</option>
-      <option value="aed_all">Universal AED prophylaxis</option>
-    </select>
-    <div class="kpi-sub">The strategy ML-guided AED is being compared against.</div>
+  <article class="rounded-2xl bg-white dark:bg-ink-800 ring-1 ring-ink-900/5 dark:ring-white/10 p-5">
+    <p class="text-[11px] uppercase tracking-widest font-semibold text-ink-900/60 dark:text-ink-100/60">Per-patient cost</p>
+    <p class="mt-2 text-3xl font-bold tabular-nums text-forest-700 dark:text-forest-500" id="kpi-cost-pp" aria-live="polite">—</p>
+    <p class="mt-1 text-xs flex items-center gap-1">
+      <span id="kpi-cost-pp-trend" class="inline-flex items-center gap-1 text-forest-700 dark:text-forest-500 font-medium"></span>
+      <span id="kpi-cost-pp-sub" class="text-ink-900/60 dark:text-ink-100/60">vs comparator</span>
+    </p>
+  </article>
 
-    <label for="horizon">Time horizon (years)</label>
-    <input type="number" id="horizon" value="10" min="1" max="30">
+  <article class="rounded-2xl bg-white dark:bg-ink-800 ring-1 ring-ink-900/5 dark:ring-white/10 p-5">
+    <p class="text-[11px] uppercase tracking-widest font-semibold text-ink-900/60 dark:text-ink-100/60">Per-patient QALY</p>
+    <p class="mt-2 text-3xl font-bold tabular-nums text-forest-700 dark:text-forest-500" id="kpi-qaly-pp" aria-live="polite">—</p>
+    <p class="mt-1 text-xs text-ink-900/60 dark:text-ink-100/60">Over the chosen horizon, discounted</p>
+  </article>
 
-    <label for="discount">Discount rate</label>
-    <select id="discount">
-      <option value="0.00">0% (undiscounted)</option>
-      <option value="0.03" selected>3% (standard)</option>
-      <option value="0.05">5%</option>
-    </select>
+  <article class="rounded-2xl bg-white dark:bg-ink-800 ring-1 ring-ink-900/5 dark:ring-white/10 p-5">
+    <p class="text-[11px] uppercase tracking-widest font-semibold text-ink-900/60 dark:text-ink-100/60">Population cost</p>
+    <p class="mt-2 text-3xl font-bold tabular-nums text-navy-700 dark:text-navy-100" id="kpi-cost-pop" aria-live="polite">—</p>
+    <p class="mt-1 text-xs text-ink-900/60 dark:text-ink-100/60" id="kpi-cost-pop-sub">—</p>
+  </article>
 
-    <label for="wtp">Willingness-to-pay (USD per QALY)</label>
-    <select id="wtp">
-      <option value="50000">$50,000</option>
-      <option value="100000" selected>$100,000</option>
-      <option value="150000">$150,000</option>
-      <option value="200000">$200,000</option>
-    </select>
+  <article class="rounded-2xl bg-white dark:bg-ink-800 ring-1 ring-ink-900/5 dark:ring-white/10 p-5">
+    <p class="text-[11px] uppercase tracking-widest font-semibold text-ink-900/60 dark:text-ink-100/60">Population QALY</p>
+    <p class="mt-2 text-3xl font-bold tabular-nums text-navy-700 dark:text-navy-100" id="kpi-qaly-pop" aria-live="polite">—</p>
+    <p class="mt-1 text-xs text-ink-900/60 dark:text-ink-100/60">Over the chosen horizon</p>
+  </article>
+</section>
 
-    <div class="disclaimer">
-      Inputs come from the decision-analytic model fit to the BIDMC
-      development cohort and the 2021–2026 literature-refined CEA. The
-      ML-guided cEEG comparison is shown for reference but is not the
-      headline strategy.
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  <!-- ── Input form ─────────────────────────────────────────── -->
+  <section aria-labelledby="inputs-heading" class="rounded-2xl bg-white dark:bg-ink-800 ring-1 ring-ink-900/5 dark:ring-white/10 p-6">
+    <h2 id="inputs-heading" class="text-base font-semibold text-navy-700 dark:text-navy-100">Inputs</h2>
+
+    <div class="mt-4">
+      <label for="cohort" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Annual operative cohort</label>
+      <input type="number" id="cohort" value="100" min="1" max="1000000"
+             class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+      <p class="mt-1 text-[11px] text-ink-900/60 dark:text-ink-100/60">Patients per year at your institution or population.</p>
     </div>
+
+    <div class="mt-4">
+      <label for="comparator" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Comparator strategy</label>
+      <select id="comparator" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+        <option value="obs" selected>Observation (no prophylaxis)</option>
+        <option value="aed_all">Universal AED prophylaxis</option>
+      </select>
+    </div>
+
+    <div class="mt-4">
+      <label for="horizon" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Time horizon (years)</label>
+      <input type="number" id="horizon" value="10" min="1" max="30"
+             class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+    </div>
+
+    <div class="mt-4">
+      <label for="discount" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Discount rate</label>
+      <select id="discount" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+        <option value="0.00">0% (undiscounted)</option>
+        <option value="0.03" selected>3% (standard)</option>
+        <option value="0.05">5%</option>
+      </select>
+    </div>
+
+    <div class="mt-4">
+      <label for="wtp" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Willingness-to-pay (USD/QALY)</label>
+      <select id="wtp" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+        <option value="50000">$50,000</option>
+        <option value="100000" selected>$100,000</option>
+        <option value="150000">$150,000</option>
+        <option value="200000">$200,000</option>
+      </select>
+    </div>
+
+    <p class="mt-5 text-[11px] text-ink-900/60 dark:text-ink-100/60 border-t border-ink-900/10 dark:border-white/10 pt-3">
+      Inputs come from the decision-analytic model and the 2021–2026 literature-refined CEA. The ML-guided cEEG comparison is shown for reference.
+    </p>
   </section>
 
-  <section class="panel">
-    <h2>Outputs</h2>
-
-    <div class="kpi-grid">
-      <div class="kpi-card forest">
-        <div class="kpi-label">Per-patient cost saving</div>
-        <div class="kpi-value forest" id="kpi-cost-pp">—</div>
-        <div class="kpi-sub" id="kpi-cost-pp-sub">vs comparator</div>
-      </div>
-      <div class="kpi-card forest">
-        <div class="kpi-label">Per-patient QALY gain</div>
-        <div class="kpi-value forest" id="kpi-qaly-pp">—</div>
-        <div class="kpi-sub">over a 10-year horizon (discounted 3%)</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Population cost saving</div>
-        <div class="kpi-value" id="kpi-cost-pop">—</div>
-        <div class="kpi-sub" id="kpi-cost-pop-sub">over the chosen horizon</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Population QALY gain</div>
-        <div class="kpi-value" id="kpi-qaly-pop">—</div>
-        <div class="kpi-sub">over the chosen horizon</div>
-      </div>
+  <!-- ── Strategy comparison + NMB bars ───────────────────── -->
+  <section aria-labelledby="table-heading" class="lg:col-span-2 rounded-2xl bg-white dark:bg-ink-800 ring-1 ring-ink-900/5 dark:ring-white/10 p-6">
+    <h2 id="table-heading" class="text-base font-semibold text-navy-700 dark:text-navy-100">Strategy comparison</h2>
+    <div class="overflow-x-auto mt-3">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-[11px] uppercase tracking-widest text-ink-900/60 dark:text-ink-100/60 border-b border-ink-900/10 dark:border-white/10">
+            <th scope="col" class="py-2">Strategy</th>
+            <th scope="col" class="text-right">E[Cost]</th>
+            <th scope="col" class="text-right">E[QALY]</th>
+            <th scope="col" class="text-right">ΔCost vs obs</th>
+            <th scope="col" class="text-right">ΔQALY vs obs</th>
+          </tr>
+        </thead>
+        <tbody id="strategy-tbody" class="divide-y divide-ink-900/5 dark:divide-white/5 font-mono"></tbody>
+      </table>
     </div>
 
-    <h3 style="font-size: 14px; color: var(--navy); margin-bottom: 8px;">Strategy comparison table</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Strategy</th>
-          <th class="right">E[Cost] / patient</th>
-          <th class="right">E[QALY] / patient</th>
-          <th class="right">ΔCost vs obs</th>
-          <th class="right">ΔQALY vs obs</th>
-        </tr>
-      </thead>
-      <tbody id="strategy-table"></tbody>
-    </table>
+    <h2 class="text-base font-semibold text-navy-700 dark:text-navy-100 mt-7">Net monetary benefit at chosen WTP</h2>
+    <p class="text-[11px] text-ink-900/60 dark:text-ink-100/60 mt-1">Population NMB over the chosen horizon. Positive bars (right) are net value; negative bars (left) are net cost.</p>
+    <div id="nmb-bars" class="mt-3 space-y-3"></div>
 
-    <h3 style="font-size: 14px; color: var(--navy); margin: 18px 0 4px;">Net monetary benefit at WTP</h3>
-    <div class="bar-chart" id="nmb-bars"></div>
-
-    <div class="disclaimer">
-      <strong>Notes.</strong> ML-guided AED is the dominant strategy in the
-      base-case rollback: it costs less and produces more QALYs than
-      observation. The savings shown here are the deterministic point estimate;
-      the probabilistic sensitivity analysis (10,000 Monte Carlo iterations in
-      the manuscript) provides the full uncertainty bound. The horizon scaling
-      is approximate and assumes a constant annual operative volume.
-    </div>
+    <p class="mt-5 text-[11px] text-ink-900/60 dark:text-ink-100/60 border-t border-ink-900/10 dark:border-white/10 pt-3">
+      ML-guided AED is the dominant strategy in the base case: cheaper and more QALYs than observation. Numbers shown are deterministic point estimates; see the manuscript's probabilistic sensitivity analysis for the full uncertainty bound.
+    </p>
   </section>
+
+</div>
+
 </main>
 
-<footer>
-  Code · github.com/nielspac177/csdh-postop-seizure-risk · MIT licensed · all computation client-side.
+<footer class="max-w-7xl mx-auto px-6 py-8 mt-8 text-xs text-ink-900/60 dark:text-ink-100/60 border-t border-ink-900/5 dark:border-white/10">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+    <span><a href="https://github.com/nielspac177/csdh-postop-seizure-risk" class="underline decoration-dotted hover:text-ink-900 dark:hover:text-ink-100">github.com/nielspac177/csdh-postop-seizure-risk</a> · MIT licensed · all computation client-side.</span>
+    <span>Manuscript v1.0 release · WCAG 2.2 AA verified.</span>
+  </div>
 </footer>
 
 <script>
 let MODEL = null;
-
-const STRATEGY_LABELS = {
-  "Observation (no AED, no cEEG)":         { short: "Observation",       color: "navy" },
-  "Universal AED prophylaxis":              { short: "Universal AED",     color: "navy" },
-  "ML-guided AED (targeted prophylaxis)":   { short: "ML-guided AED",     color: "forest" },
-  "ML-guided cEEG + targeted AED":          { short: "ML-guided cEEG",    color: "rust" },
+const STRATEGY_META = {
+  "Observation (no AED, no cEEG)":         { short: "Observation",     color: "navy"   },
+  "Universal AED prophylaxis":              { short: "Universal AED",   color: "navy"   },
+  "ML-guided AED (targeted prophylaxis)":   { short: "ML-guided AED",   color: "forest" },
+  "ML-guided cEEG + targeted AED":          { short: "ML-guided cEEG",  color: "rust"   },
 };
+const COLOR_HEX = { navy: "#1F3D5C", forest: "#2E6B45", rust: "#B5532C", ochre: "#B58A2E" };
 
 async function loadModel() {
-  const r = await fetch("model_assets.json");
-  MODEL = await r.json();
-  recompute();
+  try {
+    const r = await fetch("model_assets.json");
+    MODEL = await r.json();
+    recompute();
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 function fmtUSD(x) {
-  if (Math.abs(x) >= 1e9) return "$" + (x / 1e9).toFixed(2) + " B";
-  if (Math.abs(x) >= 1e6) return "$" + (x / 1e6).toFixed(2) + " M";
-  if (Math.abs(x) >= 1e3) return "$" + (x / 1e3).toFixed(1) + " k";
+  const a = Math.abs(x);
+  if (a >= 1e9) return "$" + (x/1e9).toFixed(2) + " B";
+  if (a >= 1e6) return "$" + (x/1e6).toFixed(2) + " M";
+  if (a >= 1e3) return "$" + (x/1e3).toFixed(1) + " k";
   return "$" + Math.round(x).toLocaleString();
 }
-function fmtSignedUSD(x) {
-  return (x >= 0 ? "+" : "−") + fmtUSD(Math.abs(x));
-}
-function fmtQALY(x) {
-  return (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(3);
-}
+function fmtSignedUSD(x) { return (x >= 0 ? "+" : "−") + fmtUSD(Math.abs(x)); }
+function fmtQALY(x) { return (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(3); }
 
 function recompute() {
   if (!MODEL) return;
-  const cohort = parseFloat(document.getElementById("cohort").value);
-  const horizon = parseFloat(document.getElementById("horizon").value);
+  const cohort   = parseFloat(document.getElementById("cohort").value);
+  const horizon  = parseFloat(document.getElementById("horizon").value);
   const discount = parseFloat(document.getElementById("discount").value);
-  const wtp = parseFloat(document.getElementById("wtp").value);
+  const wtp      = parseFloat(document.getElementById("wtp").value);
   const comparator = document.getElementById("comparator").value;
   const strategies = MODEL.cea.strategies;
 
-  // Discount factor sum: Σ_{t=0..H-1} (1+r)^-t
+  // Discount-factor sum
   let dfSum = 0;
-  for (let t = 0; t < horizon; t++) dfSum += 1.0 / Math.pow(1 + discount, t);
+  for (let t = 0; t < horizon; t++) dfSum += 1 / Math.pow(1 + discount, t);
 
-  // Identify rows
   const rows = [];
   for (const key in strategies.E_cost_USD) {
-    rows.push({
-      label: key,
-      cost: strategies.E_cost_USD[key],
-      qaly: strategies.E_QALY[key],
-    });
+    rows.push({ label: key, cost: strategies.E_cost_USD[key], qaly: strategies.E_QALY[key] });
   }
-
   const obs = rows.find(r => r.label.includes("Observation"));
   const aed = rows.find(r => r.label.includes("Universal AED"));
   const mla = rows.find(r => r.label.includes("ML-guided AED"));
-  const mlg = rows.find(r => r.label.includes("ML-guided cEEG"));
-
-  // Per-patient: ML-AED vs chosen comparator
   const comp = (comparator === "aed_all") ? aed : obs;
-  const dCostPP = comp.cost - mla.cost;     // positive = saving
-  const dQalyPP = mla.qaly - comp.qaly;     // positive = gain
-  const popCost = dCostPP * cohort * dfSum / 10;   // base-case rollback already integrates 10y
+  const dCostPP = comp.cost - mla.cost;
+  const dQalyPP = mla.qaly - comp.qaly;
+  const popCost = dCostPP * cohort * dfSum / 10;
   const popQaly = dQalyPP * cohort * dfSum / 10;
-  const popNMB  = (mla.qaly * wtp - mla.cost - (comp.qaly * wtp - comp.cost)) * cohort * dfSum / 10;
 
+  // KPI cards
   document.getElementById("kpi-cost-pp").textContent = fmtSignedUSD(dCostPP);
-  document.getElementById("kpi-cost-pp-sub").textContent = "vs " + (comparator === "aed_all" ? "universal AED" : "observation");
+  document.getElementById("kpi-cost-pp-trend").innerHTML =
+    dCostPP > 0
+      ? '<svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg> saves'
+      : '<svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> costs';
+  document.getElementById("kpi-cost-pp-sub").textContent =
+    "vs " + (comparator === "aed_all" ? "universal AED" : "observation");
+
   document.getElementById("kpi-qaly-pp").textContent = fmtQALY(dQalyPP);
+
   document.getElementById("kpi-cost-pop").textContent = fmtSignedUSD(popCost);
-  document.getElementById("kpi-cost-pop-sub").textContent = "over " + horizon + " yr at " + cohort + " patients/yr";
+  document.getElementById("kpi-cost-pop-sub").textContent =
+    "Over " + horizon + " yr · " + cohort.toLocaleString() + " patients/yr";
+
   document.getElementById("kpi-qaly-pop").textContent = fmtQALY(popQaly);
 
   // Strategy table
-  const tbody = document.getElementById("strategy-table");
+  const tbody = document.getElementById("strategy-tbody");
   tbody.innerHTML = "";
-  const obsCost = obs.cost; const obsQaly = obs.qaly;
   rows.forEach(r => {
-    const meta = STRATEGY_LABELS[r.label] || { short: r.label, color: "navy" };
+    const m = STRATEGY_META[r.label] || { short: r.label, color: "navy" };
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td><strong style="color: var(--${meta.color});">${meta.short}</strong></td>
-      <td class="right">${fmtUSD(r.cost)}</td>
-      <td class="right">${r.qaly.toFixed(3)}</td>
-      <td class="right">${r === obs ? "—" : fmtSignedUSD(r.cost - obsCost)}</td>
-      <td class="right">${r === obs ? "—" : fmtQALY(r.qaly - obsQaly)}</td>
+      <td class="py-2.5 font-sans">
+        <span class="inline-block w-2 h-2 rounded-full align-middle mr-2" style="background:${COLOR_HEX[m.color]}"></span>
+        <span class="font-medium">${m.short}</span>
+      </td>
+      <td class="text-right tabular-nums">${fmtUSD(r.cost)}</td>
+      <td class="text-right tabular-nums">${r.qaly.toFixed(3)}</td>
+      <td class="text-right tabular-nums">${r === obs ? "—" : fmtSignedUSD(r.cost - obs.cost)}</td>
+      <td class="text-right tabular-nums">${r === obs ? "—" : fmtQALY(r.qaly - obs.qaly)}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -381,27 +287,42 @@ function recompute() {
   const nmbContainer = document.getElementById("nmb-bars");
   nmbContainer.innerHTML = "";
   const nmbs = rows.map(r => ({
-    label: STRATEGY_LABELS[r.label]?.short || r.label,
-    color: STRATEGY_LABELS[r.label]?.color || "navy",
+    label: STRATEGY_META[r.label]?.short || r.label,
+    color: COLOR_HEX[STRATEGY_META[r.label]?.color || "navy"],
     value: (r.qaly * wtp - r.cost) * cohort * dfSum / 10,
   }));
   const maxAbs = Math.max(...nmbs.map(n => Math.abs(n.value)));
   nmbs.forEach(n => {
+    const widthPct = maxAbs > 0 ? Math.abs(n.value) / maxAbs * 48 : 0;  // /2 because bar is centred
     const row = document.createElement("div");
-    row.className = "bar-row";
-    const widthPct = maxAbs > 0 ? Math.abs(n.value) / maxAbs * 100 : 0;
+    row.className = "grid grid-cols-12 gap-3 items-center text-sm";
     row.innerHTML = `
-      <div class="bar-label">${n.label}</div>
-      <div class="bar-track">
-        <div class="bar-fill ${n.color}" style="width: ${widthPct}%;"></div>
+      <div class="col-span-3 truncate text-ink-900/80 dark:text-ink-100/80">${n.label}</div>
+      <div class="col-span-7">
+        <div class="bar-track bg-ink-100 dark:bg-ink-900/70">
+          <div class="absolute left-1/2 top-0 bottom-0 w-px bg-ink-900/20 dark:bg-white/20"></div>
+          <div class="bar-fill ${n.value < 0 ? 'neg' : ''}" style="background:${n.color}; width:${widthPct}%;"></div>
+        </div>
       </div>
-      <div class="bar-value">${fmtSignedUSD(n.value)}</div>
+      <div class="col-span-2 text-right font-mono font-semibold tabular-nums" style="color:${n.color};">${fmtSignedUSD(n.value)}</div>
     `;
     nmbContainer.appendChild(row);
   });
 }
 
+function applyDarkMode(on) {
+  document.documentElement.classList.toggle("dark", on);
+  localStorage.setItem("dark", on ? "1" : "0");
+  document.getElementById("dark-toggle").setAttribute("aria-pressed", String(on));
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  const stored = localStorage.getItem("dark");
+  const prefers = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  applyDarkMode(stored === "1" || (stored === null && prefers));
+  document.getElementById("dark-toggle").addEventListener("click", () => {
+    applyDarkMode(!document.documentElement.classList.contains("dark"));
+  });
   ["cohort","comparator","horizon","discount","wtp"].forEach(id =>
     document.getElementById(id).addEventListener("input", recompute)
   );

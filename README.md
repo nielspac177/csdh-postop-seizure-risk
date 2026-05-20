@@ -12,6 +12,52 @@ This repository contains the analysis code, figure-generation scripts, decision-
 
 The manuscript is a proof of concept: small-cohort clinical machine learning can be honestly deployable when calibration and decision-integration replace AUC as the optimisation target. This repository lets reviewers and the wider community reproduce the eleven-method modelling battery, the conformal risk stratification, the cost-effectiveness analysis with value-of-information, and the four-strategy decision tree.
 
+![Graphical abstract](figures/F0_graphical_abstract.png)
+
+## Analysis pipeline at a glance
+
+```mermaid
+flowchart LR
+  subgraph A[Data sources]
+    A1[BIDMC<br/>n=655, 48 events]
+    A2[eICU CRD<br/>n=5,376<br/>139 hospitals]
+    A3[NIS HCUP<br/>n=218,244<br/>corrected outcome]
+  end
+  subgraph B[Modelling]
+    B1[Firth penalized LR<br/>deployment model]
+    B2[11-method battery<br/>SMOTE family · GBMs · stacking]
+    B3[Leave-one-hospital-out<br/>random-effects pooling]
+  end
+  subgraph C[Decision layer]
+    C1[Class-conditional<br/>conformal prediction]
+    C2[Decision-curve<br/>net benefit]
+  end
+  subgraph D[Economic layer]
+    D1[4-strategy<br/>decision tree]
+    D2[Probabilistic<br/>sensitivity analysis]
+    D3[EVPI / EVPPI<br/>research priorities]
+  end
+  A1 --> B1
+  A1 --> B2
+  A2 --> B3
+  A3 -.outcome-correction.-> B1
+  B1 --> C1
+  B1 --> C2
+  C1 --> D1
+  C2 --> D1
+  D1 --> D2 --> D3
+
+  classDef navy fill:#EEF3F8,stroke:#1F3D5C,stroke-width:1.5px,color:#0F243A;
+  classDef forest fill:#E8F2EC,stroke:#2E6B45,stroke-width:1.5px,color:#1B4029;
+  classDef rust fill:#FBEFE9,stroke:#B5532C,stroke-width:1.5px,color:#7A371C;
+  classDef ochre fill:#FBF4E0,stroke:#B58A2E,stroke-width:1.5px,color:#785A18;
+  class A1,A2,A3 navy;
+  class B1,B2,B3 navy;
+  class C1,C2 forest;
+  class D1,D2 rust;
+  class D3 ochre;
+```
+
 ## What you can do with this code
 
 - **Reproduce every figure and table in the manuscript.** Each script is a single-purpose, deterministic module that consumes either the BIDMC working CSV, the eICU CRD cohort export, or the NIS HCUP working file. With access to the underlying data the analyses run end-to-end on a laptop in under one hour.

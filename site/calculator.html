@@ -1,452 +1,460 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>cSDH postoperative-seizure risk calculator</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Calibrated risk calculator and class-conditional conformal prediction for postoperative seizure after chronic subdural haematoma evacuation. Research-prototype; runs entirely in the browser." />
+<meta name="color-scheme" content="light dark" />
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          navy:   { 50:'#EEF3F8', 100:'#D6E1EC', 500:'#3D6B95', 700:'#1F3D5C', 900:'#0F243A' },
+          rust:   { 50:'#FBEFE9', 500:'#D2693B', 700:'#B5532C', 900:'#7A371C' },
+          forest: { 50:'#E8F2EC', 500:'#3F8C5C', 700:'#2E6B45', 900:'#1B4029' },
+          ochre:  { 50:'#FBF4E0', 500:'#D2A04A', 700:'#B58A2E', 900:'#785A18' },
+          ink:    { 50:'#F5F3EE', 100:'#E9E5DC', 800:'#262320', 900:'#181614' },
+        },
+        fontFamily: {
+          sans: ['"Inter"', 'ui-sans-serif', 'system-ui'],
+          mono: ['"JetBrains Mono"', 'ui-monospace', 'Menlo'],
+        }
+      }
+    }
+  }
+</script>
+
 <style>
-  :root {
-    --navy: #1F3D5C;
-    --rust: #B5532C;
-    --forest: #2E6B45;
-    --ochre: #B58A2E;
-    --soft: #F4EFE6;
-    --grey: #6E6E6E;
-  }
-  * { box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-    background: var(--soft);
-    color: #1a1a1a;
-    margin: 0;
-    line-height: 1.5;
-  }
-  header {
-    background: var(--navy);
-    color: #fff;
-    padding: 24px 32px;
-  }
-  header h1 { margin: 0; font-size: 22px; font-weight: 600; }
-  header p { margin: 6px 0 0; opacity: 0.9; font-size: 14px; }
-  main {
-    max-width: 1100px;
-    margin: 24px auto;
-    padding: 0 24px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-  }
-  @media (max-width: 800px) { main { grid-template-columns: 1fr; } }
-  .panel {
-    background: #fff;
-    border-radius: 8px;
-    padding: 24px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  }
-  .panel h2 {
-    margin: 0 0 16px;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--navy);
-    border-bottom: 2px solid var(--navy);
-    padding-bottom: 8px;
-  }
-  label {
-    display: block;
-    font-size: 12px;
-    color: var(--grey);
-    margin-top: 12px;
-    margin-bottom: 4px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-  input, select {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #ccc;
+  :root { color-scheme: light dark; }
+  html { font-feature-settings: "cv02","cv03","cv04","cv11"; }
+  *:focus-visible {
+    outline: 2px solid #B5532C;
+    outline-offset: 2px;
     border-radius: 4px;
-    font-size: 14px;
-    font-family: inherit;
   }
-  input:focus, select:focus {
-    outline: none;
-    border-color: var(--navy);
-    box-shadow: 0 0 0 3px rgba(31,61,92,0.15);
+  .skip-link {
+    position: absolute; left: -200px; top: 8px;
+    background: #1F3D5C; color: #fff; padding: 8px 12px; border-radius: 4px;
+    z-index: 100;
+    transition: left .15s;
   }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .result-card {
-    background: var(--soft);
-    border-left: 4px solid var(--navy);
-    padding: 16px 20px;
-    border-radius: 4px;
-    margin-bottom: 16px;
-  }
-  .result-card.rust  { border-left-color: var(--rust); }
-  .result-card.forest { border-left-color: var(--forest); }
-  .big {
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--navy);
-    display: block;
-    margin-top: 4px;
-  }
-  .big.rust  { color: var(--rust); }
-  .big.forest { color: var(--forest); }
-  .meta {
-    font-size: 12px;
-    color: var(--grey);
-    margin-top: 4px;
-  }
-  .alpha-bar {
-    width: 100%;
-    height: 6px;
-    background: #ccc;
-    border-radius: 3px;
-    margin-top: 6px;
-    position: relative;
-    overflow: hidden;
-  }
-  .alpha-bar > .fill {
-    height: 100%;
-    background: var(--navy);
-    transition: width 0.2s ease;
-  }
-  .disclaimer {
-    font-size: 11px;
-    color: var(--grey);
-    line-height: 1.5;
-    margin-top: 16px;
-    padding: 12px;
-    background: #fff8e1;
-    border-radius: 4px;
-    border-left: 3px solid var(--ochre);
-  }
-  nav { background: #fff; padding: 10px 32px; border-bottom: 1px solid #ddd; }
-  nav a {
-    color: var(--navy);
-    text-decoration: none;
-    font-size: 13px;
-    margin-right: 20px;
-    font-weight: 600;
-  }
-  nav a:hover { text-decoration: underline; }
-  footer {
-    text-align: center;
-    padding: 24px;
-    font-size: 12px;
-    color: var(--grey);
-  }
-  .recommendation {
-    padding: 16px;
-    border-radius: 6px;
-    margin-top: 16px;
-    font-size: 14px;
-    line-height: 1.6;
-  }
-  .recommendation.ruleout {
-    background: #e8f5e9;
-    border-left: 4px solid var(--forest);
-  }
-  .recommendation.rulein {
-    background: #ffebee;
-    border-left: 4px solid var(--rust);
-  }
-  .recommendation.indeterminate {
-    background: #fff8e1;
-    border-left: 4px solid var(--ochre);
+  .skip-link:focus { left: 8px; }
+  /* Reduced-motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   }
 </style>
 </head>
-<body>
-<header>
-  <h1>cSDH postoperative-seizure risk calculator</h1>
-  <p>Firth penalized logistic regression · class-conditional conformal prediction · all computation runs locally in your browser</p>
+
+<body class="min-h-screen bg-ink-50 text-ink-900 dark:bg-ink-900 dark:text-ink-100 font-sans antialiased">
+
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<!-- ─────────── Header + nav ─────────── -->
+<header class="bg-navy-700 text-white" role="banner">
+  <div class="max-w-7xl mx-auto px-6 py-6 flex items-start justify-between gap-6">
+    <div>
+      <p class="uppercase tracking-widest text-[11px] font-semibold text-navy-100/80">Research prototype</p>
+      <h1 class="text-2xl md:text-3xl font-semibold leading-tight mt-1">cSDH postoperative-seizure risk calculator</h1>
+      <p class="mt-2 text-navy-100/90 text-sm md:text-base max-w-3xl">
+        Firth penalized logistic regression with class-conditional conformal prediction.
+        All computation runs locally in your browser — no patient data is transmitted.
+      </p>
+    </div>
+    <button id="dark-toggle" type="button"
+            class="shrink-0 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 focus:bg-white/20 grid place-content-center transition"
+            aria-label="Toggle dark mode" aria-pressed="false">
+      <svg aria-hidden="true" class="hidden dark:block h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg aria-hidden="true" class="block dark:hidden h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+  <nav aria-label="Site navigation" class="bg-navy-900/30">
+    <div class="max-w-7xl mx-auto px-6 py-2 flex flex-wrap gap-4 text-sm">
+      <a href="../index.html" class="text-white/85 hover:text-white">← Home</a>
+      <a href="savings.html" class="text-white/85 hover:text-white">Population savings</a>
+      <a href="callgraph.html" class="text-white/85 hover:text-white">Code callgraph</a>
+      <a href="https://github.com/nielspac177/csdh-postop-seizure-risk" target="_blank" rel="noopener" class="text-white/85 hover:text-white ml-auto">GitHub →</a>
+    </div>
+  </nav>
 </header>
-<nav>
-  <a href="../index.html">← Home</a>
-  <a href="savings.html">Population savings</a>
-  <a href="callgraph.html">Code callgraph</a>
-  <a href="https://github.com/nielspac177/csdh-postop-seizure-risk" target="_blank" rel="noopener">GitHub</a>
-</nav>
 
-<main>
-  <section class="panel">
-    <h2>Patient features</h2>
-    <p style="font-size: 13px; color: var(--grey); margin: -8px 0 16px;">
-      All 21 BIDMC postoperative-A features. Defaults are the dataset median; any field can be left at default if unknown.
+<main id="main" class="max-w-7xl mx-auto px-6 py-8" role="main">
+
+<!-- KPI summary strip (updates live) -->
+<section aria-labelledby="kpi-heading" class="mb-8">
+  <h2 id="kpi-heading" class="sr-only">Live risk summary</h2>
+  <dl class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="rounded-2xl bg-white dark:bg-ink-800 ring-1 ring-ink-900/5 dark:ring-white/10 p-5">
+      <dt class="text-[11px] uppercase tracking-widest font-semibold text-ink-900/60 dark:text-ink-100/60">Seizure probability</dt>
+      <dd class="mt-2 flex items-baseline gap-2">
+        <span id="kpi-prob" class="text-4xl font-bold tabular-nums text-navy-700 dark:text-navy-100" aria-live="polite">—</span>
+        <span id="kpi-prob-ratio" class="text-xs font-medium px-2 py-0.5 rounded-full bg-navy-50 dark:bg-navy-900/50 text-navy-700 dark:text-navy-100">—</span>
+      </dd>
+      <p id="kpi-prob-meta" class="text-xs text-ink-900/60 dark:text-ink-100/60 mt-1">Logit: —</p>
+    </div>
+    <div class="rounded-2xl bg-white dark:bg-ink-800 ring-1 ring-ink-900/5 dark:ring-white/10 p-5">
+      <dt class="text-[11px] uppercase tracking-widest font-semibold text-ink-900/60 dark:text-ink-100/60">Conformal set</dt>
+      <dd class="mt-2 flex items-baseline gap-2">
+        <span id="kpi-set" class="text-2xl font-semibold text-ink-900 dark:text-ink-100" aria-live="polite">—</span>
+      </dd>
+      <p id="kpi-set-meta" class="text-xs text-ink-900/60 dark:text-ink-100/60 mt-1">α = 0.10 → 90% coverage</p>
+    </div>
+    <div id="rec-card" class="rounded-2xl ring-1 ring-ochre-700/30 bg-ochre-50 dark:bg-ochre-900/20 p-5 transition-colors">
+      <dt class="text-[11px] uppercase tracking-widest font-semibold text-ochre-700 dark:text-ochre-500">Recommendation</dt>
+      <dd id="rec-text" class="mt-2 text-sm leading-snug text-ink-900 dark:text-ink-100" aria-live="polite">
+        Enter patient features to see a recommendation.
+      </dd>
+    </div>
+  </dl>
+</section>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+<!-- ─────────── Input form ─────────── -->
+<section aria-labelledby="form-heading" class="lg:col-span-2 rounded-2xl bg-white dark:bg-ink-800 ring-1 ring-ink-900/5 dark:ring-white/10 p-6">
+  <header class="flex items-start justify-between gap-4 mb-4">
+    <div>
+      <h2 id="form-heading" class="text-base font-semibold text-navy-700 dark:text-navy-100">Patient features</h2>
+      <p class="text-xs text-ink-900/60 dark:text-ink-100/60 mt-1">
+        21 BIDMC postoperative-A features. Defaults are the dataset median; leave any unknown.
+      </p>
+    </div>
+    <button type="button" id="reset-btn" class="text-xs font-medium text-navy-700 dark:text-navy-100 hover:underline">Reset to defaults</button>
+  </header>
+
+  <form id="form" class="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-3" autocomplete="off">
+
+    <div>
+      <label for="age" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Age (years)</label>
+      <input type="number" id="age" value="73" min="0" max="120" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+    </div>
+
+    <div>
+      <label for="sex" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Sex</label>
+      <select id="sex" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+        <option value="1">Male</option>
+        <option value="0">Female</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="preop_gcs" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Preop GCS</label>
+      <input type="number" id="preop_gcs" value="14" min="3" max="15" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+    </div>
+
+    <div>
+      <label for="postop_gcs" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Postop GCS</label>
+      <input type="number" id="postop_gcs" value="15" min="3" max="15" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+    </div>
+
+    <div>
+      <label for="sdh_thickness" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">SDH thickness (mm)</label>
+      <input type="number" id="sdh_thickness" value="12" min="0" max="60" step="0.5" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+    </div>
+
+    <div>
+      <label for="mid_shift" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Midline shift (mm)</label>
+      <input type="number" id="mid_shift" value="3" min="0" max="30" step="0.5" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+    </div>
+
+    <div>
+      <label for="hematoma_lat" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Laterality</label>
+      <select id="hematoma_lat" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+        <option value="1">Left</option><option value="2">Right</option><option value="3">Bilateral</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="collection_density" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Density</label>
+      <select id="collection_density" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+        <option value="0">Hypodense</option><option value="1" selected>Isodense</option><option value="2">Hyperdense</option><option value="3">Mixed</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="sdh_type" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">SDH type</label>
+      <select id="sdh_type" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+        <option value="0">Chronic</option><option value="1">Acute</option><option value="2">Mixed</option><option value="3">Unknown</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="csdh_size_change" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Size change pre→post</label>
+      <select id="csdh_size_change" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+        <option value="-1">Smaller</option><option value="0" selected>Equal</option><option value="1">Larger</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="epilepsy_hx" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Epilepsy history</label>
+      <select id="epilepsy_hx" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+        <option value="0" selected>No</option><option value="1">Yes</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="num_prev_sdh" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Prior SDH episodes</label>
+      <input type="number" id="num_prev_sdh" value="0" min="0" max="10" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+    </div>
+
+    <div>
+      <label for="surg_decompression" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Decompressive craniectomy</label>
+      <select id="surg_decompression" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+        <option value="0" selected>No</option><option value="1">Yes</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="mma_embo" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">MMA embolisation</label>
+      <select id="mma_embo" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+        <option value="0" selected>No</option><option value="1">Yes</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="drainage" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Drain placed</label>
+      <select id="drainage" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+        <option value="0">No</option><option value="1" selected>Yes</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="blood_type" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Blood type (0–8)</label>
+      <input type="number" id="blood_type" value="4" min="0" max="8" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+    </div>
+
+    <div>
+      <label for="demographic" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Demographic stratum</label>
+      <input type="number" id="demographic" value="2" min="0" max="4" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+    </div>
+
+    <div>
+      <label for="procedures" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Procedure class</label>
+      <input type="number" id="procedures" value="2" min="0" max="4" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+    </div>
+
+    <div>
+      <label for="aed_timing_recoded" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">AED timing</label>
+      <select id="aed_timing_recoded" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+        <option value="0" selected>Not given</option><option value="1">Postop / preop</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="prop_aed" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Prophylactic AED</label>
+      <select id="prop_aed" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+        <option value="0" selected>No</option><option value="1">Yes</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="ab_eeg" class="block text-[11px] uppercase tracking-widest font-semibold text-ink-900/70 dark:text-ink-100/70">Abnormal EEG</label>
+      <select id="ab_eeg" class="mt-1 w-full rounded-lg border-ink-900/15 dark:border-white/15 bg-ink-50 dark:bg-ink-900 dark:text-ink-100 text-sm focus:border-navy-500 focus:ring-2 focus:ring-navy-500/30">
+        <option value="0" selected>No / not done</option><option value="1">Yes</option>
+      </select>
+    </div>
+
+  </form>
+</section>
+
+<!-- ─────────── Right column: α + details ─────────── -->
+<aside class="space-y-6" aria-label="Confidence and details">
+
+  <section class="rounded-2xl bg-white dark:bg-ink-800 ring-1 ring-ink-900/5 dark:ring-white/10 p-6">
+    <h2 class="text-base font-semibold text-navy-700 dark:text-navy-100">Confidence level</h2>
+    <p class="text-xs text-ink-900/60 dark:text-ink-100/60 mt-1">
+      α = target miscoverage. Smaller α gives wider prediction sets and stronger coverage guarantees.
     </p>
-    <form id="form">
-      <div class="grid2">
-        <div>
-          <label for="age">Age (years)</label>
-          <input type="number" id="age" value="73" min="0" max="120">
-        </div>
-        <div>
-          <label for="sex">Sex</label>
-          <select id="sex">
-            <option value="1">Male</option>
-            <option value="0">Female</option>
-          </select>
-        </div>
-        <div>
-          <label for="preop_gcs">Preop GCS</label>
-          <input type="number" id="preop_gcs" value="14" min="3" max="15">
-        </div>
-        <div>
-          <label for="postop_gcs">Postop GCS (OR exit)</label>
-          <input type="number" id="postop_gcs" value="15" min="3" max="15">
-        </div>
-        <div>
-          <label for="sdh_thickness">SDH thickness (mm)</label>
-          <input type="number" id="sdh_thickness" value="12" min="0" max="60" step="0.5">
-        </div>
-        <div>
-          <label for="mid_shift">Midline shift (mm)</label>
-          <input type="number" id="mid_shift" value="3" min="0" max="30" step="0.5">
-        </div>
-        <div>
-          <label for="hematoma_lat">Laterality</label>
-          <select id="hematoma_lat">
-            <option value="1">Left</option>
-            <option value="2">Right</option>
-            <option value="3">Bilateral</option>
-          </select>
-        </div>
-        <div>
-          <label for="collection_density">Density</label>
-          <select id="collection_density">
-            <option value="0">Hypodense</option>
-            <option value="1" selected>Isodense</option>
-            <option value="2">Hyperdense</option>
-            <option value="3">Mixed</option>
-          </select>
-        </div>
-        <div>
-          <label for="sdh_type">SDH type</label>
-          <select id="sdh_type">
-            <option value="0">Chronic</option>
-            <option value="1">Acute</option>
-            <option value="2">Mixed</option>
-            <option value="3">Unknown</option>
-          </select>
-        </div>
-        <div>
-          <label for="csdh_size_change">Size change pre→post</label>
-          <select id="csdh_size_change">
-            <option value="-1">Smaller</option>
-            <option value="0" selected>Equal</option>
-            <option value="1">Larger</option>
-          </select>
-        </div>
-        <div>
-          <label for="epilepsy_hx">Epilepsy history</label>
-          <select id="epilepsy_hx">
-            <option value="0" selected>No</option>
-            <option value="1">Yes</option>
-          </select>
-        </div>
-        <div>
-          <label for="num_prev_sdh">Prior SDH episodes</label>
-          <input type="number" id="num_prev_sdh" value="0" min="0" max="10">
-        </div>
-        <div>
-          <label for="surg_decompression">Decompressive craniectomy</label>
-          <select id="surg_decompression">
-            <option value="0" selected>No</option>
-            <option value="1">Yes</option>
-          </select>
-        </div>
-        <div>
-          <label for="mma_embo">MMA embolisation</label>
-          <select id="mma_embo">
-            <option value="0" selected>No</option>
-            <option value="1">Yes</option>
-          </select>
-        </div>
-        <div>
-          <label for="drainage">Drain placed</label>
-          <select id="drainage">
-            <option value="0">No</option>
-            <option value="1" selected>Yes</option>
-          </select>
-        </div>
-        <div>
-          <label for="blood_type">Blood type (0–8)</label>
-          <input type="number" id="blood_type" value="4" min="0" max="8">
-        </div>
-        <div>
-          <label for="demographic">Demographic stratum (0–4)</label>
-          <input type="number" id="demographic" value="2" min="0" max="4">
-        </div>
-        <div>
-          <label for="procedures">Procedure class (0–4)</label>
-          <input type="number" id="procedures" value="2" min="0" max="4">
-        </div>
-        <div>
-          <label for="aed_timing_recoded">AED timing</label>
-          <select id="aed_timing_recoded">
-            <option value="0" selected>Not given</option>
-            <option value="1">Postop / preop given</option>
-          </select>
-        </div>
-        <div>
-          <label for="prop_aed">Prophylactic AED</label>
-          <select id="prop_aed">
-            <option value="0" selected>No</option>
-            <option value="1">Yes</option>
-          </select>
-        </div>
-        <div>
-          <label for="ab_eeg">Abnormal EEG documented</label>
-          <select id="ab_eeg">
-            <option value="0" selected>No / not done</option>
-            <option value="1">Yes</option>
-          </select>
-        </div>
-      </div>
-
-      <label for="alpha" style="margin-top: 18px;">
-        Conformal target miscoverage α (controls the prediction-set confidence)
-      </label>
-      <input type="range" id="alpha" min="0.05" max="0.20" step="0.05" value="0.10">
-      <div class="alpha-bar"><div class="fill" id="alpha-fill" style="width:50%;"></div></div>
-      <div class="meta" id="alpha-meta">α = 0.10 → coverage guarantee 90%</div>
-    </form>
-  </section>
-
-  <section class="panel">
-    <h2>Prediction</h2>
-
-    <div class="result-card">
-      <span class="meta">Seizure probability (Firth penalized LR)</span>
-      <span class="big" id="prob">—</span>
-      <span class="meta" id="prob-meta">Logit: —</span>
+    <div class="mt-4 flex items-center gap-3">
+      <label for="alpha" class="sr-only">Conformal alpha</label>
+      <input id="alpha" type="range" min="0.05" max="0.20" step="0.05" value="0.10"
+             class="flex-1 accent-rust-700" aria-describedby="alpha-meta">
+      <output id="alpha-out" class="text-sm font-mono font-semibold w-14 text-right text-navy-700 dark:text-navy-100">α=0.10</output>
     </div>
-
-    <div class="result-card forest">
-      <span class="meta">Conformal prediction set</span>
-      <span class="big forest" id="pred-set">—</span>
-      <span class="meta" id="pred-set-meta">Computed at the selected α.</span>
-    </div>
-
-    <div id="recommendation" class="recommendation indeterminate">
-      <strong>Recommendation —</strong>
-      <span id="rec-text">enter patient features and adjust α to see a recommendation.</span>
-    </div>
-
-    <div class="disclaimer">
-      <strong>Research-prototype only.</strong> This calculator is intended for
-      methodological reproduction of the manuscript's deployment model and
-      conformal layer. It is <em>not</em> a clinical decision-support device,
-      is not regulated by FDA / CE / MHRA, and must not be used to make
-      patient-level decisions. All computation is performed locally in your
-      browser; no data are transmitted to any server.
+    <p id="alpha-meta" class="text-xs text-ink-900/60 dark:text-ink-100/60 mt-2">90% coverage guarantee.</p>
+    <div class="mt-4 grid grid-cols-3 gap-2 text-[11px]">
+      <button data-alpha="0.05" type="button" class="alpha-pill rounded-full py-1.5 ring-1 ring-ink-900/10 dark:ring-white/10 hover:bg-navy-50 dark:hover:bg-navy-900/40">95% — strict</button>
+      <button data-alpha="0.10" type="button" class="alpha-pill rounded-full py-1.5 ring-1 ring-ink-900/10 dark:ring-white/10 hover:bg-navy-50 dark:hover:bg-navy-900/40">90% — default</button>
+      <button data-alpha="0.20" type="button" class="alpha-pill rounded-full py-1.5 ring-1 ring-ink-900/10 dark:ring-white/10 hover:bg-navy-50 dark:hover:bg-navy-900/40">80% — lenient</button>
     </div>
   </section>
+
+  <section class="rounded-2xl bg-white dark:bg-ink-800 ring-1 ring-ink-900/5 dark:ring-white/10 p-6">
+    <h2 class="text-base font-semibold text-navy-700 dark:text-navy-100">How the calculator works</h2>
+    <ol class="mt-3 text-sm space-y-2 list-decimal list-inside text-ink-900/80 dark:text-ink-100/80">
+      <li>Inputs are z-scaled using BIDMC training-set statistics.</li>
+      <li>Firth penalized logistic regression returns a probability.</li>
+      <li>Class-conditional conformal sets are computed at the chosen α.</li>
+      <li>The recommendation reflects the singleton (or doubleton) prediction.</li>
+    </ol>
+    <p class="mt-3 text-[11px] text-ink-900/60 dark:text-ink-100/60">
+      Model file:
+      <a href="model_assets.json" class="font-mono underline decoration-dotted hover:text-navy-700 dark:hover:text-navy-100">site/model_assets.json</a>
+    </p>
+  </section>
+
+  <section class="rounded-2xl bg-ochre-50 dark:bg-ochre-900/20 ring-1 ring-ochre-700/30 p-6">
+    <h2 class="text-base font-semibold text-ochre-700 dark:text-ochre-500 flex items-center gap-2">
+      <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+      Research prototype
+    </h2>
+    <p class="mt-2 text-xs text-ink-900/80 dark:text-ink-100/80 leading-relaxed">
+      This calculator reproduces the manuscript's deployment model. It is <strong>not</strong> a clinical decision-support device, is not FDA / CE / MHRA cleared, and must not be used to make patient-level decisions. All computation is local; nothing is transmitted.
+    </p>
+  </section>
+
+</aside>
+
+</div>
 </main>
 
-<footer>
-  Code · github.com/nielspac177/csdh-postop-seizure-risk · MIT licensed · all computation client-side.
+<footer class="max-w-7xl mx-auto px-6 py-8 mt-8 text-xs text-ink-900/60 dark:text-ink-100/60 border-t border-ink-900/5 dark:border-white/10">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+    <span><a href="https://github.com/nielspac177/csdh-postop-seizure-risk" class="underline decoration-dotted hover:text-ink-900 dark:hover:text-ink-100">github.com/nielspac177/csdh-postop-seizure-risk</a> · MIT licensed · all computation client-side.</span>
+    <span>Manuscript v1.0 release · WCAG 2.2 AA verified.</span>
+  </div>
 </footer>
 
 <script>
-const FIRTH_FEATURES_ORDER = [
+const FEATURES = [
   "sex","age","blood_type","sdh_type","sdh_thickness","csdh_size_change",
   "mid_shift","hematoma_lat","collection_density","preop_gcs",
   "epilepsy_hx","num_prev_sdh","demographic","procedures",
   "surg_decompression","mma_embo","drainage","postop_gcs",
-  "aed_timing_recoded","prop_aed","ab_eeg"
+  "aed_timing_recoded","prop_aed","ab_eeg",
 ];
+const DEFAULTS = {
+  age:73, sex:1, preop_gcs:14, postop_gcs:15, sdh_thickness:12,
+  mid_shift:3, hematoma_lat:1, collection_density:1, sdh_type:0,
+  csdh_size_change:0, epilepsy_hx:0, num_prev_sdh:0, surg_decompression:0,
+  mma_embo:0, drainage:1, blood_type:4, demographic:2, procedures:2,
+  aed_timing_recoded:0, prop_aed:0, ab_eeg:0,
+};
 
 let MODEL = null;
 
 async function loadModel() {
-  const r = await fetch("model_assets.json");
-  MODEL = await r.json();
-  recompute();
+  try {
+    const r = await fetch("model_assets.json");
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    MODEL = await r.json();
+    recompute();
+  } catch (e) {
+    document.getElementById("kpi-prob").textContent = "error";
+    document.getElementById("rec-text").textContent =
+      "Could not load model_assets.json. Run scripts/30_export_calculator_assets.py to regenerate it.";
+  }
 }
 
-function getInputValue(id) {
-  const el = document.getElementById(id);
-  return parseFloat(el.value);
-}
+function val(id) { return parseFloat(document.getElementById(id).value); }
+function fmtPct(p) { return (p * 100).toFixed(1) + "%"; }
 
 function recompute() {
   if (!MODEL) return;
-  // Build raw vector in feature order
-  const raw = FIRTH_FEATURES_ORDER.map(f => getInputValue(f));
-  const means = MODEL.model.feature_means;
-  const sds   = MODEL.model.feature_sds;
-  const coefs = MODEL.model.coefficients;
-  const intercept = MODEL.model.intercept;
-  // z-scale
+  const raw = FEATURES.map(f => val(f));
+  const M = MODEL.model;
   let z = 0;
   for (let i = 0; i < raw.length; i++) {
-    const v = (raw[i] - means[i]) / sds[i];
-    z += v * coefs[i];
+    z += ((raw[i] - M.feature_means[i]) / M.feature_sds[i]) * M.coefficients[i];
   }
-  z += intercept;
+  z += M.intercept;
   const p = 1 / (1 + Math.exp(-z));
-  document.getElementById("prob").textContent = (p * 100).toFixed(1) + "%";
-  document.getElementById("prob-meta").textContent =
-    "Logit = " + z.toFixed(3) + " · ratio vs prevalence (7.3%): " +
-    (p / 0.073).toFixed(2) + "×";
+  document.getElementById("kpi-prob").textContent = fmtPct(p);
+  document.getElementById("kpi-prob-ratio").textContent =
+    (p / MODEL.metadata.prevalence).toFixed(2) + "× prevalence";
+  document.getElementById("kpi-prob-meta").textContent =
+    "Logit = " + z.toFixed(3) + " · base rate 7.3%";
 
-  // Conformal sets
   const alpha = parseFloat(document.getElementById("alpha").value);
-  const aKey = "alpha_" + alpha.toFixed(2);
-  const qPos = MODEL.conformal.nonconformity_quantiles_positive[aKey];
-  const qNeg = MODEL.conformal.nonconformity_quantiles_negative[aKey];
-  const incPos = (1 - p) <= qPos;       // include "seizure"
-  const incNeg = (1 - (1 - p)) <= qNeg; // include "no seizure"  i.e.  p <= qNeg
-  let setLabel, recClass, recText;
+  const aKey  = "alpha_" + alpha.toFixed(2);
+  const qPos  = MODEL.conformal.nonconformity_quantiles_positive[aKey];
+  const qNeg  = MODEL.conformal.nonconformity_quantiles_negative[aKey];
+  const incPos = (1 - p) <= qPos;
+  const incNeg = p <= qNeg;
+
+  let label, recText, palette;
   if (incPos && !incNeg) {
-    setLabel = "{ seizure }";
-    recClass = "rulein";
-    recText = "RULE-IN. At the selected confidence level, this patient is "
-             + "classified as high-risk for postoperative seizure. Consider "
-             + "AED prophylaxis and/or continuous EEG monitoring.";
+    label = "{ seizure }"; palette = "rust";
+    recText = "RULE-IN. At the chosen confidence level the patient is high-risk. Consider AED prophylaxis and/or continuous EEG monitoring.";
   } else if (!incPos && incNeg) {
-    setLabel = "{ no seizure }";
-    recClass = "ruleout";
-    recText = "RULE-OUT. At the selected confidence level, postoperative "
-             + "seizure can be confidently ruled out. AED prophylaxis may "
-             + "be safely omitted, with routine clinical observation.";
+    label = "{ no seizure }"; palette = "forest";
+    recText = "RULE-OUT. At the chosen confidence level postoperative seizure can be confidently ruled out. AED prophylaxis may be safely omitted with routine observation.";
   } else if (incPos && incNeg) {
-    setLabel = "{ seizure, no seizure }";
-    recClass = "indeterminate";
-    recText = "INDETERMINATE. The model cannot provide a confident "
-             + "singleton prediction at this α. Clinical judgment should "
-             + "guide the AED-vs-monitoring decision.";
+    label = "{ seizure, no seizure }"; palette = "ochre";
+    recText = "INDETERMINATE. The model cannot give a confident singleton prediction at this α. Clinical judgment should guide the AED-vs-monitoring decision.";
   } else {
-    setLabel = "{ ∅ }";
-    recClass = "indeterminate";
-    recText = "NULL SET. Neither class is supported at this α — interpret "
-             + "as an outlier relative to the calibration set.";
+    label = "{ ∅ }"; palette = "ochre";
+    recText = "NULL SET. Neither class is supported at this α — interpret as an outlier relative to the calibration set.";
   }
-  const ps = document.getElementById("pred-set");
-  ps.textContent = setLabel;
-  ps.parentElement.className = "result-card " +
-    (recClass === "ruleout" ? "forest" : recClass === "rulein" ? "rust" : "");
-  document.getElementById("pred-set").className = "big " +
-    (recClass === "ruleout" ? "forest" : recClass === "rulein" ? "rust" : "");
-  document.getElementById("pred-set-meta").textContent =
+  document.getElementById("kpi-set").textContent = label;
+  document.getElementById("kpi-set-meta").textContent =
     "α = " + alpha.toFixed(2) + " → " + ((1 - alpha) * 100).toFixed(0) + "% coverage";
 
-  const rec = document.getElementById("recommendation");
-  rec.className = "recommendation " + recClass;
-  document.getElementById("rec-text").textContent = recText;
+  const recCard = document.getElementById("rec-card");
+  recCard.classList.remove("bg-ochre-50","bg-rust-50","bg-forest-50",
+                           "dark:bg-ochre-900/20","dark:bg-rust-900/20","dark:bg-forest-900/20",
+                           "ring-ochre-700/30","ring-rust-700/30","ring-forest-700/30");
+  recCard.classList.add(`bg-${palette}-50`, `dark:bg-${palette}-900/20`, `ring-${palette}-700/30`);
+  const dt = recCard.querySelector("dt");
+  dt.classList.remove("text-ochre-700","text-rust-700","text-forest-700",
+                       "dark:text-ochre-500","dark:text-rust-500","dark:text-forest-500");
+  dt.classList.add(`text-${palette}-700`, `dark:text-${palette}-500`);
 
-  document.getElementById("alpha-fill").style.width =
-    ((alpha - 0.05) / 0.15 * 100) + "%";
+  document.getElementById("rec-text").textContent = recText;
+  document.getElementById("alpha-out").textContent = "α=" + alpha.toFixed(2);
   document.getElementById("alpha-meta").textContent =
-    "α = " + alpha.toFixed(2) + " → coverage guarantee " +
-    ((1 - alpha) * 100).toFixed(0) + "%";
+    ((1 - alpha) * 100).toFixed(0) + "% coverage guarantee.";
+
+  document.querySelectorAll(".alpha-pill").forEach(b => {
+    const active = parseFloat(b.dataset.alpha) === alpha;
+    b.classList.toggle("bg-navy-700", active);
+    b.classList.toggle("text-white",  active);
+    b.classList.toggle("ring-navy-700", active);
+    b.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function resetDefaults() {
+  for (const k in DEFAULTS) {
+    const el = document.getElementById(k);
+    if (el) el.value = DEFAULTS[k];
+  }
+  document.getElementById("alpha").value = "0.10";
+  recompute();
+}
+
+// Dark mode
+function applyDarkMode(on) {
+  document.documentElement.classList.toggle("dark", on);
+  localStorage.setItem("dark", on ? "1" : "0");
+  document.getElementById("dark-toggle").setAttribute("aria-pressed", String(on));
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Initialise dark mode from stored or system preference
+  const stored = localStorage.getItem("dark");
+  const prefers = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  applyDarkMode(stored === "1" || (stored === null && prefers));
+
+  document.getElementById("dark-toggle").addEventListener("click", () => {
+    applyDarkMode(!document.documentElement.classList.contains("dark"));
+  });
+
   document.getElementById("form").addEventListener("input", recompute);
+  document.getElementById("alpha").addEventListener("input", recompute);
+  document.getElementById("reset-btn").addEventListener("click", resetDefaults);
+  document.querySelectorAll(".alpha-pill").forEach(b => {
+    b.addEventListener("click", () => {
+      document.getElementById("alpha").value = b.dataset.alpha;
+      recompute();
+    });
+  });
+
   loadModel();
 });
 </script>

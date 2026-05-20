@@ -12,6 +12,8 @@ Companion code, interactive tools and documentation for the manuscript:
 [![Release](https://img.shields.io/github/v/release/nielspac177/csdh-postop-seizure-risk.svg)](https://github.com/nielspac177/csdh-postop-seizure-risk/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+![Graphical abstract](figures/F0_graphical_abstract.png)
+
 ## Interactive tools (run in your browser, no data leaves the machine)
 
 - **[Patient-level risk calculator](site/calculator.html)** — Enter a patient's clinical features and obtain the Firth model's seizure probability, the class-conditional conformal prediction set, and the AED-versus-cEEG recommendation.
