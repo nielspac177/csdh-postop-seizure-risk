@@ -336,9 +336,14 @@ def figure_3():
     colors = [COL["rust"] if f else COL["navy"] if b else COL["soft"]
               for f, b in zip(is_firth, is_baseline)]
 
-    fig, axes = plt.subplots(1, 2, figsize=(7.5, 6.4),
-                              gridspec_kw={"width_ratios": [1.6, 1.0]})
-    plt.subplots_adjust(wspace=0.05, bottom=0.22, top=0.94)
+    # Wider figure (9.5" instead of 7.5") so the long method names on the
+    # AUC panel's y-axis no longer crowd the Brier bars.  width_ratios
+    # tilted further toward the AUC panel because that is the panel with
+    # the long labels.
+    fig, axes = plt.subplots(1, 2, figsize=(9.5, 6.4),
+                              gridspec_kw={"width_ratios": [1.9, 1.0]})
+    plt.subplots_adjust(wspace=0.08, bottom=0.22, top=0.94,
+                          left=0.20, right=0.97)
 
     # Panel A: AUC + CI
     axA = axes[0]

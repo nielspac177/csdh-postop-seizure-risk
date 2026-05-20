@@ -332,7 +332,7 @@ def make_pipeline_postopA():
                            ("sc",  StandardScaler())]), POSTOP_A_FEATURES)]
     )
     clf = BalancedRandomForestClassifier(
-        # rationale: n_estimators=300 matches the published paper; tuning
+        # rationale: n_estimators=300 matches the prior version of this manuscript; tuning
         # showed diminishing returns past ~300 trees on n=655.
         # min_samples_leaf=2 is the imbalanced-learn default for BRF and
         # leaves enough leaves to keep variable-importance ranks stable
@@ -1385,7 +1385,7 @@ def add_figure(doc, path, *, caption, width=Inches(6.5)):
 
 def add_table_from_df(doc, df, caption=None):
     if caption:
-... (750 more lines elided — see full script in the repository) ...
+... (751 more lines elided — see full script in the repository) ...
 \end{lstlisting}
 
 The structure mirrors a normal Word workflow: setup\_document sets page margins; add\_heading, add\_para, add\_runs handle text; register\_figure and register\_table accumulate figures and tables; render\_collected\_tables\_and\_figures emits them all in a single Tables-and-Figures section at the end.
