@@ -170,21 +170,27 @@ def build_main():
                    "References: 38", size=10)
     add_para(doc, "Reporting: TRIPOD-AI (checklist in Supplementary Appendix S1).", size=10)
     add_para(doc, "Code and data availability:  The analysis code, six "
-                   "main figures, seven supplementary figures, TRIPOD-AI "
-                   "reporting checklist and reproducibility appendix are "
-                   "released at github.com/nielspac177/csdh-postop-seizure-risk (tagged "
-                   "release v1.0-JNNP-submission, DOI to be assigned by "
-                   "Zenodo on acceptance). An interactive companion site at "
-                   "nielspac177.github.io/csdh-jnnp provides a calibrated "
-                   "risk calculator, a population cost-savings tool, and an "
-                   "interactive code callgraph. Raw patient-level data are "
-                   "restricted by the BIDMC IRB, the eICU Collaborative "
-                   "Research Database data-use agreement and the HCUP "
-                   "Nationwide Inpatient Sample data-use agreement; filtered "
-                   "working subsets are released to authorised peer "
-                   "reviewers via the reviewer-access protocol documented "
-                   "at github.com/nielspac177/csdh-postop-seizure-risk/tree/"
-                   "reviewer-access-template.", size=10)
+                   "main figures, seven supplementary figures, the TRIPOD-AI "
+                   "reporting checklist (Supplementary Appendix S1) and the "
+                   "reproducibility appendix (Supplementary Appendix S2) are "
+                   "released at github.com/nielspac177/csdh-postop-seizure-"
+                   "risk (tagged release v1.0-submission). A persistent "
+                   "Zenodo DOI will be minted on manuscript acceptance via "
+                   "the GitHub–Zenodo integration. An interactive companion "
+                   "site at nielspac177.github.io/csdh-postop-seizure-risk "
+                   "provides a calibrated patient-level risk calculator, a "
+                   "population cost-savings tool, and an interactive code "
+                   "callgraph; all computation runs client-side in the "
+                   "browser so that no patient information is transmitted. "
+                   "Raw patient-level data are restricted by the BIDMC "
+                   "Institutional Review Board, the eICU Collaborative "
+                   "Research Database data-use agreement, and the HCUP "
+                   "Nationwide Inpatient Sample data-use agreement; "
+                   "filtered, de-identified working subsets are released "
+                   "to authorised peer reviewers via the reviewer-access "
+                   "protocol documented at github.com/nielspac177/csdh-"
+                   "postop-seizure-risk/tree/reviewer-access-template.",
+              size=10)
     add_para(doc, "Conflicts: None.", size=10)
     add_page_break(doc)
 
