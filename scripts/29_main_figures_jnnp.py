@@ -519,22 +519,23 @@ def figure_4():
 
     # Move the prediction-set explanation and the postop_A/B difference note
     # below the figure (as figure-level text) so they no longer compete with
-    # the working-point callout for space inside the panel.
-    fig.text(0.04, 0.02,
-             "Prediction-set categories:  "
-             "{no seizure} → rule-out (skip AED)   ·   "
-             "{seizure} → rule-in (target cEEG)   ·   "
-             "{seizure, no seizure} → defer to clinical judgment.",
+    # the working-point callout for space inside the panel.  Wrapped onto
+    # multiple short lines so the text block is ~5 cm narrower than the
+    # full figure width.
+    fig.text(0.14, 0.05,
+             "Prediction-set categories:\n"
+             "    {no seizure}              →  rule-out (skip AED)\n"
+             "    {seizure}                 →  rule-in (target cEEG)\n"
+             "    {seizure, no seizure} →  defer to clinical judgment.",
              fontsize=7.5, color="#262320", ha="left",
-             family="DejaVu Sans")
-    fig.text(0.04, -0.02,
-             "postop_A and postop_B differ only in the postop_B set omitting "
-             "three variables (AED timing, prophylactic AED, abnormal EEG) "
-             "that could in principle be charted after seizure onset; both "
-             "achieve the same coverage and similar rule-out fractions.",
+             family="DejaVu Sans", linespacing=1.5)
+    fig.text(0.14, -0.04,
+             "postop_A and postop_B differ only in postop_B omitting\n"
+             "three variables (AED timing, prophylactic AED, abnormal\n"
+             "EEG) that could be charted after seizure onset.",
              fontsize=7.0, color=COL["grey"], style="italic", ha="left",
-             family="DejaVu Sans")
-    plt.subplots_adjust(bottom=0.30)
+             family="DejaVu Sans", linespacing=1.4)
+    plt.subplots_adjust(bottom=0.36)
 
     plt.savefig(FIG / "F4_conformal.png")
     plt.savefig(FIG / "F4_conformal.pdf")
