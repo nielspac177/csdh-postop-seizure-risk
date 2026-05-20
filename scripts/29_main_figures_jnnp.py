@@ -230,34 +230,66 @@ def figure_1():
 
 # ─── F2 — Calibration + DCA ─────────────────────────────────
 def figure_2():
+    from statsmodels.nonparametric.smoothers_lowess import lowess
     cal = pd.read_csv(RES / "02_calibration_metrics.csv")
-    bins = json.loads((RES / "02_calibration_bins.json").read_text())
 
-    fig, axes = plt.subplots(1, 2, figsize=(7.0, 4.2))
-    plt.subplots_adjust(wspace=0.34, bottom=0.28, top=0.92)
+    fig, axes = plt.subplots(1, 2, figsize=(8.4, 4.4))
+    plt.subplots_adjust(wspace=0.34, bottom=0.16, top=0.92,
+                          left=0.08, right=0.97)
 
-    # Panel A: calibration curves (BIDMC postop_A + eICU Set C)
+    # ── Panel A: LOWESS-smoothed calibration curves ──
+    # Load raw OOF predictions from cache instead of quantile-binned points;
+    # LOWESS gives a non-parametric estimate of E[y | p_pred] without forcing
+    # the calibration plot through coarse decile bins (which are noisy on
+    # BIDMC's 48 events).  A 95% bootstrap envelope shows the uncertainty.
     axA = axes[0]
-    models_to_plot = {
-        "eicu_setC":     ("eICU Set C",     COL["navy"], "o"),
-        "bidmc_postopA": ("BIDMC postop-A", COL["rust"], "s"),
-    }
-    axA.plot([0, 1], [0, 1], color=COL["grey"], lw=0.8, ls="--",
-              label="Perfect calibration")
-    for key, (label, color, marker) in models_to_plot.items():
-        if key in bins:
-            obs = bins[key]["obs"]; pred = bins[key]["pred"]
-            axA.plot(pred, obs, marker=marker, color=color, lw=1.6, ms=5,
-                      label=label, markeredgecolor="black",
-                      markeredgewidth=0.4)
-    axA.set_xlim(0, 0.6); axA.set_ylim(0, 0.6)
+    models_to_plot = [
+        ("eicu_setC",     "eICU Set C",     COL["navy"], "-"),
+        ("bidmc_postopA", "BIDMC postop-A", COL["rust"], "--"),
+    ]
+    axA.plot([0, 0.6], [0, 0.6], color=COL["grey"], lw=0.8, ls=":",
+              label="Perfect calibration", zorder=1)
+
+    rng = np.random.default_rng(42)
+    grid = np.linspace(0.0, 0.55, 80)
+    for key, label, color, ls in models_to_plot:
+        cache_path = CACHE / f"oof_{key}.npz"
+        if not cache_path.exists():
+            continue
+        z = np.load(cache_path)
+        y = z["y"].astype(float); p = np.clip(z["p"], 1e-6, 1 - 1e-6)
+        # bootstrap LOWESS envelope: 200 resamples
+        smooths = []
+        for _ in range(200):
+            idx = rng.integers(0, len(y), len(y))
+            try:
+                sm = lowess(y[idx], p[idx], frac=0.5, return_sorted=True,
+                              it=0, missing="drop")
+            except Exception:
+                continue
+            if len(sm) < 5: continue
+            smooths.append(np.interp(grid, sm[:, 0], sm[:, 1]))
+        if not smooths: continue
+        smooths = np.vstack(smooths)
+        smooths = np.clip(smooths, 0, 1)
+        lo  = np.percentile(smooths, 2.5,  axis=0)
+        hi  = np.percentile(smooths, 97.5, axis=0)
+        mid = np.percentile(smooths, 50,   axis=0)
+        axA.fill_between(grid, lo, hi, color=color, alpha=0.18, lw=0, zorder=2)
+        axA.plot(grid, mid, color=color, lw=2.2, ls=ls,
+                  label=label, zorder=3)
+    axA.set_xlim(0, 0.55); axA.set_ylim(0, 0.55)
     axA.set_xlabel("Predicted probability")
     axA.set_ylabel("Observed event rate")
     axA.set_title("Calibration after Platt scaling")
     style_axis(axA, ygrid=True, xgrid=True)
     add_panel_label(axA, "A")
-    # legend collected for shared placement below the figure
-    axA_handles, axA_labels = axA.get_legend_handles_labels()
+    # Panel-local legend: place inside the panel rather than the shared bottom
+    axA.legend(loc="upper left", fontsize=7.5, frameon=False,
+                handlelength=2.0, handletextpad=0.5,
+                title="(LOWESS · 95% bootstrap envelope)",
+                title_fontsize=7)
+    axA_handles, axA_labels = [], []  # nothing to forward to the shared legend
 
     # Panel B: decision-curve net benefit
     axB = axes[1]
@@ -291,16 +323,11 @@ def figure_2():
     axB.axhline(0, color=COL["grey"], lw=0.5)
     add_panel_label(axB, "B")
 
-    # Shared legend below the figure
-    axB_handles, axB_labels = axB.get_legend_handles_labels()
-    # Combine, dedupe while preserving order
-    combined = list(zip(axA_handles + axB_handles, axA_labels + axB_labels))
-    seen = set(); merged = []
-    for h, l in combined:
-        if l not in seen:
-            seen.add(l); merged.append((h, l))
-    figure_legend_below(fig, [h for h, _ in merged], [l for _, l in merged],
-                         ncol=3, y=0.02, fontsize=7.5)
+    # Panel-local legend inside Panel B (rather than the shared bottom one).
+    # Place in the upper-right corner where the curves are densest at the
+    # left, leaving the upper-right empty.
+    axB.legend(loc="upper right", fontsize=7.5, frameon=False,
+                handlelength=2.0, handletextpad=0.5)
 
     plt.savefig(FIG / "F2_calibration_dca.png")
     plt.savefig(FIG / "F2_calibration_dca.pdf")
@@ -426,6 +453,9 @@ def figure_4():
     axA.set_title("Coverage validation")
     style_axis(axA, ygrid=True, xgrid=True)
     add_panel_label(axA, "A")
+    # Panel-local legend (lower-left empty region)
+    axA.legend(loc="lower left", fontsize=7.5, frameon=False,
+                handlelength=2.0, handletextpad=0.5)
 
     # Panel B: clinical utility
     axB = axes[1]
@@ -458,36 +488,50 @@ def figure_4():
                                  edgecolor=COL["ochre"], linewidth=0.8),
                        arrowprops=dict(arrowstyle="->", lw=0.8,
                                        color=COL["ochre"]))
-    axB.set_xlim(0, 0.30); axB.set_ylim(0, 0.45)
+    axB.set_xlim(0, 0.30); axB.set_ylim(0, 0.55)
     axB.set_xlabel("α (target miscoverage)")
     axB.set_ylabel("Fraction of patients")
     axB.set_title("Clinical utility — confident decisions")
     style_axis(axB, ygrid=True, xgrid=True)
     add_panel_label(axB, "B")
 
-    # Shared legend below the figure — never overlaps the data or the
-    # working-point callout
+    # Panel-local legend in the upper-left (where the data lines are at
+    # their lower values — keeps the legend away from the working-point
+    # callout in the lower-right).
     from matplotlib.lines import Line2D
     legend_handles = [
-        Line2D([0],[0], color=COL["grey"], ls="--", lw=1),
-        Line2D([0],[0], marker="o", color=COL["navy"], lw=1.6,
+        Line2D([0],[0], color=COL["navy"], marker="o", lw=1.8,
                 markeredgecolor="black", markeredgewidth=0.4,
                 markerfacecolor=COL["navy"]),
-        Line2D([0],[0], marker="s", color=COL["rust"], lw=1.6,
+        Line2D([0],[0], color=COL["rust"], marker="s", lw=1.8,
                 markeredgecolor="black", markeredgewidth=0.4,
                 markerfacecolor=COL["rust"]),
         Line2D([0],[0], color=COL["slate"], lw=1.8),
         Line2D([0],[0], color=COL["slate"], lw=1.2, ls=":"),
     ]
     legend_labels = [
-        "Target coverage (1−α)",
-        "postop_A",
-        "postop_B",
-        "Rule-out 'no seizure'",
-        "Rule-in 'seizure'",
+        "postop_A (21 features)",
+        "postop_B (18 features, leakage-safe)",
+        "Rule-out — singleton {no seizure}",
+        "Rule-in  — singleton {seizure}",
     ]
-    figure_legend_below(fig, legend_handles, legend_labels, ncol=5,
-                         y=0.04, fontsize=7.5)
+    axB.legend(legend_handles, legend_labels,
+                loc="upper left", fontsize=7.0, frameon=False,
+                handlelength=2.0, handletextpad=0.5)
+
+    # Inset explaining the three prediction-set categories — small
+    # legend-style block placed in the lower-left empty region.
+    inset = (
+        "Prediction-set categories\n"
+        "  • {no seizure}          → rule-out (skip AED)\n"
+        "  • {seizure}             → rule-in  (target cEEG)\n"
+        "  • {seizure, no seizure} → defer to clinical judgment"
+    )
+    axB.text(0.014, 0.005, inset, transform=axB.transAxes,
+              fontsize=6.8, fontfamily="monospace",
+              va="bottom", ha="left",
+              bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
+                        edgecolor=COL["soft"], linewidth=0.6))
 
     plt.savefig(FIG / "F4_conformal.png")
     plt.savefig(FIG / "F4_conformal.pdf")
