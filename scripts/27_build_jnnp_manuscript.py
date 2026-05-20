@@ -171,8 +171,10 @@ def build_main():
     add_para(doc, "Reporting: TRIPOD-AI (checklist in Supplementary Appendix S1).", size=10)
     add_para(doc, "Code and data availability:  The analysis code, six "
                    "main figures, seven supplementary figures, the TRIPOD-AI "
-                   "reporting checklist (Supplementary Appendix S1) and the "
-                   "reproducibility appendix (Supplementary Appendix S2) are "
+                   "reporting checklist (Supplementary Appendix S1), the "
+                   "reproducibility appendix (Supplementary Appendix S2) "
+                   "and the BIDMC feature dictionary (Supplementary "
+                   "Appendix S3) are "
                    "openly available at github.com/nielspac177/csdh-postop-"
                    "seizure-risk and permanently archived on Zenodo "
                    "(DOI: [pending — minted at manuscript submission via "
@@ -802,6 +804,53 @@ def build_supplementary():
         "ICD-10 outcome codeset; (c) the CEA decision-tree Python "
         "implementation and parameter file; and (d) Firth coefficient "
         "estimates with confidence intervals.")
+    add_page_break(doc)
+
+    # Appendix S3 — Feature dictionary for the BIDMC postoperative-A and
+    # postoperative-B sets
+    add_heading(doc, "Appendix S3.  Feature dictionary for the BIDMC "
+                       "postoperative-A and postoperative-B sets", level=1)
+    add_para(doc,
+        "The 21 variables that constitute the BIDMC postoperative-A "
+        "feature set are listed below. The leakage-safe postoperative-B "
+        "set excludes the three variables marked with † (timing of "
+        "antiepileptic drug administration, prophylactic antiepileptic "
+        "drug use, and abnormal electroencephalography findings) because "
+        "they could in principle be charted after seizure onset.")
+    feat_tbl = pd.DataFrame([
+        {"#":1,  "Variable": "sex",                "Type": "binary (0/1)",   "Description": "Sex (1 = male)"},
+        {"#":2,  "Variable": "age",                "Type": "integer",        "Description": "Age at index admission, years"},
+        {"#":3,  "Variable": "blood_type",         "Type": "ordinal (0–8)",  "Description": "ABO + Rh blood group, ordinal-encoded"},
+        {"#":4,  "Variable": "sdh_type",           "Type": "categorical (0–3)", "Description": "Subdural haematoma classification: chronic / acute / mixed / unknown"},
+        {"#":5,  "Variable": "sdh_thickness",      "Type": "continuous",     "Description": "Maximum hematoma thickness, mm (imaging)"},
+        {"#":6,  "Variable": "csdh_size_change",   "Type": "ordinal (−1/0/+1)", "Description": "Pre→post hematoma size change (smaller / equal / larger)"},
+        {"#":7,  "Variable": "mid_shift",          "Type": "continuous",     "Description": "Midline shift, mm (imaging)"},
+        {"#":8,  "Variable": "hematoma_lat",       "Type": "categorical (1–3)", "Description": "Laterality — left / right / bilateral"},
+        {"#":9,  "Variable": "collection_density", "Type": "categorical (0–3)", "Description": "Hounsfield density classification — hypo / iso / hyper / mixed"},
+        {"#":10, "Variable": "preop_gcs",          "Type": "integer (3–15)", "Description": "Preoperative Glasgow Coma Scale total"},
+        {"#":11, "Variable": "epilepsy_hx",        "Type": "binary (0/1)",   "Description": "Prior history of epilepsy"},
+        {"#":12, "Variable": "num_prev_sdh",       "Type": "integer",        "Description": "Number of previous SDH episodes"},
+        {"#":13, "Variable": "demographic",        "Type": "categorical (0–4)", "Description": "Demographic stratum (institutional encoding)"},
+        {"#":14, "Variable": "procedures",         "Type": "categorical (0–4)", "Description": "Procedure-class encoding"},
+        {"#":15, "Variable": "surg_decompression", "Type": "binary (0/1)",   "Description": "Decompressive craniectomy performed"},
+        {"#":16, "Variable": "mma_embo",           "Type": "binary (0/1)",   "Description": "Middle meningeal artery embolisation"},
+        {"#":17, "Variable": "drainage",           "Type": "binary (0/1)",   "Description": "Subdural drain placed at evacuation"},
+        {"#":18, "Variable": "postop_gcs",         "Type": "integer (3–15)", "Description": "OR-exit Glasgow Coma Scale total"},
+        {"#":19, "Variable": "aed_timing_recoded †", "Type": "categorical (0/1)", "Description": "When the antiepileptic drug was administered (pre/post/not given) — leakage-suspect; excluded from postop-B"},
+        {"#":20, "Variable": "prop_aed †",         "Type": "binary (0/1)",   "Description": "Prophylactic antiepileptic drug administered — leakage-suspect; excluded from postop-B"},
+        {"#":21, "Variable": "ab_eeg †",           "Type": "binary (0/1)",   "Description": "Abnormal electroencephalography findings documented during admission — leakage-suspect; excluded from postop-B"},
+    ])
+    add_table_from_df(doc, feat_tbl)
+    add_para(doc,
+        "† Excluded from postoperative-B (the leakage-safe sensitivity "
+        "feature set, n = 18 variables). The comparison of postop-A "
+        "(AUC 0.681, 95% CI 0.609–0.753) against postop-B (AUC 0.645, "
+        "95% CI 0.562–0.729) is reported in Results §3.2 and Figure 1A "
+        "as the temporal-leakage robustness check; the modest AUC drop "
+        "(≈0.04) is well within the Bernoulli sampling-noise floor at "
+        "n = 48 events (±0.06 at AUC = 0.70; Hanley & McNeil 1982), "
+        "indicating the primary discrimination signal is not driven by "
+        "post-event information.")
     add_page_break(doc)
 
     # Tables S1–S5
