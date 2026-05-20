@@ -31,7 +31,7 @@ Companion code, interactive tools and documentation for the manuscript:
 - Twenty-eight deterministic analysis scripts (BIDMC + eICU + NIS), all `n_jobs = 1`.
 - The Firth penalized logistic regression deployment model and a class-conditional Mondrian conformal prediction layer.
 - An eleven-method modelling battery (SMOTE family, Optuna-tuned gradient boosting, diverse-base stacking, Bayesian logistic regression).
-- A probabilistic cost-effectiveness analysis with the first published value-of-information ranking for postoperative-seizure prevention.
+- A probabilistic cost-effectiveness analysis with the first value-of-information ranking for postoperative-seizure prevention.
 - Six main figures (F1–F6) in journal-style aesthetic and seven supplementary figures.
 - TRIPOD-AI reporting checklist and reproducibility appendix.
 

@@ -15,7 +15,7 @@ Base learners (deliberately heterogeneous):
 Meta-learner: logistic regression with isotonic calibration on OOF predictions.
 
 Evaluation: 5×5 repeated stratified CV; bootstrap 95% AUC CI;
-paired DeLong vs published BalancedRF baseline.
+paired DeLong vs BalancedRF baseline.
 
 Outputs:
   results/22_diverse_stacking.csv

@@ -562,7 +562,7 @@ def build():
         indent=True)
     add_para(doc,
         "The headline finding produced by this script is that Firth "
-        "matches the published BalancedRandomForest baseline on AUC "
+        "matches the BalancedRandomForest baseline on AUC "
         "(0.681 vs 0.676; DeLong p = 0.81) with a 3.3-fold improvement "
         "in Brier score. The Bayesian-with-eICU-priors variant, by "
         "contrast, degrades discrimination significantly — a finding "

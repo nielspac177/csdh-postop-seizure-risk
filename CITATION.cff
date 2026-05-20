@@ -1,0 +1,51 @@
+cff-version: 1.2.0
+title: >-
+  csdh-postop-seizure-risk — A calibrated and conformally-deployable risk
+  score for postoperative seizure after chronic subdural haematoma evacuation
+message: >-
+  If you use this software or the accompanying analysis, please cite it as
+  below.
+type: software
+authors:
+  - given-names: Niels
+    family-names: Pacheco-Barrios
+    email: nielspacheco1997@gmail.com
+    affiliation: >-
+      Department of Neurosurgery, Beth Israel Deaconess Medical Center,
+      Harvard Medical School, Boston, MA, USA
+    orcid: 'https://orcid.org/0000-0000-0000-0000'   # update on Zenodo page
+repository-code: 'https://github.com/nielspac177/csdh-postop-seizure-risk'
+url: 'https://nielspac177.github.io/csdh-postop-seizure-risk'
+abstract: >-
+  Proof-of-concept multi-database study of machine-learning prediction of
+  postoperative seizure after chronic subdural haematoma evacuation.
+  Includes a Firth penalized logistic regression deployment model, class-
+  conditional Mondrian conformal prediction sets for individual-patient
+  decision support, a refreshed probabilistic cost-effectiveness analysis,
+  and the first value-of-information analysis applied to postoperative
+  seizure prophylaxis. The companion site provides an interactive
+  patient-level risk calculator, a population cost-savings calculator, and
+  an interactive code callgraph; all computation runs client-side.
+keywords:
+  - chronic subdural haematoma
+  - postoperative seizure
+  - clinical prediction model
+  - calibration
+  - conformal prediction
+  - cost-effectiveness analysis
+  - value of information
+  - reproducible research
+license: MIT
+version: '1.0'
+date-released: '2026-05-19'
+preferred-citation:
+  type: article
+  title: >-
+    A calibrated and conformally-deployable risk score for postoperative
+    seizure after chronic subdural haematoma evacuation: a proof-of-concept
+    multi-database study with value-of-information analysis
+  authors:
+    - given-names: Niels
+      family-names: Pacheco-Barrios
+  year: 2026
+  status: in-preparation

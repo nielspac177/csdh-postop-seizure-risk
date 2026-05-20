@@ -132,7 +132,7 @@ def make_pipeline_postopA():
                            ("sc",  StandardScaler())]), POSTOP_A_FEATURES)]
     )
     clf = BalancedRandomForestClassifier(
-        # rationale: n_estimators=300 matches the published paper; tuning
+        # rationale: n_estimators=300 matches the prior version of this manuscript; tuning
         # showed diminishing returns past ~300 trees on n=655.
         # min_samples_leaf=2 is the imbalanced-learn default for BRF and
         # leaves enough leaves to keep variable-importance ranks stable

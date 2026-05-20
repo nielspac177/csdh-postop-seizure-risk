@@ -316,7 +316,7 @@ def build():
                 "What prior ML attempts have not delivered")
     add_bullets(s, [
         ("Small single-institution cohorts",
-         "Most published cSDH seizure-prediction models report on n<300 with no external test."),
+         "Many cSDH seizure-prediction models in the literature report on n<300 with no external test."),
         ("Discrimination only, no calibration",
          "AUC alone does not say whether a probability is trustworthy at the bedside."),
         ("No clinical translation layer",
@@ -349,7 +349,7 @@ def build():
     s = blank_slide(prs)
     add_header(s, prs, "Methods · 2/2", "An eleven-method modelling battery")
     add_bullets(s, [
-        ("Baseline reference: BalancedRandomForest (the published baseline)",
+        ("Baseline reference: BalancedRandomForest (the prior baseline)",
          "Reproduces the original analysis exactly so every comparison is on a like-for-like footing."),
         ("Deployment model: Firth penalized logistic regression",
          "Bias-corrected for rare events (Firth 1993, Puhr 2017). Parametric, interpretable, valid coefficient CIs."),
@@ -493,7 +493,7 @@ def build():
         ("Single-institution development cohort",
          "External evaluation in eICU across 139 hospitals with I² = 0% provides the heterogeneity check."),
         ("Imaging features absent from structured EMR",
-         "The published deployment model uses 21 structured variables; imaging-NLP augmentation is a planned next step."),
+         "The deployment model uses 21 structured variables; imaging-NLP augmentation is a planned next step."),
         ("Administrative outcome ascertainment",
          "Sensitivity analyses across four time-window cuts (0–24h, 0–48h, 0–72h, ≥24h) preserve the primary AUC."),
         ("US-payer-perspective cost inputs",

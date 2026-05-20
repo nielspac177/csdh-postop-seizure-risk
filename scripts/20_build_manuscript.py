@@ -165,7 +165,7 @@ def build():
         "(development); 5,376 SDH ICU stays across 139 hospitals in the eICU "
         "Collaborative Research Database (external validation); and 218,244 SDH "
         "admissions in the Nationwide Inpatient Sample 2016–2019 (population). "
-        "Eleven model classes were compared, including the published "
+        "Eleven model classes were compared, including the prior "
         "BalancedRandomForest, Firth penalized logistic regression for rare-"
         "event stability, Bayesian logistic regression with eICU-informed and "
         "weakly-informative priors, six oversampling variants (SMOTE family), "
@@ -182,7 +182,7 @@ def build():
     add_para(doc,
         "Firth penalized logistic regression — selected as the deployment "
         "model — achieved BIDMC discrimination at AUC 0.681 (95% CI "
-        "0.609–0.753), statistically equivalent to the published "
+        "0.609–0.753), statistically equivalent to the prior "
         "BalancedRandomForest (0.676; DeLong p = 0.81), with a 3.3-fold "
         "calibration improvement (Brier 0.069 vs 0.228). External "
         "validation in the eICU non-traumatic cohort gave AUC 0.750 "
@@ -363,7 +363,7 @@ def build():
     add_para(doc,
         "On BIDMC, the Firth penalized logistic regression model — selected "
         "as the deployment model on the basis of equivalent discrimination "
-        "and substantially better calibration than the published "
+        "and substantially better calibration than the prior "
         "BalancedRandomForest (§3.10) — produced a 25-fold cross-validated "
         "AUC of 0.681 (95% CI 0.609–0.753). The BalancedRandomForest "
         "reference reproduced the originally-reported analysis at AUC "
@@ -372,7 +372,7 @@ def build():
         "onset (postoperative-B, 18 features) yielded AUC 0.645 "
         "(0.562–0.729); the primary signal does not depend on post-event "
         "information. In the eICU non-traumatic external cohort, the "
-        "published Set C feature ensemble discriminated at AUC 0.750 "
+        "prior Set C feature ensemble discriminated at AUC 0.750 "
         "(0.711–0.774). Random-effects meta-analytic pooling across the "
         "42 hospitals meeting the prespecified three-event minimum gave "
         "a pooled AUC of 0.684 (0.651–0.714), with τ² ≈ 0 and I² = 0% — "
@@ -410,7 +410,7 @@ def build():
     # § 3.4 Cohort sensitivity
     add_heading(doc, "3.4 Cohort definition and external generalization", level=2)
     add_para(doc,
-        "Four prespecified eICU cohort definitions bracketed the published "
+        "Four prespecified eICU cohort definitions bracketed the prior "
         "phenotype (Table 3). The non-traumatic cohort discriminated at "
         "AUC 0.750 (0.711–0.774). In the smaller non-traumatic + operative "
         "subgroup (n = 317), AUC was 0.575 (0.409–0.656); the wide "
@@ -436,7 +436,7 @@ def build():
     add_para(doc,
         "A nationwide reanalysis identified a conflation between ICD-10-CM "
         "acute-symptomatic seizure codes (R56.x, 780.39, G41.x) and pre-"
-        "existing epilepsy codes (G40.x, 345.x) in the originally-published "
+        "existing epilepsy codes (G40.x, 345.x) in the originally-reported "
         "outcome. Combining both code families inflated the event rate by "
         "2.3-fold and produced an L2-regularized logistic-regression AUC of "
         "0.617. Restricting the outcome to acute symptomatic seizure alone "
@@ -506,7 +506,7 @@ def build():
     add_heading(doc, "3.9 Class-imbalance treatment sweep", level=2)
     add_para(doc,
         "Given the 7.3% positive prevalence in BIDMC (48 events / 655), we "
-        "compared the published BalancedRandomForest baseline against "
+        "compared the BalancedRandomForest baseline against "
         "class-weighted RandomForest, six over-sampling variants (SMOTE, "
         "Borderline-SMOTE, SVM-SMOTE, ADASYN, SMOTEENN, SMOTETomek), and "
         "cost-sensitive XGBoost with scale_pos_weight and focal loss. "

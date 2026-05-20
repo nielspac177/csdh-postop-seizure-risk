@@ -173,23 +173,24 @@ def build_main():
                    "main figures, seven supplementary figures, the TRIPOD-AI "
                    "reporting checklist (Supplementary Appendix S1) and the "
                    "reproducibility appendix (Supplementary Appendix S2) are "
-                   "released at github.com/nielspac177/csdh-postop-seizure-"
-                   "risk (tagged release v1.0-submission). A persistent "
-                   "Zenodo DOI will be minted on manuscript acceptance via "
-                   "the GitHub–Zenodo integration. An interactive companion "
-                   "site at nielspac177.github.io/csdh-postop-seizure-risk "
-                   "provides a calibrated patient-level risk calculator, a "
-                   "population cost-savings tool, and an interactive code "
-                   "callgraph; all computation runs client-side in the "
-                   "browser so that no patient information is transmitted. "
-                   "Raw patient-level data are restricted by the BIDMC "
-                   "Institutional Review Board, the eICU Collaborative "
-                   "Research Database data-use agreement, and the HCUP "
-                   "Nationwide Inpatient Sample data-use agreement; "
-                   "filtered, de-identified working subsets are released "
-                   "to authorised peer reviewers via the reviewer-access "
-                   "protocol documented at github.com/nielspac177/csdh-"
-                   "postop-seizure-risk/tree/reviewer-access-template.",
+                   "openly available at github.com/nielspac177/csdh-postop-"
+                   "seizure-risk and permanently archived on Zenodo "
+                   "(DOI: [pending — minted at manuscript submission via "
+                   "the GitHub–Zenodo integration]). An interactive "
+                   "companion site at nielspac177.github.io/csdh-postop-"
+                   "seizure-risk provides a calibrated patient-level risk "
+                   "calculator, a population cost-savings tool, and an "
+                   "interactive code callgraph; all computation runs "
+                   "client-side in the browser so that no patient "
+                   "information is transmitted. Raw patient-level data are "
+                   "restricted by the BIDMC Institutional Review Board, the "
+                   "eICU Collaborative Research Database data-use "
+                   "agreement, and the HCUP Nationwide Inpatient Sample "
+                   "data-use agreement; filtered, de-identified working "
+                   "subsets are released to authorised peer reviewers via "
+                   "the reviewer-access protocol documented at "
+                   "github.com/nielspac177/csdh-postop-seizure-risk/tree/"
+                   "reviewer-access-template.",
               size=10)
     add_para(doc, "Conflicts: None.", size=10)
     add_page_break(doc)
@@ -219,7 +220,7 @@ def build_main():
     add_runs(doc, [("Results. ", {"bold": True}),
         ("Firth penalized logistic regression — selected as the deployment "
          "model — discriminated at AUC 0.681 (95% CI 0.609–0.753), "
-         "equivalent to the published BalancedRandomForest baseline (DeLong "
+         "equivalent to the BalancedRandomForest baseline (DeLong "
          "p = 0.81), with 3.3-fold better calibration (Brier 0.069 vs 0.228). "
          "Eleven-method comparison confirmed an AUC ceiling near 0.68 "
          "consistent with 2022–2025 meta-evidence. eICU external AUC was "
@@ -339,7 +340,7 @@ def build_main():
          "potentially recorded after seizure onset.", {})], indent=True)
     add_heading(doc, "Modelling", level=2)
     add_runs(doc, [
-        ("Eleven model classes were compared: the published BalancedRandom"
+        ("Eleven model classes were compared: the prior version's BalancedRandom"
          "Forest (BRF) reference; Firth penalized logistic regression; "
          "Bayesian logistic regression with weakly-informative and "
          "eICU-informed priors; class-weighted RandomForest; six SMOTE-"
@@ -430,7 +431,7 @@ def build_main():
     add_runs(doc, [
         ("On BIDMC, Firth penalized logistic regression produced a 25-fold "
          "cross-validated AUC of 0.681 (95% CI 0.609–0.753), within noise of "
-         "the published BalancedRandomForest reference (0.676; 0.595–0.760; "
+         "the BalancedRandomForest reference (0.676; 0.595–0.760; "
          "DeLong p = 0.81). Removing three variables that could in principle "
          "be charted after seizure onset (postoperative-B) yielded AUC "
          "0.645; the primary signal does not require post-event information. "
@@ -566,7 +567,7 @@ def build_main():
          "evacuation can be honestly deployable when calibration and "
          "individual-patient decision support — not discrimination — are "
          "treated as the optimisation target. Firth penalized logistic "
-         "regression matches the published BalancedRandomForest baseline "
+         "regression matches the BalancedRandomForest baseline "
          "on AUC, delivers three-fold better calibration, and supports "
          "class-conditional conformal prediction sets that confidently "
          "rule out seizure in approximately one quarter of patients at a "
