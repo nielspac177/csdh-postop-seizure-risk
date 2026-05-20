@@ -384,7 +384,9 @@ def figure_3():
         axA.scatter(df["auc"].iloc[i], pos[i], color=c, s=42, zorder=3,
                      edgecolor="black", linewidth=0.5)
     axA.set_yticks(pos)
-    axA.set_yticklabels(df["method"], fontsize=7.5)
+    axA.set_yticklabels(
+        [m.replace(" (baseline)", "") for m in df["method"]],
+        fontsize=7.5)
     axA.axvline(0.5, ls=":", color=COL["grey"], lw=0.7)
     axA.set_xlim(0.45, 0.80)
     axA.set_xlabel("Cross-validated AUC (95% CI)")

@@ -450,8 +450,9 @@ def build_main():
     # 3.1 Primary discrimination
     add_heading(doc, "Primary discrimination performance", level=2)
     add_runs(doc, [
-        ("On BIDMC, Firth penalized logistic regression produced a 25-fold "
-         "cross-validated AUC of 0.681 (95% CI 0.609–0.753), within noise of "
+        ("On BIDMC, Firth penalized logistic regression produced a "
+         "5 × 5 repeated cross-validated AUC of 0.681 (95% CI 0.609–0.753), "
+         "within noise of "
          "the BalancedRandomForest reference (0.676; 0.595–0.760; "
          "DeLong p = 0.81). Removing three variables that could in principle "
          "be charted after seizure onset (postoperative-B) yielded AUC "
@@ -531,7 +532,7 @@ def build_main():
     add_heading(doc, "Conformal risk stratification", level=2)
     add_runs(doc, [
         ("Class-conditional (Mondrian) conformal prediction sets tracked "
-         "the target coverage within 0.2 percentage points across α ∈ "
+         "the target coverage within 0.3 percentage points across α ∈ "
          "{0.05, 0.10, 0.20} (empirical coverage 94.9%, 90.2% and 80.3% "
          "respectively). At α = 0.10 — corresponding to a 90% individual-"
          "patient coverage guarantee — the procedure produced a confident "
@@ -630,7 +631,7 @@ def build_main():
          "analysis — to our knowledge the first applied to this clinical "
          "question — quantifies the population-scale upper bound on "
          "future research investment at approximately $190 million over "
-         "10 years. the analysis identifies *which* "
+         "10 years. The analysis identifies *which* "
          "parameters drive the upper bound: per-day cEEG cost, baseline "
          "seizure prevalence, and AED relative-risk reduction. Each is "
          "addressable through prospective data collection or focused "
@@ -888,17 +889,21 @@ def build_supplementary():
         "appends a per-feature binary missing-indicator covariate; "
         "sensitivity to this choice is reported below.")
     add_para(doc,
-        "Missingness patterns.  The BIDMC development cohort is complete "
-        "on all 21 postoperative-A variables (n = 655; no imputation "
-        "required). The eICU non-traumatic stratum has feature-specific "
+        "Missingness patterns.  In the BIDMC development cohort, two of "
+        "the 21 postoperative-A variables carried administrative-category "
+        "missingness: 'demographic' (63/655 = 9.6%) and 'procedures' "
+        "(56/655 = 8.5%); the remaining 19 variables were complete. The "
+        "eICU non-traumatic stratum had additional feature-specific "
         "missingness concentrated in structured-record physiological "
         "variables; per-feature rates are visualised in Supplementary "
         "Figure S4.")
     add_para(doc,
-        "Little's MCAR test.  We rejected the missing-completely-at-"
-        "random hypothesis (χ² = 79.3, df = 33, p < 0.001), consistent "
-        "with at-most a missing-at-random pattern. Multiple imputation "
-        "under MAR is therefore the principled default.")
+        "Little's MCAR test.  Applied to the BIDMC postoperative-B "
+        "feature set, the test rejected the missing-completely-at-random "
+        "hypothesis (χ² = 79.3, df = 33, p < 0.001), consistent with at-"
+        "most a missing-at-random pattern across the two administrative-"
+        "category variables. Multiple imputation under MAR is therefore "
+        "the principled default.")
     # Imputation comparison table
     add_para(doc,
         "Imputation method comparison.  Four imputation strategies were "
