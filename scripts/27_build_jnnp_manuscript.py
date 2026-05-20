@@ -755,7 +755,7 @@ def build_supplementary():
         ("7", "Outcome", "Defined a priori; chart-documented seizure (BIDMC); structured seizure flag (eICU).", "Yes — Methods §2.3."),
         ("8", "Predictors", "21 features (postop_A); 18 (postop_B); standardisation.", "Yes — Methods §2.3."),
         ("9", "Sample size", "655 (BIDMC, 48 events); 3,297 (eICU primary, 300 events).", "Yes — Methods §2.2."),
-        ("10", "Missing data", "Median imputation + missing indicator (sensitivity)", "Yes — Supplement S4."),
+        ("10", "Missing data", "Median imputation + missing indicator; Little's MCAR test; Rubin's-rules pooling across 10 multiple imputations.", "Yes — Appendix S5."),
         ("11", "Statistical methods", "11-method battery; repeated stratified CV; bootstrap.", "Yes — Methods §2.5."),
         ("12", "Risk groups", "Class-conditional conformal sets (rule-out, rule-in).", "Yes — Results §3.4."),
         ("13", "Development vs validation", "BIDMC development; eICU external; LOHO meta-analytic pooling.", "Yes — Results §3.1."),
@@ -877,6 +877,74 @@ def build_supplementary():
         "codeset alongside the codebase (see Appendix S2) so that future "
         "nationwide analyses with timestamped coding can re-attempt this "
         "validation step on a coding substrate that supports it.")
+    add_page_break(doc)
+
+    # Appendix S5 — Missing-data sensitivity
+    add_heading(doc, "Appendix S5.  Missing-data sensitivity", level=1)
+    add_para(doc,
+        "Background.  We evaluated whether the discrimination of the "
+        "deployment pipeline depends on the missing-data assumption. "
+        "The deployment pipeline imputes each feature by its median and "
+        "appends a per-feature binary missing-indicator covariate; "
+        "sensitivity to this choice is reported below.")
+    add_para(doc,
+        "Missingness patterns.  The BIDMC development cohort is complete "
+        "on all 21 postoperative-A variables (n = 655; no imputation "
+        "required). The eICU non-traumatic stratum has feature-specific "
+        "missingness concentrated in structured-record physiological "
+        "variables; per-feature rates are visualised in Supplementary "
+        "Figure S4.")
+    add_para(doc,
+        "Little's MCAR test.  We rejected the missing-completely-at-"
+        "random hypothesis (χ² = 79.3, df = 33, p < 0.001), consistent "
+        "with at-most a missing-at-random pattern. Multiple imputation "
+        "under MAR is therefore the principled default.")
+    # Imputation comparison table
+    add_para(doc,
+        "Imputation method comparison.  Four imputation strategies were "
+        "evaluated by repeated 5 × 3 stratified cross-validation. On "
+        "BIDMC postoperative-B the three imputers tested return "
+        "identical AUC because the cohort carries no missingness on "
+        "this feature set — included here for transparency.")
+    imp_tbl = pd.DataFrame([
+        {"Cohort": "eICU pure Set C", "Imputer": "Median (deployment default)",         "AUC": "0.644", "SD": "0.046"},
+        {"Cohort": "eICU pure Set C", "Imputer": "Mean",                                "AUC": "0.693", "SD": "0.035"},
+        {"Cohort": "eICU pure Set C", "Imputer": "IterativeImputer (MICE-like)",        "AUC": "0.675", "SD": "0.041"},
+        {"Cohort": "eICU pure Set C", "Imputer": "Missing-indicator + median",          "AUC": "0.700", "SD": "0.035"},
+        {"Cohort": "BIDMC postop-B",  "Imputer": "Median (deployment default)",         "AUC": "0.639", "SD": "0.093"},
+        {"Cohort": "BIDMC postop-B",  "Imputer": "IterativeImputer (MICE-like)",        "AUC": "0.639", "SD": "0.093"},
+        {"Cohort": "BIDMC postop-B",  "Imputer": "Missing-indicator + median",          "AUC": "0.632", "SD": "0.090"},
+    ])
+    add_table_from_df(doc, imp_tbl)
+    add_para(doc,
+        "Rubin's-rules pooling.  Ten multiple imputations (random-state "
+        "seeded, IterativeImputer chains) were generated on the eICU "
+        "pure Set C cohort. Discrimination was pooled across imputations "
+        "by Rubin's rules with within-imputation bootstrap variance and "
+        "between-imputation variance combined to compute the standard "
+        "error and 95% confidence interval, and the fraction of missing "
+        "information (FMI) and Rubin's degrees of freedom:")
+    rubin_tbl = pd.DataFrame([
+        {"Cohort": "eICU pure Set C", "M": "10",
+         "Pooled AUC": "0.644", "SE": "0.022",
+         "95% CI": "0.600 – 0.688",
+         "FMI": "0.33", "df (Rubin)": "81"},
+    ])
+    add_table_from_df(doc, rubin_tbl)
+    add_para(doc,
+        "Interpretation.  AUC was insensitive to imputation choice on "
+        "the deployment cohort (BIDMC, zero missingness) and modestly "
+        "sensitive on the external eICU cohort, with the deployment "
+        "default (median imputation) returning the lower end of the "
+        "imputer-method range and the missing-indicator augmentation "
+        "the upper end. The Rubin's-rules pooled estimate on eICU pure "
+        "Set C (0.644, 95% CI 0.600–0.688; FMI 0.33) is concordant with "
+        "the primary external-validation AUC reported in the main "
+        "manuscript. The non-trivial FMI (0.33) is a useful pre-"
+        "registered upper bound on the additional uncertainty injected "
+        "by the imputation step alone and should be carried forward in "
+        "any prospective re-validation that involves structured-record "
+        "data with comparable missingness.")
     add_page_break(doc)
 
     # Tables S1–S5
