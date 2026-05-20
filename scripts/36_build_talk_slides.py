@@ -306,7 +306,7 @@ def build():
               col_w - Inches(0.5), col_h - Inches(1.1),
               size=14, color=INK, line_spacing=1.5)
     add_callout(s,
-                 "Risk stratification is the missing piece — and is currently empirical.",
+                 "Risk stratification would fill this gap, and is currently empirical.",
                  Inches(0.6), Inches(6.65), Inches(12.1), Inches(0.55),
                  accent=OCHRE)
     add_footer(s, prs, slide_num=3)
@@ -339,7 +339,7 @@ def build():
     add_image(s, FIG / "F0_graphical_abstract.png",
                 Inches(0.45), Inches(1.7), w=Inches(12.4))
     add_callout(s,
-                 "BIDMC develops the deployment model; eICU's 139 hospitals stress-test "
+                 "BIDMC develops the deployment model; eICU's 139 hospitals test "
                  "external generalisability; NIS surfaces a methodological correction "
                  "needed for population-scale analyses.",
                  Inches(0.6), Inches(6.50), Inches(12.1), Inches(0.75),
@@ -379,14 +379,14 @@ def build():
     ], Inches(9.0), Inches(2.3), Inches(4.0), Inches(4.6),
        size=12, bullet_size=12)
     add_callout(s,
-                 "The ceiling is biological, not modelling failure. Time to optimise something else.",
+                 "The ceiling is biological, not modelling failure. The right target is calibration.",
                  Inches(0.5), Inches(6.50), Inches(12.3), Inches(0.75),
                  accent=RUST)
     add_footer(s, prs, slide_num=7)
 
     # ─────── 8. Calibration is the actionable target (results 2/5) ───────
     s = blank_slide(prs)
-    add_header(s, prs, "Results · 2/5", "Calibration is the actionable improvement")
+    add_header(s, prs, "Results · 2/5", "Calibration is the improvement")
     add_image(s, FIG / "F2_calibration_dca.png",
                 Inches(0.5), Inches(1.6), w=Inches(8.2))
     add_text(s, "Firth penalized LR",
@@ -421,7 +421,7 @@ def build():
          "On a 7.3% positive rate, marginal coverage can be satisfied by covering the majority class alone. Mondrian CP guarantees coverage on the seizure-positive class separately. (Löfström et al., J Chem Inf Model 2017; Vovk PMLR 25, 2012)"),
         ("Computational cost orders below MCMC, with no priors to tune",
          "Split-conformal computes one held-out quantile; comparable Bayesian uncertainty needs MCMC and prior elicitation. (Fortuna et al., PLoS Comput Biol 2025)"),
-        ("A principled \"I don't know\" for deployment",
+        ("A principled \"I do not know\" for deployment",
          "A doubleton set is a formal abstention signal that triggers EEG monitoring or specialist review; the null set flags out-of-distribution patients. (Olsson et al., Sci Rep 2026)"),
     ], Inches(0.6), Inches(1.6), Inches(12.1), Inches(4.8),
        size=13, bullet_size=13, line_spacing=1.25)
@@ -444,7 +444,7 @@ def build():
         ("Confident singleton prediction in 37% of patients", None),
         ("Rule-out of seizure in 27% — AED prophylaxis can be safely omitted", None),
         ("Rule-in of seizure in 11% — targeted cEEG monitoring", None),
-        ("Remaining 63% deferred to clinical judgment (no over-claim)", None),
+        ("Remaining 63% deferred to clinical judgment (without over-reaching)", None),
     ], Inches(9.0), Inches(2.3), Inches(4.0), Inches(4.6),
        size=12, bullet_size=12)
     add_callout(s,
@@ -488,7 +488,7 @@ def build():
     ], Inches(9.0), Inches(2.3), Inches(4.0), Inches(4.6),
        size=12, bullet_size=12)
     add_callout(s,
-                 "VOI ranks where to invest in future evidence collection — by decision-relevant value, not by p-value.",
+                 "VOI ranks where to invest in future evidence collection — by their decision-relevant value rather than by p-value alone.",
                  Inches(0.5), Inches(6.50), Inches(12.3), Inches(0.75),
                  accent=OCHRE)
     add_footer(s, prs, slide_num=12)
@@ -534,7 +534,7 @@ def build():
     add_text(s, "TAKE-HOMES",
               Inches(0.7), Inches(0.6), Inches(8), Inches(0.5),
               size=14, color=RUST, bold=True)
-    add_text(s, "Five conclusions in one minute",
+    add_text(s, "Five take-homes",
               Inches(0.7), Inches(1.0), Inches(8), Inches(0.8),
               size=30, color=WHITE, bold=True)
     add_bullets(s, [

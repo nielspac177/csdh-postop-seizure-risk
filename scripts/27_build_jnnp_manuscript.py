@@ -232,7 +232,7 @@ def build_main():
          "and QALYs. Population EVPI at $100k/QALY was $190M over 10 years.", {})],
          indent=False)
     add_runs(doc, [("Conclusion. ", {"bold": True}),
-        ("Small-cohort clinical machine learning can be honestly deployable "
+        ("Small-cohort clinical machine learning can be deployable "
          "when calibration and decision-integration replace discrimination "
          "as the optimisation target. ML-guided AED prophylaxis is "
          "cost-effective; VOI prioritises per-day cEEG cost, baseline "
@@ -567,7 +567,7 @@ def build_main():
          "7.36 and 7.42; Figure 5). ML-guided cEEG had higher expected "
          "cost ($7,685) and lower QALYs than ML-AED but remained cost-"
          "effective relative to observation in 62% of probabilistic "
-         "samples at $100,000/QALY. To our knowledge this is the first "
+         "samples at $100,000/QALY. This is, to our knowledge, the first "
          "value-of-information analysis applied to postoperative-seizure "
          "prophylaxis after cSDH evacuation. The per-patient expected "
          "value of perfect information at $100k/QALY was $541; the "
@@ -603,7 +603,7 @@ def build_main():
     add_runs(doc, [
         ("This proof-of-concept study demonstrates that small-cohort "
          "clinical machine learning for postoperative seizure after cSDH "
-         "evacuation can be honestly deployable when calibration and "
+         "evacuation can be deployable when calibration and "
          "individual-patient decision support — not discrimination — are "
          "treated as the optimisation target. Firth penalized logistic "
          "regression matches the BalancedRandomForest baseline "
@@ -638,7 +638,7 @@ def build_main():
          "analysis — to our knowledge the first applied to this clinical "
          "question — quantifies the population-scale upper bound on "
          "future research investment at approximately $190 million over "
-         "10 years. Importantly, the analysis identifies *which* "
+         "10 years. the analysis identifies *which* "
          "parameters drive the upper bound: per-day cEEG cost, baseline "
          "seizure prevalence, and AED relative-risk reduction. Each is "
          "addressable through prospective data collection or focused "
