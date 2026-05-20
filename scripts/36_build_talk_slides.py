@@ -8,13 +8,14 @@ beat at the centre:
   4-5.  Methods — multi-database design + modelling strategy
   6.    Results turn 1 — the AUC ceiling is biological, not modelling failure
   7.    Results turn 2 — calibration is the actionable target
-  8.    Results turn 3 — conformal prediction translates into bedside decisions
-  9.    Results turn 4 — ML-AED dominates current practice (CEA)
-  10.   Results turn 5 — value-of-information identifies research priorities
-  11.   Discussion — methodological contributions
-  12.   Limitations — honest acknowledgement, paired with mitigations
-  13.   Conclusions — the five take-homes
-  14.   Acknowledgements + QR
+  8.    Methods bridge — what conformal prediction adds to the model
+  9.    Results turn 3 — conformal prediction translates into bedside decisions
+  10.   Results turn 4 — ML-AED dominates current practice (CEA)
+  11.   Results turn 5 — value-of-information identifies research priorities
+  12.   Discussion — methodological contributions
+  13.   Limitations — honest acknowledgement, paired with mitigations
+  14.   Conclusions — the five take-homes
+  15.   Acknowledgements + QR
 
 Output: Manuscript_05192026/Slides.pptx
 """
@@ -133,7 +134,7 @@ def add_header(slide, prs, eyebrow, title, *, accent=NAVY):
               fill=accent)
 
 
-def add_footer(slide, prs, *, slide_num=None, total=14):
+def add_footer(slide, prs, *, slide_num=None, total=15):
     add_text(slide, "Pacheco-Barrios  ·  csdh-postop-seizure-risk",
               Inches(0.5), prs.slide_height - Inches(0.40),
               Inches(7), Inches(0.30),
@@ -404,7 +405,33 @@ def build():
                  accent=FOREST)
     add_footer(s, prs, slide_num=8)
 
-    # ─────── 9. Conformal — bedside decision support (results 3/5) ───────
+    # ─────── 9. Why conformal prediction? (methods bridge) ───────
+    s = blank_slide(prs)
+    add_header(s, prs, "Methods · narrative bridge",
+                "Why conformal prediction on top of the Firth model?")
+    # Left column: the six contributions
+    add_bullets(s, [
+        ("Distribution-free, finite-sample coverage",
+         "Guarantees P(true label ∈ set) ≥ 1−α with only an exchangeability assumption — no asymptotics, no prior, no correct-likelihood assumption. (Angelopoulos & Bates, arXiv:2107.07511, 2023)"),
+        ("Model-agnostic post-hoc wrapper",
+         "The Firth coefficients and inferential machinery are untouched; conformal runs on top in seconds. (Vovk et al., arXiv:2005.07972, 2023)"),
+        ("Adaptive per-patient set size",
+         "Returns {}, {no-seizure}, {seizure} or {seizure, no-seizure}. The set grows for ambiguous patients and shrinks for easy ones — a heterogeneous uncertainty signal a calibrated probability cannot give. (Romano, Sesia & Candès, NeurIPS 2020)"),
+        ("Class-conditional (Mondrian) coverage for imbalance",
+         "On a 7.3% positive rate, marginal coverage can be satisfied by covering the majority class alone. Mondrian CP guarantees coverage on the seizure-positive class separately. (Löfström et al., J Chem Inf Model 2017; Vovk PMLR 25, 2012)"),
+        ("Computational cost orders below MCMC, with no priors to tune",
+         "Split-conformal computes one held-out quantile; comparable Bayesian uncertainty needs MCMC and prior elicitation. (Fortuna et al., PLoS Comput Biol 2025)"),
+        ("A principled \"I don't know\" for deployment",
+         "A doubleton set is a formal abstention signal that triggers EEG monitoring or specialist review; the null set flags out-of-distribution patients. (Olsson et al., Sci Rep 2026)"),
+    ], Inches(0.6), Inches(1.6), Inches(12.1), Inches(4.8),
+       size=13, bullet_size=13, line_spacing=1.25)
+    add_callout(s,
+                 "Calibration fixes probabilities but bounds no error. Bayesian intervals need correct priors + MCMC. Bootstrap CIs are asymptotic. Mondrian CP is finite-sample, class-conditional, and deployment-ready.",
+                 Inches(0.5), Inches(6.50), Inches(12.3), Inches(0.75),
+                 accent=NAVY)
+    add_footer(s, prs, slide_num=9)
+
+    # ─────── 10. Conformal — bedside decision support (results 3/5) ───────
     s = blank_slide(prs)
     add_header(s, prs, "Results · 3/5",
                 "Conformal prediction turns probabilities into decisions")
@@ -424,9 +451,9 @@ def build():
                  "First application of class-conditional conformal sets to postoperative-seizure decision support.",
                  Inches(0.5), Inches(6.50), Inches(12.3), Inches(0.75),
                  accent=FOREST)
-    add_footer(s, prs, slide_num=9)
+    add_footer(s, prs, slide_num=10)
 
-    # ─────── 10. CEA dominance (results 4/5) ───────
+    # ─────── 11. CEA dominance (results 4/5) ───────
     s = blank_slide(prs)
     add_header(s, prs, "Results · 4/5", "ML-guided AED dominates current practice")
     add_image(s, FIG / "F5_cea.png",
@@ -442,9 +469,9 @@ def build():
         ("ML-cEEG: cost-effective in 62% of PSA samples at $100k", None),
     ], Inches(9.0), Inches(2.3), Inches(4.0), Inches(4.6),
        size=12, bullet_size=12)
-    add_footer(s, prs, slide_num=10)
+    add_footer(s, prs, slide_num=11)
 
-    # ─────── 11. VOI — research priorities (results 5/5) ───────
+    # ─────── 12. VOI — research priorities (results 5/5) ───────
     s = blank_slide(prs)
     add_header(s, prs, "Results · 5/5",
                 "Value-of-information identifies the research frontier")
@@ -464,9 +491,9 @@ def build():
                  "VOI ranks where to invest in future evidence collection — by decision-relevant value, not by p-value.",
                  Inches(0.5), Inches(6.50), Inches(12.3), Inches(0.75),
                  accent=OCHRE)
-    add_footer(s, prs, slide_num=11)
+    add_footer(s, prs, slide_num=12)
 
-    # ─────── 12. Methodological contributions ───────
+    # ─────── 13. Methodological contributions ───────
     s = blank_slide(prs)
     add_header(s, prs, "Discussion · 1/2", "Methodological contributions")
     add_bullets(s, [
@@ -481,9 +508,9 @@ def build():
         ("First value-of-information analysis in postoperative-seizure prevention",
          "Population EVPI $190M / 10yr; per-parameter EVPPI ranks research priorities by decision-relevant value."),
     ], Inches(0.6), Inches(1.6), Inches(12.1), Inches(5.5), size=14)
-    add_footer(s, prs, slide_num=12)
+    add_footer(s, prs, slide_num=13)
 
-    # ─────── 13. Limitations ───────
+    # ─────── 14. Limitations ───────
     s = blank_slide(prs)
     add_header(s, prs, "Discussion · 2/2",
                 "Limitations — paired with mitigations")
@@ -499,9 +526,9 @@ def build():
         ("US-payer-perspective cost inputs",
          "VOI explicitly identifies cEEG cost as the highest-EVPPI parameter for international refinement."),
     ], Inches(0.6), Inches(1.6), Inches(12.1), Inches(5.5), size=13)
-    add_footer(s, prs, slide_num=13)
+    add_footer(s, prs, slide_num=14)
 
-    # ─────── 14. Conclusions + QR (final) ───────
+    # ─────── 15. Conclusions + QR (final) ───────
     s = blank_slide(prs, bg=NAVY)
     # Title block
     add_text(s, "TAKE-HOMES",
@@ -538,7 +565,7 @@ def build():
     prs.save(OUT_PATH)
     print(f"[OK] {OUT_PATH}")
     print(f"     size: {os.path.getsize(OUT_PATH)/1024:.1f} KB")
-    print(f"     slides: {len(prs.slides)}  ·  target 14 (15-min talk @ ~1 min/slide + Q&A)")
+    print(f"     slides: {len(prs.slides)}  ·  target 15 (15-min talk @ ~1 min/slide + Q&A)")
 
 
 if __name__ == "__main__":
