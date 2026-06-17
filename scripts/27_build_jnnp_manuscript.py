@@ -590,7 +590,7 @@ def build_main():
          "noise floor and consistent with recent meta-evidence.", {}),
         ("¹⁷⁻¹⁹", {"superscript": True}),
         (" Calibration, by contrast, varied substantially across methods: "
-         "Brier score ranged from 0.067 (Firth and stacking) to 0.228 "
+         "Brier score ranged from 0.068 (Firth, the candidate model) to 0.228 "
          "(BalancedRandomForest) — a more-than-threefold "
          "difference (Figure 3). Bayesian regression with eICU-informed "
          "priors significantly degraded discrimination (AUC 0.515, "
@@ -811,12 +811,18 @@ def build_main():
          "postoperative seizure after cSDH evacuation, paired with "
          "class-conditional conformal prediction, is feasible and meets "
          "methodological preconditions for prospective evaluation, supporting "
-         "individual-patient decisions with formal coverage guarantees. "
-         "Active prophylaxis dominates watchful observation; whether to "
-         "allocate it selectively with the model rather than treat all "
-         "patients depends on AED efficacy and harm in cSDH, which current "
-         "evidence leaves uncertain, and which value-of-information identifies "
-         "as the priority targets for future research.", {})],
+         "individual-patient decisions, for the minority of patients in whom "
+         "the conformal procedure yields a confident prediction, with formal "
+         "coverage guarantees. ML-guided allocation exceeds watchful "
+         "observation; whether to allocate prophylaxis selectively with the "
+         "model rather than treat all or none depends on AED efficacy and harm "
+         "in cSDH, which current evidence leaves uncertain. Consistent with "
+         "this, the value-of-information analysis shows the model's "
+         "discrimination carries modest decision value relative to AED "
+         "efficacy and per-day cEEG cost; the methodological contribution is "
+         "the calibration-and-conformal decision framework, and the priority "
+         "for prospective work is resolving the AED and monitoring "
+         "parameters.", {})],
         indent=True)
     add_page_break(doc)
 

@@ -111,3 +111,37 @@ should carry the prediction interval and slope>1 caveat; "biological ceiling"→
 feature limit"; degenerate Firth coeffs (demographic/procedures — drop or explain); 7→8 supplementary
 figures; international cost_scale 0.79/0.92 (CSV) vs 0.800/0.900 (table); replace placeholder refs
 14–16; real IRB number; cross-database phenotype "agreement" asserted not demonstrated — soften.
+
+---
+
+# Second adversarial round — residuals (after F7–F13 applied)
+
+RESOLVED (verified round 2): F7 observation-domination, conditional CEA, F8 RRR consistency,
+abstract slope+PI caveats, F10 VOI ($23M, no stale $190M), biological→sample-size, conformal text
+22%, operating point, discrimination-premium text. Fixed this round: Brier 0.067→0.068; conclusion
+"active prophylaxis dominates"→"ML-guided exceeds observation" + honest model-low-VOI framing.
+
+## F14 — Figure 4 PNG still shows 37%/27% (old BRF/postop-A); caption now says 22% (MUST regen)
+Regenerate F4_conformal.png (and 25_conformal.png) from 44_conformal_postopB_firth.csv so the image
+matches the corrected caption. Figure builder: 29_main_figures_jnnp.py / 26_main_figures.py.
+
+## F15 — Stale Table S5 (16_voi_evppi, postop-A) contradicts the new VOI narrative
+Replace supplementary Table S5 with 45_voi_postopB.csv (EVPI + EVPPI under the deployed model).
+The old table (cEEG cost $68.7M etc.) is what the red-team used to argue the model is low-VOI.
+
+## F16 — Discrimination premium ($1,000–1,600) asserted in text but not tabulated
+Add 44_model_vs_random.csv as a supplementary table so the premium is sourced; otherwise the only
+tabulated head-to-head (mlg_mla $514, CI crosses zero) undercuts the text.
+
+## F17 — Deployed-model significant coefficients are procedure variables (drainage OR 1.44 backwards)
+Add a sentence (Appendix S8 / Discussion): the only significant coefficients are procedure variables
+reflecting confounding by indication, not causal seizure biology — a limitation of the candidate model.
+
+## F18 — "deployed/deployment" and "external validation" still recur in body/supplement (terminology sweep)
+Headline fixed; finish replacing residual "deployed model"→"candidate model" and "external
+validation"→"external evaluation" in Results/Methods/Supplement for consistency.
+
+## F19 — RRR≈0 advantage over observation is partly the cEEG-detection arm, not discrimination
+Acknowledge that at near-zero AED efficacy the ML-guided edge over observation derives substantially
+from the early-detection (cEEG) limb; the conclusion now states the model's discrimination is modest
+decision-value, which is consistent and honest.
