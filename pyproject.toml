@@ -1,0 +1,76 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "csdh-postop-seizure-risk"
+version = "1.1.0"
+description = "Calibrated, conformal-prediction proof-of-concept for postoperative seizure after chronic subdural haematoma evacuation, with multi-database validation and value-of-information analysis."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.9,<3.13"
+authors = [{ name = "Niels Pacheco-Barrios" }]
+keywords = [
+    "chronic subdural haematoma",
+    "postoperative seizure",
+    "clinical prediction model",
+    "calibration",
+    "conformal prediction",
+    "cost-effectiveness analysis",
+    "value of information",
+    "reproducible research",
+]
+
+# Pinned to match requirements.txt. numpy<2 and scikit-learn 1.5.2 are chosen
+# for Apple-Silicon thread-safety (the analysis is forced to n_jobs=1).
+dependencies = [
+    "numpy==1.26.4",
+    "pandas==2.3.3",
+    "scipy==1.13.1",
+    "scikit-learn==1.5.2",
+    "imbalanced-learn==0.12.4",
+    "xgboost==2.1.4",
+    "lightgbm==4.6.0",
+    "lifelines==0.30.0",
+    "firthlogist==0.5.0",
+    "mapie==1.4.0",
+    "optuna==4.8.0",
+    "matplotlib==3.9.4",
+    "Pillow==11.3.0",
+    "python-docx==1.2.0",
+    "python-pptx==1.0.2",
+    "lxml==6.1.1",
+    "XlsxWriter==3.2.9",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "ruff>=0.6", "pre-commit>=3"]
+
+[project.urls]
+Repository = "https://github.com/nielspac177/csdh-postop-seizure-risk"
+
+[tool.setuptools]
+# Analysis scripts are run directly (python scripts/NN_*.py); this is not an
+# importable package, so no automatic package discovery.
+py-modules = []
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+# This is a research codebase whose 38 numbered scripts intentionally use
+# compact idioms (semicolons, env-vars set before heavy imports, grouped
+# imports). We lint for genuine correctness bugs only — syntax errors,
+# undefined names, redefinitions, unreachable code — not style, so CI never
+# pressures a reformat that could perturb a result-producing script.
+select = [
+    "E9",    # syntax errors
+    "F63",   # invalid comparisons / assertions on tuples
+    "F7",    # break/return/continue outside loop, etc.
+    "F82",   # undefined name / undefined name in __all__
+    "F811",  # redefinition of unused name
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

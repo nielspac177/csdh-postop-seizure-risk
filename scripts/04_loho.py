@@ -205,10 +205,11 @@ def main():
         plt.close()
 
     # plot distributions
+    jitter_rng = np.random.default_rng(SEED)  # seeded so the swarm jitter is reproducible
     fig, axes = plt.subplots(1, 3, figsize=(14, 4.5))
     for ax, (k, g) in zip(axes, perh.groupby(["cohort", "set"])):
         ax.boxplot([g["auc"]], showfliers=True)
-        ax.scatter(np.random.normal(1, 0.04, len(g)), g["auc"], alpha=0.5, s=20)
+        ax.scatter(jitter_rng.normal(1, 0.04, len(g)), g["auc"], alpha=0.5, s=20)
         ax.axhline(0.5, color="gray", ls=":", lw=1)
         ax.set_title(f"{k[0]} / {k[1]}\nmedian AUC={g['auc'].median():.3f}, n={len(g)} hosp")
         ax.set_ylabel("Held-out hospital AUC")

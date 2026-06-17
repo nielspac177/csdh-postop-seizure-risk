@@ -1,0 +1,44 @@
+name: CI
+
+# Verifies that the pinned environment resolves and that the core modeling
+# utilities run end-to-end on synthetic data (the real cohorts are not
+# redistributed — see .gitignore). This is a reproducibility guard, not a
+# full re-run of the manuscript pipeline.
+
+on:
+  push:
+    branches: ["main", "revision-2026-06"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint-and-smoke:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest ruff
+
+      - name: Lint (ruff)
+        run: ruff check scripts tests
+
+      - name: Synthetic-data smoke test
+        env:
+          OMP_NUM_THREADS: "1"
+          OPENBLAS_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
+        run: pytest tests -q

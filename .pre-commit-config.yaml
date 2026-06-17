@@ -1,0 +1,37 @@
+# Pre-commit hooks for the cSDH reproducibility repo.
+# Install once with:  pre-commit install
+# Run on demand with: pre-commit run --all-files
+#
+# Deliberately light-touch: this is a research codebase, so we guard against
+# accidents (large files, committed patient data, broken syntax) rather than
+# enforcing a style that would churn the result-producing scripts.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+        args: ["--maxkb=2048"]
+      - id: check-merge-conflict
+      - id: debug-statements
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: ["--config", "pyproject.toml"]
+
+  # Block obvious patient-data filenames from ever being committed.
+  - repo: local
+    hooks:
+      - id: block-patient-data
+        name: block patient-data files
+        entry: >-
+          bash -c 'for f in "$@"; do case "$f" in
+          *csdh_clean.csv|*eicu_csdh_cohort_final.csv|*nis_*.csv|*nis_*.parquet|*mimic*.csv)
+          echo "Refusing to commit patient-data file: $f"; exit 1;; esac; done'
+        language: system
+        files: '\.(csv|parquet|duckdb|sqlite|xlsx)$'

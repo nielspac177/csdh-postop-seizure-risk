@@ -25,10 +25,11 @@ import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 import warnings; warnings.filterwarnings("ignore")
-from _shared import RES, FIG, SEED
+from _shared import RES, FIG, SEED, BIDMC_CSV
 
-ROOT = "/Users/nielspacheco/Desktop/Research/Ogilvy research/Data Chronic Subdural Haematoma"
-DATA_PATH = os.path.join(ROOT, "csdh_clean.csv")
+# Portable data path — reuse the repo-relative location resolved in _shared.py
+# (was a hardcoded absolute path that broke on a fresh clone).
+DATA_PATH = str(BIDMC_CSV)
 RANDOM_STATE = SEED
 N_PSA = 10_000
 
