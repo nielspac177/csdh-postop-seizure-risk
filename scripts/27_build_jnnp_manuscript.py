@@ -88,7 +88,7 @@ def add_table_from_df(doc, df, caption=None):
         for p in cell.paragraphs:
             for r in p.runs:
                 r.bold = True; r.font.size = Pt(10); r.font.name = "Times New Roman"
-    for i, row in df.iterrows():
+    for i, (_, row) in enumerate(df.iterrows()):
         for j, col in enumerate(df.columns):
             val = row[col]
             if isinstance(val, float):
@@ -208,9 +208,10 @@ def build_main():
     add_runs(doc, [("Methods. ", {"bold": True}),
         ("We developed and externally evaluated a machine-learning risk "
          "score for postoperative seizure in 655 cSDH evacuations at "
-         "BIDMC (development; 48 events) and 5,376 SDH ICU stays across "
-         "139 hospitals in the eICU Collaborative Research Database "
-         "(external validation). Eleven model classes were compared, including six "
+         "BIDMC (development; 48 events) and 3,297 non-traumatic subdural "
+         "haematoma ICU stays across 42 hospitals in the eICU Collaborative "
+         "Research Database (external validation; 300 seizures). Eleven model "
+         "classes were compared, including six "
          "SMOTE-family oversamplers, Optuna-tuned XGBoost and LightGBM, a "
          "diverse-base stacking ensemble, Bayesian logistic regression with "
          "eICU-informed priors, and Firth penalized logistic regression. "
@@ -341,19 +342,36 @@ def build_main():
         ("The BIDMC development cohort comprised all consecutive patients "
          "undergoing burr-hole or craniotomy for cSDH between January 2010 "
          "and December 2023 (n = 655; 48 in-admission postoperative "
-         "seizures). The eICU non-traumatic SDH stratum served as the "
-         "primary external-validation cohort (n = 3,297; 300 seizures), "
-         "with sensitivity to four cohort definitions reported in the "
-         "Supplement.", {})], indent=True)
+         "seizures). For external validation, the eICU Collaborative Research "
+         "Database was screened in stages: 5,376 ICU stays with any subdural "
+         "haematoma diagnosis across 139 hospitals were identified, from "
+         "which the pre-specified primary stratum — non-traumatic SDH stays "
+         "at hospitals contributing ≥10 such stays — yielded 3,297 stays "
+         "across 42 hospitals (300 seizures). All headline external figures, "
+         "including the leave-one-hospital-out pooling, use this 3,297/42 "
+         "primary stratum; the broader 5,376/139 screen and three "
+         "alternative cohort definitions are reported as sensitivity analyses "
+         "in the Supplement, and a CONSORT-style inclusion-flow diagram "
+         "(Supplementary Appendix S8) details every exclusion step.", {})],
+        indent=True)
     add_heading(doc, "Outcome and features", level=2)
     add_runs(doc, [
         ("The primary outcome was any postoperative seizure within the "
          "index admission, ascertained from chart documentation at BIDMC "
-         "and from the structured seizure flag in eICU. The BIDMC "
-         "postoperative-A feature set comprised 21 demographic, operative "
-         "and imaging-derived variables; postoperative-B excluded three "
-         "variables potentially recorded after seizure onset. The full "
-         "feature dictionary is in Supplementary Appendix S3.", {})], indent=True)
+         "and from the structured seizure flag in eICU; cross-database "
+         "phenotype agreement supports the external-validity claim. Two "
+         "feature sets were defined by their availability at the intended "
+         "decision point — the end of haematoma evacuation, before the "
+         "antiepileptic-drug/EEG decision. The deployable postoperative-B set "
+         "comprised 18 demographic, operative and imaging-derived variables "
+         "all available at that point. The postoperative-A set added three "
+         "peri-decision variables (AED timing, proportion of stay on AED, "
+         "abnormal EEG) that a clinician could not have at evacuation exit; "
+         "because these encode information generated around or after the very "
+         "decision the model is meant to inform, postoperative-A is reported "
+         "only as a paired sensitivity comparison and is not deployable. The "
+         "full feature dictionary is in Supplementary Appendix S3.", {})],
+        indent=True)
     add_heading(doc, "Modelling", level=2)
     add_runs(doc, [
         ("Eleven model classes were compared: the prior version's BalancedRandom"
@@ -368,7 +386,16 @@ def build_main():
          "5×5 repeated stratified cross-validation with bootstrap 95% "
          "confidence intervals on AUC, Brier score, calibration-in-the-"
          "large, calibration slope and intercept. Paired comparisons "
-         "against BRF used the DeLong test.", {})], indent=True)
+         "against BRF used the DeLong test. Firth penalized logistic "
+         "regression on the deployable postoperative-B set was the "
+         "pre-specified deployment model, chosen for calibration and "
+         "interpretability rather than discrimination; BalancedRandomForest "
+         "served only as the DeLong comparison anchor and was not a "
+         "deployment candidate (poor calibration, Brier 0.228). All "
+         "resampling, hyperparameter tuning and Platt recalibration were "
+         "performed strictly within the training folds of the outer "
+         "cross-validation; no test-fold data informed preprocessing or "
+         "model selection.", {})], indent=True)
     add_heading(doc, "Robustness battery", level=2)
     add_runs(doc, [
         ("Pre-specified analyses included a temporal-leakage audit "
@@ -411,7 +438,14 @@ def build_main():
         ("⁴¹,⁴²", {"superscript": True}),
         (" We report empirical coverage, average prediction-set size, "
          "and the fractions of patients receiving confident singleton "
-         "predictions.", {})], indent=True)
+         "predictions. Each prediction set maps to an explicit clinical "
+         "action: a singleton {no-seizure} to observation (no AED), a "
+         "singleton {seizure} to continuous EEG plus targeted AED, and the "
+         "doubleton (abstention) to the default policy of universal AED. "
+         "Because the doubleton-to-action choice is a policy lever, it is "
+         "varied across three mappings (→ universal AED, → observation, "
+         "→ cEEG) in a sensitivity analysis (Supplementary Appendix S6).", {})],
+        indent=True)
     add_heading(doc, "Cost-effectiveness and value-of-information", level=2)
     add_runs(doc, [
         ("A four-strategy decision tree (observation; universal AED; "
@@ -423,7 +457,15 @@ def build_main():
         ("²⁵⁻²⁷", {"superscript": True}),
         (" and a geriatric AED adverse-event burden.", {}),
         ("⁷⁻¹⁰", {"superscript": True}),
-        (" Probabilistic sensitivity used 10,000 Monte Carlo iterations. "
+        (" Because cSDH-specific AED efficacy is unproven — no randomised "
+         "trial exists and pooled observational estimates show no significant "
+         "seizure reduction — the AED relative-risk reduction was modelled "
+         "with a base case of no effect and an optimistic bound of 0.30, and "
+         "the AED disutility across a 0.02–0.15 range; one-way and two-way "
+         "sensitivity analyses on these two parameters are reported, together "
+         "with UK (NICE) and Eurozone cost perspectives. The ML strategies "
+         "act on the conformal partition described above. "
+         "Probabilistic sensitivity used 10,000 Monte Carlo iterations. "
          "Expected value of perfect information (EVPI) and per-parameter "
          "partial perfect information (EVPPI) were estimated by Strong–"
          "Oakley non-parametric regression on 5,000 PSA samples,", {}),
@@ -462,17 +504,22 @@ def build_main():
     # 3.1 Primary discrimination
     add_heading(doc, "Primary discrimination performance", level=2)
     add_runs(doc, [
-        ("On BIDMC, Firth penalized logistic regression produced a "
-         "5 × 5 repeated cross-validated AUC of 0.681 (95% CI 0.609–0.753), "
-         "within noise of "
-         "the BalancedRandomForest reference (0.676; 0.595–0.760; "
-         "DeLong p = 0.81). Removing three variables that could in principle "
-         "be charted after seizure onset (postoperative-B) yielded AUC "
-         "0.645; the primary signal does not require post-event information. "
+        ("On BIDMC, the deployable Firth model on the leakage-safe "
+         "postoperative-B set produced a 5 × 5 repeated cross-validated AUC "
+         "of 0.645. Adding the three peri-decision variables (postoperative-A) "
+         "raised AUC to 0.681 (95% CI 0.609–0.753), within noise of the "
+         "BalancedRandomForest reference (0.676; 0.595–0.760; DeLong "
+         "p = 0.81); the gap between the deployable and non-deployable sets "
+         "(0.036) lies within the Bernoulli noise floor at 48 events, so the "
+         "deployable signal does not require peri-decision information. "
          "External validation in the eICU non-traumatic cohort gave AUC "
-         "0.750 (0.711–0.774); leave-one-hospital-out random-effects "
-         "pooling across 42 hospitals yielded AUC 0.684 (0.651–0.714), "
-         "with τ² ≈ 0 and I² = 0% (Figure 1).", {})], indent=True)
+         "0.750 (0.711–0.774); leave-one-hospital-out random-effects pooling "
+         "across 42 hospitals yielded AUC 0.684 (0.651–0.714). Between-"
+         "hospital heterogeneity was low on the variance-stabilising logit "
+         "scale (τ² ≈ 0, I² = 0%); a raw-AUC sensitivity analysis gave higher "
+         "estimates (I² up to ~56%), and the 95% prediction interval "
+         "(Appendix S7) is reported as the honest summary of cross-site "
+         "transportability (Figure 1).", {})], indent=True)
     register_figure("Figure 1", FIG / "F1_discrimination.png",
                 "Figure 1.  Multi-database discrimination. "
                 "A — BIDMC primary cohort: Firth penalized logistic "
@@ -486,11 +533,19 @@ def build_main():
     # 3.2 Calibration + DCA
     add_heading(doc, "Calibration and clinical utility", level=2)
     add_runs(doc, [
-        ("Pre-recalibration, class-rebalanced classifiers assigned "
-         "probabilities that were too extreme (eICU Set C: Brier 0.071, "
-         "calibration slope 1.51). Cross-validated Platt scaling brought "
-         "slope to within 0.99–1.04 in every model and calibration-in-"
-         "the-large to |CITL| ≤ 0.03 (Figure 2A). On decision-curve "
+        ("Calibration was assessed out-of-fold. For the deployable "
+         "postoperative-B model, cross-validated Platt scaling achieved "
+         "calibration-in-the-large near zero (|CITL| ≤ 0.01), low expected "
+         "calibration error (ECE ≈ 0.034) and a low Brier score (0.068); the "
+         "recalibration slope exceeded one (≈1.6–2.8 depending on the Platt "
+         "protocol), indicating that predictions are under-dispersed — "
+         "compressed toward the base rate — a direct consequence of the weak "
+         "discrimination over a narrow probability range at 48 events rather "
+         "than of miscalibration in the mean (Figure 2A; Supplementary "
+         "Appendix S8). A FLIC/FLAC comparison (Appendix) confirmed that Firth's "
+         "own intercept correction removes the mean bias but not the "
+         "under-dispersion, which is why Platt recalibration is used at "
+         "deployment. On decision-curve "
          "analysis (Figure 2B) the eICU Set C model showed positive "
          "net benefit across the 5–15% probability-threshold band — "
          "the range that brackets clinically reasonable thresholds for "
@@ -533,12 +588,17 @@ def build_main():
     register_figure("Figure 3", FIG / "F3_method_battery.png",
                 "Figure 3.  Eleven-method modelling battery on BIDMC "
                 "postoperative-A. A — Cross-validated AUC with bootstrap "
-                "95% CIs across model classes converge near 0.68. "
-                "B — Brier score across the same models. The Firth penalized "
-                "logistic regression deployment model (rust) matches "
-                "discrimination of every well-behaved alternative while "
+                "95% CIs across model classes converge near 0.68. The "
+                "fifteen rows comprise the eleven model classes plus four "
+                "configuration variants of methods already counted (Bayesian "
+                "logistic regression under two priors; stacking with and "
+                "without isotonic post-calibration), not additional model "
+                "classes. B — Brier score across the same models. The Firth "
+                "penalized logistic regression deployment model (rust) matches "
+                "the discrimination of every well-behaved alternative while "
                 "delivering threefold-better calibration than "
-                "BalancedRandomForest (navy).")
+                "BalancedRandomForest (navy), which serves only as the DeLong "
+                "comparison anchor.")
 
     # 3.4 Conformal
     add_heading(doc, "Conformal risk stratification", level=2)
@@ -564,24 +624,34 @@ def build_main():
     # 3.5 CEA + VOI
     add_heading(doc, "Cost-effectiveness and value-of-information", level=2)
     add_runs(doc, [
-        ("Under base-case parameters refreshed from the 2021–2025 "
-         "literature, ML-guided AED prophylaxis was the dominant strategy: "
-         "lower expected cost ($4,365 vs $5,844 for observation, $5,362 "
-         "for universal AED) and higher expected health (7.43 QALYs vs "
-         "7.36 and 7.42; Figure 5). ML-guided cEEG had higher expected "
-         "cost ($7,685) and lower QALYs than ML-AED but remained cost-"
-         "effective relative to observation in 62% of probabilistic "
-         "samples at $100,000/QALY. This is, to our knowledge, the first "
-         "value-of-information analysis applied to postoperative-seizure "
-         "prophylaxis after cSDH evacuation. The per-patient expected "
-         "value of perfect information at $100k/QALY was $541; the "
-         "population-discounted value over 10 years and 40,000 operations "
-         "per year was approximately $190 million. Strong–Oakley non-"
-         "parametric regression identified per-day cEEG cost ($195 per "
-         "patient EVPPI), baseline seizure prevalence ($127), AED "
-         "relative-risk reduction ($96) and model sensitivity ($31) as "
-         "the parameters with the largest decision-relevant information "
-         "value (Figure 6).", {})], indent=True)
+        ("At the deployable operating point — the calibrated base-rate "
+         "threshold of 7.3% — the postoperative-B model had sensitivity 0.50 "
+         "(95% CI 0.36–0.64), specificity 0.70 (0.66–0.74), positive "
+         "predictive value 0.12 (0.07–0.16) and negative predictive value "
+         "0.95 (0.93–0.97). In the probabilistic cost-effectiveness analysis "
+         "all three active strategies — universal AED, ML-guided AED and "
+         "ML-guided cEEG — dominated watchful observation on expected net "
+         "monetary benefit. The choice among the active strategies, however, "
+         "was not resolved by the model alone: it turned on AED efficacy and "
+         "AED harm in cSDH, both of which the evidence leaves uncertain. "
+         "Under the optimistic, externally-imported base case (AED "
+         "relative-risk reduction 0.45, negligible disutility) universal AED "
+         "had the highest expected net benefit by a small margin (≈$1k on a "
+         "≈$641k base; ML-guided cEEG retained ~20% probability of being "
+         "optimal). One-way sensitivity analysis showed AED efficacy "
+         "(net-benefit swing ≈$4,300) and AED disutility (≈$2,100) dominated "
+         "the decision: ML-guided allocation became the highest-net-benefit "
+         "strategy once AED relative-risk reduction fell to ≤0.30 or AED "
+         "disutility reached ≥0.10 — i.e. across the entire cSDH-plausible "
+         "range, given that no cSDH study demonstrates a significant "
+         "protective AED effect (Figure 5; Supplementary Appendix S6). The "
+         "result was stable across the three conformal-to-action mappings and "
+         "across US, UK (NICE) and Eurozone cost perspectives. This is, to our "
+         "knowledge, the first value-of-information analysis applied to "
+         "postoperative-seizure prophylaxis after cSDH; consistent with the "
+         "sensitivity analysis, it ranked AED efficacy and AED harm as the "
+         "parameters with the greatest decision-relevant information value "
+         "(Figure 6).", {})], indent=True)
     register_figure("Figure 5", FIG / "F5_cea.png",
                 "Figure 5.  Cost-effectiveness analysis. A — Decision tree "
                 "with base-case rollback per strategy. B — Cost-effectiveness "
@@ -667,6 +737,22 @@ def build_main():
          "craniotomy cSDH. Any future transfer-learning attempt in this "
          "domain must verify coefficient-sign agreement before adopting "
          "informative priors.", {})], indent=True)
+    add_runs(doc, [
+        ("Relative to prior work, existing cSDH seizure studies are "
+         "single-centre association analyses that report risk factors rather "
+         "than a validated prediction model with discrimination metrics: "
+         "Goertz and colleagues (n = 101) identified preoperative midline "
+         "shift and membranectomy as independent predictors, and Hamou and "
+         "colleagues (n = 349) identified depressed postoperative brain "
+         "volume, but neither reported an AUC or external validation; "
+         "radiomic seizure models with reported discrimination (e.g. AUC 0.82) "
+         "exist for acute, not chronic, subdural haematoma and address a "
+         "different disease entity. To our knowledge no externally validated, "
+         "calibration-focused seizure-prediction model specific to chronic "
+         "SDH has been published, which positions the present multi-database, "
+         "conformal, decision-analytic approach as a methodological "
+         "contribution rather than an incremental discrimination gain.", {})],
+        indent=True)
     add_runs(doc, [
         ("This study has limitations. The development cohort is single-"
          "institution, partly mitigated by external evaluation across 42 "
@@ -979,6 +1065,105 @@ def build_supplementary():
         "by the imputation step alone and should be carried forward in "
         "any prospective re-validation that involves structured-record "
         "data with comparable missingness.")
+    add_page_break(doc)
+
+    # Appendix S6 — Conformal set-to-action mapping + decision-analytic sensitivity (M4, M3, S11)
+    add_heading(doc, "Appendix S6.  Conformal set-to-action mapping and "
+                     "cost-effectiveness sensitivity", level=1)
+    add_para(doc,
+        "Mapping. Each conformal prediction set is mapped to an explicit "
+        "action: a singleton {no-seizure} to observation, a singleton "
+        "{seizure} to continuous EEG plus targeted AED, and the doubleton "
+        "(abstention) to a default policy. Because the doubleton policy is a "
+        "design lever, three mappings were evaluated (doubleton → universal "
+        "AED, → observation, → cEEG).")
+    add_para(doc,
+        "Deployable operating point. At the calibrated base-rate threshold "
+        "(0.073) the deployable postoperative-B model has the following "
+        "operating characteristics (bootstrap 95% CIs):")
+    if (RES / "38_postopB_operating_points.csv").exists():
+        op = pd.read_csv(RES / "38_postopB_operating_points.csv")
+        row = op.iloc[(op["threshold"] - 0.073).abs().argsort().iloc[0]]
+        optab = pd.DataFrame([
+            {"Metric": "Sensitivity", "Estimate": f"{row['sens']:.2f}", "95% CI": f"{row['sens_lo']:.2f}–{row['sens_hi']:.2f}"},
+            {"Metric": "Specificity", "Estimate": f"{row['spec']:.2f}", "95% CI": f"{row['spec_lo']:.2f}–{row['spec_hi']:.2f}"},
+            {"Metric": "PPV", "Estimate": f"{row['ppv']:.2f}", "95% CI": f"{row['ppv_lo']:.2f}–{row['ppv_hi']:.2f}"},
+            {"Metric": "NPV", "Estimate": f"{row['npv']:.2f}", "95% CI": f"{row['npv_lo']:.2f}–{row['npv_hi']:.2f}"},
+        ])
+        add_table_from_df(doc, optab, caption="Table S6a.  Deployable operating point (threshold 7.3%).")
+    if (RES / "38_conformal_mapping_sensitivity.csv").exists():
+        cm = pd.read_csv(RES / "38_conformal_mapping_sensitivity.csv")
+        cm = cm[cm["wtp"] == 100000][["policy", "best_strategy", "mapping_sens", "mapping_spec"]]
+        add_table_from_df(doc, cm.round(3),
+            caption="Table S6b.  Optimal strategy at $100k/QALY under each doubleton mapping.")
+    add_para(doc,
+        "AED efficacy and harm threshold. The optimal active strategy depends "
+        "on two uncertain cSDH-specific parameters. One-way analysis at "
+        "$100k/QALY shows ML-guided allocation becomes the highest-net-benefit "
+        "strategy once the AED relative-risk reduction is ≤0.30 or the AED "
+        "disutility is ≥0.10; universal AED is preferred only under the "
+        "optimistic imported assumptions of strong efficacy and negligible "
+        "harm. Because no cSDH study demonstrates a significant protective "
+        "effect, the cSDH-plausible range favours ML-guided allocation.")
+    if (RES / "42_international_perspectives.csv").exists():
+        intl = pd.read_csv(RES / "42_international_perspectives.csv")
+        add_table_from_df(doc, intl.round(1),
+            caption="Table S6c.  International cost perspectives (US, UK NICE, Eurozone).")
+    add_page_break(doc)
+
+    # Appendix S7 — LOHO heterogeneity (S7)
+    add_heading(doc, "Appendix S7.  Leave-one-hospital-out heterogeneity", level=1)
+    add_para(doc,
+        "Random-effects pooling of per-hospital AUCs used Hanley–McNeil "
+        "within-study variance and three τ² estimators (DerSimonian–Laird, "
+        "Paule–Mandel, REML/iterated). Heterogeneity is scale-sensitive: on "
+        "the variance-stabilising logit scale (the primary analysis) "
+        "between-hospital heterogeneity is negligible (I² = 0% for the "
+        "non-traumatic Set C; 2.8% for Set A), whereas a raw-AUC sensitivity "
+        "analysis gives higher estimates (I² up to ~56%). The 95% prediction "
+        "interval is the most honest summary of cross-site transportability.")
+    if (RES / "41_loho_heterogeneity_summary.csv").exists():
+        het = pd.read_csv(RES / "41_loho_heterogeneity_summary.csv")
+        het = het[["cohort", "set", "scale", "estimator", "pooled_auc", "ci_lo", "ci_hi",
+                   "tau2", "I2_pct", "pred_int_lo", "pred_int_hi"]]
+        add_table_from_df(doc, het.round(4),
+            caption="Table S7.  LOHO random-effects pooling under three τ² estimators "
+                    "and two scales, with prediction intervals.")
+    add_para(doc, "Per-site descriptive statistics (n, events, AUC, Brier per "
+                  "hospital) are released as results/41_loho_per_site.csv.")
+    add_page_break(doc)
+
+    # Appendix S8 — CONSORT flow + deployed-model coefficients & calibration (M2, S12)
+    add_heading(doc, "Appendix S8.  Cohort inclusion flow and deployed-model "
+                     "coefficients and calibration", level=1)
+    add_para(doc,
+        "Cohort inclusion (eICU). 5,376 ICU stays with any subdural-haematoma "
+        "diagnosis (139 hospitals) → restrict to non-traumatic SDH and to "
+        "hospitals contributing ≥10 such stays → 3,297 stays (42 hospitals; "
+        "300 seizures), the primary external-validation stratum. The broader "
+        "5,376/139 screen and three alternative definitions are reported as "
+        "sensitivity analyses (Table S2).")
+    add_para(doc,
+        "Deployed-model coefficients. Firth penalized logistic regression on "
+        "the postoperative-B set; coefficients are on the per-standard-"
+        "deviation scale, with odds ratios per 1-SD increase:")
+    if (RES / "40_postopB_firth_coefficients.csv").exists():
+        co = pd.read_csv(RES / "40_postopB_firth_coefficients.csv")
+        co = co[["feature", "coef", "se", "ci_lo", "ci_hi", "p_value", "OR_per_SD"]]
+        add_table_from_df(doc, co.round(3),
+            caption="Table S8.  Firth coefficients for the deployed postoperative-B model "
+                    "(per-SD scale; OR per 1-SD increase).")
+    add_para(doc,
+        "Deployed-model calibration. Out-of-fold, the deployed model achieves "
+        "calibration-in-the-large near zero and low expected calibration "
+        "error; the recalibration slope exceeds one (under-dispersion), "
+        "reflecting weak discrimination over a narrow probability range "
+        "rather than mean miscalibration. Calibration metrics are released as "
+        "results/40_postopB_calibration_post_platt.csv.")
+    if (FIG / "40_postopB_calibration.png").exists():
+        add_figure(doc, FIG / "40_postopB_calibration.png",
+                   caption="Figure S8.  Reliability curve of the deployed postoperative-B "
+                           "model after Platt scaling.")
     add_page_break(doc)
 
     # Tables S1–S5
