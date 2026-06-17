@@ -1,0 +1,9 @@
+metric,EVPPI_per_patient,EVPPI_population_M,parameter
+EVPI,64.8,22.8,
+,0.0,0.0,prev
+,0.0,0.0,rrr
+,0.0,0.0,sens
+,0.0,0.0,spec
+,0.0,0.0,p_se
+,0.0,0.0,ceeg_cost
+,0.0,0.0,aed_dis
