@@ -434,8 +434,9 @@ def build_main():
         ("Pre-specified analyses included a temporal-leakage audit "
          "excluding 24- and 48-hour rolling features and the prophylactic-"
          "AED indicator; cohort-definition sensitivity across four eICU "
-         "strata; leave-one-hospital-out cross-validation with DerSimonian–"
-         "Laird random-effects pooling and Hanley–McNeil within-study "
+         "strata; leave-one-hospital-out cross-validation with random-effects "
+         "pooling (REML primary; DerSimonian–Laird and Paule–Mandel as "
+         "sensitivity, Appendix S7) and Hanley–McNeil within-study "
          "variance; calibration after cross-validated Platt scaling; "
          "decision-curve net benefit (Vickers) across thresholds 0–30%; "
          "cause-specific Cox modelling with in-hospital death as a "
@@ -563,8 +564,8 @@ def build_main():
                 "A, BIDMC primary cohort: Firth penalized logistic "
                 "regression and BalancedRandomForest with bootstrap 95% CIs. "
                 "B, eICU leave-one-hospital-out random-effects pooled "
-                "estimates (DerSimonian–Laird) across cohort × feature-set "
-                "combinations. C, Temporal-leakage audit: the strict "
+                "estimates (REML; estimators compared in Appendix S7) across "
+                "cohort × feature-set combinations. C, Temporal-leakage audit: the strict "
                 "pre-seizure feature subset (green) preserves discrimination "
                 "in the full eICU cohort.")
 
@@ -657,10 +658,16 @@ def build_main():
                 "Figure 4.  Class-conditional conformal prediction on the "
                 "candidate Firth postoperative-B model. "
                 "A, Empirical class-conditional coverage near the target 1−α "
-                "across α ∈ {0.05, 0.10, 0.20}. B, Rule-out and rule-in "
-                "singleton fractions versus α; at α = 0.10 the procedure "
-                "delivers confident decisions for 22% of patients (rule-out "
-                "11%, rule-in 11%).")
+                "across α ∈ {0.05, 0.10, 0.20} (90.3% no-seizure, 93.8% seizure "
+                "at α = 0.10). B, Rule-out and rule-in singleton fractions "
+                "versus α; at α = 0.10 the procedure delivers a confident "
+                "singleton in 22% of patients (rule-out 11%, rule-in 11%) and "
+                "defers the remaining 78%. Each prediction set maps to an "
+                "action: singleton {no-seizure} → observation (skip AED); "
+                "singleton {seizure} → continuous EEG plus targeted AED; "
+                "doubleton {seizure, no-seizure} → defer to clinical judgment. "
+                "Conformal quantiles are fit on a held-out calibration split; "
+                "rates and coverage are out-of-fold.")
 
     # 3.5 CEA + VOI
     add_heading(doc, "Cost-effectiveness and value-of-information", level=2)
@@ -707,11 +714,18 @@ def build_main():
                 "C, Cost-effectiveness acceptability curves over willingness-"
                 "to-pay.")
     register_figure("Figure 6", FIG / "F6_voi.png",
-                "Figure 6.  Value of information. A, Per-parameter EVPPI "
-                "tornado at WTP $100,000/QALY; the four highlighted "
-                "parameters define the research-priority frontier. "
-                "B, Per-patient EVPI as a function of willingness-to-pay "
-                "threshold.")
+                "Figure 6.  Decision sensitivity and value of information. "
+                "A, One-way sensitivity at WTP $100,000/QALY: net-benefit swing "
+                "of ML-guided allocation versus universal AED across each "
+                "parameter's plausible range; AED efficacy and AED disutility "
+                "(highlighted) dominate the decision. B, Two-way optimal-"
+                "strategy map over AED relative-risk reduction and AED "
+                "disutility: ML-guided allocation is preferred across the "
+                "cSDH-plausible region, universal AED only under high efficacy "
+                "and negligible harm. Under cSDH-grounded priors the population "
+                "expected value of perfect information at $100k/QALY is "
+                "approximately $23M over 10 years; no single parameter "
+                "individually reverses the decision within its prior range.")
 
     # NIS results are not reported in the main manuscript. The cohort was
     # excluded from the primary analysis because available ICD-10 coding
@@ -832,9 +846,10 @@ def build_main():
          "ascertainment is administrative rather than EEG-"
          "adjudicated; sensitivity analyses across four time-window cuts "
          "preserved the primary AUC. Cost inputs adopt the US-payer "
-         "perspective; the VOI analysis explicitly identifies per-day "
-         "cEEG cost as the highest-EVPPI parameter for international "
-         "refinement.", {})], indent=True)
+         "perspective; the decision-sensitivity analysis identifies AED "
+         "efficacy and AED harm as the parameters governing the strategy "
+         "choice, and we report UK (NICE) and Eurozone cost perspectives as "
+         "sensitivity analyses.", {})], indent=True)
     add_runs(doc, [
         ("In conclusion, calibrated machine-learning prediction of "
          "postoperative seizure after cSDH evacuation, paired with "
@@ -871,8 +886,8 @@ def build_main():
         "Vespa PM, Olson DM, John S, et al. Evaluating the clinical impact of rapid-response electroencephalography (DECIDE). Crit Care Med. 2020;48(9):1249–57.",
         "Parvizi J, Cole AJ, Hirsch LJ. Economic value of rapid-EEG. J Med Econ. 2021;24(1):318–26.",
         "Kamousi B, Vespa P, Hirsch LJ, et al. Multicenter rapid-EEG vs conventional EEG seizure capture. Front Neurol. 2022;13:937515.",
-        "Hamou HA, Alzaiyani M, Pjontek R, et al. Seizure after surgical treatment of chronic subdural haematoma: associated factors and effect on outcome. Front Neurol. 2022;13:977329.",
         "Goertz L, Speier J, Schulte AP, et al. Independent risk factors for postoperative seizures in chronic subdural haematoma identified by multiple logistic regression analysis. World Neurosurg. 2019;132:e716–e721.",
+        "Hamou HA, Alzaiyani M, Pjontek R, et al. Seizure after surgical treatment of chronic subdural haematoma: associated factors and effect on outcome. Front Neurol. 2022;13:977329.",
         "Guranda A, Richter A, Wach J, et al. Radiomic shape features predict early postoperative seizures after acute subdural haematoma evacuation. Brain Sci. 2025;15(2):204.",
         "van den Goorbergh R, et al. The harm of class-imbalance corrections for risk prediction. JAMIA. 2022;29(9):1525–34.",
         "Carriero J, et al. Tipping the Balance: class imbalance corrections in clinical prediction. arXiv:2404.19494. 2024.",
