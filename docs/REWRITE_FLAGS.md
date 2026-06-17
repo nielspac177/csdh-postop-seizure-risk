@@ -60,4 +60,14 @@ exchangeability; under site-level domain shift, deployment should recalibrate th
 quantiles on each site's first ~50 cases to restore class-conditional coverage. No new figure
 required for this submission.
 
+## F6 — Population EVPI ($190M) is stale; recompute under the new CEA parameterisation
+- The "$190M EVPI at $100k/QALY over 10 years" predates the deployable-postop-B operating point
+  and the literature-grounded AED parameters (RRR≈0, higher disutility). Decision uncertainty is
+  now larger, so EVPI is likely higher, but the specific figure must be **recomputed** before
+  quoting.
+- **Done in the rewrite:** the abstract/discussion no longer quote $190M; they state VOI ranks
+  AED efficacy and AED harm as priorities (qualitative, robust). Recompute the EVPI/EVPPI number
+  (`16_voi_evpi.py` under postop-B Se/Sp + new AED priors) before re-inserting any dollar figure.
+
 _Phase 3 analytical items complete (S6, S12, S7, S11, C1 done; C2 by Discussion)._
+_Phase 4 in progress: Title/Abstract/Discussion rewritten (M1/M3/S1/S2/S3/F1/F2/F3/F5 applied)._

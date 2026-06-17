@@ -148,9 +148,9 @@ def build_main():
 
     # Title page
     t = doc.add_paragraph(); t.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    tr = t.add_run("A calibrated and conformally-deployable risk score for "
-                    "postoperative seizure after chronic subdural haematoma "
-                    "evacuation: a proof-of-concept multi-database study with "
+    tr = t.add_run("Postoperative seizure after chronic subdural haematoma "
+                    "evacuation: a calibrated, conformal-prediction "
+                    "proof-of-concept with multi-database validation and "
                     "value-of-information analysis")
     tr.bold = True; tr.font.size = Pt(15); tr.font.name = "Times New Roman"
     add_para(doc, "")
@@ -202,8 +202,9 @@ def build_main():
         ("Postoperative seizure complicates 7–12% of chronic subdural "
          "haematoma (cSDH) evacuations, but routine antiepileptic drug (AED) "
          "prophylaxis carries fall, cognitive and drug-interaction risks "
-         "specific to elderly patients. Calibrated, deployable risk "
-         "stratification is needed.", {})], indent=False)
+         "specific to elderly patients, and its efficacy after cSDH is "
+         "unproven. Calibrated risk stratification that can support "
+         "individual treatment decisions is needed.", {})], indent=False)
     add_runs(doc, [("Methods. ", {"bold": True}),
         ("We developed and externally evaluated a machine-learning risk "
          "score for postoperative seizure in 655 cSDH evacuations at "
@@ -218,25 +219,36 @@ def build_main():
          "effectiveness analysis with value-of-information (VOI) was run "
          "on 10,000 Monte Carlo iterations.", {})], indent=False)
     add_runs(doc, [("Results. ", {"bold": True}),
-        ("Firth penalized logistic regression — selected as the deployment "
-         "model — discriminated at AUC 0.681 (95% CI 0.609–0.753), "
-         "equivalent to BalancedRandomForest (DeLong p = 0.81), with "
-         "3.3-fold better calibration (Brier 0.069 vs 0.228). "
-         "Eleven-method comparison confirmed an AUC ceiling near 0.68 "
-         "consistent with 2022–2025 meta-evidence. eICU external AUC was "
-         "0.750 (0.711–0.774); random-effects pooled AUC across 42 hospitals "
-         "was 0.684 (0.651–0.714), I²=0%. Conformal prediction at α=0.10 "
-         "produced confident singleton predictions in 37% of patients "
-         "(rule-out of seizure in 27%; rule-in 11%). ML-guided AED "
-         "prophylaxis dominated observation and universal AED on both cost "
-         "and QALYs. Population EVPI at $100k/QALY was $190M over 10 years.", {})],
+        ("Firth penalized logistic regression was the deployment model, fit "
+         "on a leakage-safe postoperative-B feature set (18 variables "
+         "available at the end of evacuation, before the AED/EEG decision); "
+         "it discriminated at AUC 0.645. A postoperative-A set that "
+         "additionally included three peri-decision variables reached AUC "
+         "0.681 (95% CI 0.609–0.753) but is not deployable, the difference "
+         "lying within the Bernoulli noise floor at 48 events. Firth matched "
+         "BalancedRandomForest discrimination (DeLong p = 0.81) with markedly "
+         "better calibration (Brier 0.069 vs 0.228) and calibration-in-the-"
+         "large near zero. Eleven model classes converged on an AUC ceiling "
+         "near 0.68 consistent with 2022–2025 meta-evidence. eICU external AUC "
+         "was 0.750 (0.711–0.774); random-effects pooled AUC across 42 "
+         "hospitals was 0.684 (0.651–0.714). Class-conditional conformal "
+         "prediction at α=0.10 gave confident singleton predictions in 37% of "
+         "patients (rule-out 27%; rule-in 11%). All active prophylaxis "
+         "strategies dominated observation; the choice between universal AED "
+         "and ML-guided allocation depended on AED efficacy and harm — both "
+         "uncertain in cSDH — with ML-guided allocation cost-effective under "
+         "cSDH-plausible values. Value-of-information identified AED efficacy "
+         "and AED harm as the dominant research priorities.", {})],
          indent=False)
     add_runs(doc, [("Conclusion. ", {"bold": True}),
-        ("Small-cohort clinical machine learning can be deployable "
-         "when calibration and decision-integration replace discrimination "
-         "as the optimisation target. ML-guided AED prophylaxis is "
-         "cost-effective; VOI prioritises per-day cEEG cost, baseline "
-         "seizure prevalence and AED efficacy as research targets.", {})],
+        ("For postoperative seizure after cSDH evacuation, optimising "
+         "small-cohort clinical machine learning for calibration and "
+         "individual-patient decision support — rather than discrimination — "
+         "yields a candidate model that meets methodological preconditions "
+         "for prospective clinical evaluation. Whether selective ML-guided "
+         "prophylaxis is preferable to treating all or none hinges on AED "
+         "efficacy and harm in cSDH, which current evidence leaves uncertain; "
+         "value-of-information prioritises resolving these.", {})],
          indent=False)
     add_page_break(doc)
 
@@ -595,18 +607,22 @@ def build_main():
     # 4. Discussion (~800 words)
     add_heading(doc, "Discussion", level=1)
     add_runs(doc, [
-        ("This proof-of-concept study demonstrates that small-cohort "
-         "clinical machine learning for postoperative seizure after cSDH "
-         "evacuation can be deployable when calibration and "
-         "individual-patient decision support — not discrimination — are "
-         "treated as the optimisation target. Firth penalized logistic "
-         "regression matches BalancedRandomForest on AUC, delivers "
-         "three-fold better calibration, and supports "
-         "class-conditional conformal prediction sets that confidently "
-         "rule out seizure in approximately one quarter of patients at a "
-         "90% coverage guarantee. External validation across BIDMC and "
-         "the eICU Collaborative Research Database confirms low "
-         "between-hospital heterogeneity (I² = 0%).", {})], indent=True)
+        ("This proof-of-concept study shows that, for postoperative seizure "
+         "after cSDH evacuation, optimising small-cohort clinical machine "
+         "learning for calibration and individual-patient decision support — "
+         "rather than discrimination — yields a candidate model that meets "
+         "methodological preconditions for prospective clinical evaluation. "
+         "Firth penalized logistic regression matches BalancedRandomForest on "
+         "AUC, delivers three-fold better calibration, and supports "
+         "class-conditional conformal prediction sets that confidently rule "
+         "out seizure in approximately one quarter of patients at a 90% "
+         "coverage guarantee. External evaluation across BIDMC and the eICU "
+         "Collaborative Research Database showed low between-hospital "
+         "heterogeneity on the variance-stabilising logit scale (I² = 0%); a "
+         "raw-AUC sensitivity analysis gave higher estimates (I² up to ~56%), "
+         "so we report the random-effects prediction interval (Appendix S7) "
+         "as the more honest summary of cross-site transportability.", {})],
+         indent=True)
     add_runs(doc, [
         ("The eleven-method modelling battery — spanning six SMOTE-family "
          "oversamplers, Optuna-tuned gradient boosting, diverse-base "
@@ -624,18 +640,25 @@ def build_main():
          "half-width on AUC ≈ 0.70 near 0.06; the ceiling we observe "
          "is therefore biological, not algorithmic.", {})], indent=True)
     add_runs(doc, [
-        ("The decision-analytic integration shows that the calibrated "
-         "deployment model translates directly into clinical value. "
-         "ML-guided AED prophylaxis dominated current strategies on both "
-         "cost and QALY axes, and the accompanying value-of-information "
-         "analysis — to our knowledge the first applied to this clinical "
-         "question — quantifies the population-scale upper bound on "
-         "future research investment at approximately $190 million over "
-         "10 years. The analysis identifies *which* "
-         "parameters drive the upper bound: per-day cEEG cost, baseline "
-         "seizure prevalence, and AED relative-risk reduction. Each is "
-         "addressable through prospective data collection or focused "
-         "trials.", {})], indent=True)
+        ("The decision-analytic integration clarifies where the calibrated "
+         "model could change practice. All active prophylaxis strategies "
+         "(universal AED, ML-guided AED, ML-guided cEEG) dominated watchful "
+         "observation. The choice among the active strategies, however, is "
+         "not settled by the model alone: it depends on two cSDH-specific "
+         "parameters that the evidence leaves genuinely uncertain — the "
+         "efficacy of AED prophylaxis (no randomised trial exists, and pooled "
+         "observational estimates show no significant seizure reduction) and "
+         "its disutility in elderly patients (falls, sedation, cognition). "
+         "One-way sensitivity analysis at $100k/QALY shows AED efficacy and "
+         "AED harm dominate the decision: under cSDH-plausible values (AED "
+         "relative-risk reduction at or below 0.30, or a non-trivial AED "
+         "disutility) ML-guided allocation has the highest expected net "
+         "benefit, whereas universal AED is preferable only under the "
+         "optimistic, externally-imported assumptions of strong efficacy and "
+         "negligible harm. The accompanying value-of-information analysis — to "
+         "our knowledge the first applied to this question — accordingly "
+         "ranks AED efficacy and AED harm as the priority targets for "
+         "prospective data collection.", {})], indent=True)
     add_runs(doc, [
         ("One methodological observation bears on future cSDH research: "
          "cross-cohort transfer learning from eICU to BIDMC failed not for "
@@ -646,8 +669,12 @@ def build_main():
          "informative priors.", {})], indent=True)
     add_runs(doc, [
         ("This study has limitations. The development cohort is single-"
-         "institution, partly mitigated by external evaluation across 139 "
-         "eICU hospitals with zero between-site heterogeneity. The "
+         "institution, partly mitigated by external evaluation across 42 "
+         "eICU hospitals with low logit-scale between-site heterogeneity. "
+         "Calibration-in-the-large and decision-curve net benefit are the "
+         "robust calibration findings; the recalibration slope exceeds one "
+         "(under-dispersed predictions), reflecting weak discrimination over "
+         "a narrow probability range at 48 events. The "
          "structured electronic medical record lacks imaging features "
          "known to inform seizure risk (sulcal effacement, midline shift "
          "magnitude, density heterogeneity); future work could augment "
@@ -660,14 +687,16 @@ def build_main():
          "cEEG cost as the highest-EVPPI parameter for international "
          "refinement.", {})], indent=True)
     add_runs(doc, [
-        ("In conclusion, calibrated, conformally-deployable machine-"
-         "learning prediction of postoperative seizure after cSDH "
-         "evacuation is feasible and supports individual-patient "
-         "decisions with formal coverage guarantees. ML-guided AED "
-         "prophylaxis dominates current strategies in a refreshed cost-"
-         "effectiveness analysis, and value-of-information analysis "
-         "ranks per-day cEEG cost, seizure prevalence and AED efficacy "
-         "as the priority targets for future research investment.", {})],
+        ("In conclusion, calibrated machine-learning prediction of "
+         "postoperative seizure after cSDH evacuation, paired with "
+         "class-conditional conformal prediction, is feasible and meets "
+         "methodological preconditions for prospective evaluation, supporting "
+         "individual-patient decisions with formal coverage guarantees. "
+         "Active prophylaxis dominates watchful observation; whether to "
+         "allocate it selectively with the model rather than treat all "
+         "patients depends on AED efficacy and harm in cSDH, which current "
+         "evidence leaves uncertain, and which value-of-information identifies "
+         "as the priority targets for future research.", {})],
         indent=True)
     add_page_break(doc)
 
