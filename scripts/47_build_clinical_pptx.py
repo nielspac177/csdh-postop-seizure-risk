@@ -187,7 +187,7 @@ s = figure_slide("Discrimination is modest, and that is the point", FIG / "sld_c
                      "and honest uncertainty, what a bedside tool actually needs.")
 
 # ── 6. Calibration ──
-figure_slide("Calibrated on average, deliberately conservative", FIG / "calibration.png",
+figure_slide("Calibrated on average, deliberately conservative", FIG / "sld_calibration.png",
              kicker="Calibration",
              caption="When the model says '5%', about 5% of such patients seize; predictions are "
                      "deliberately compressed (conservative) given only 48 events.")

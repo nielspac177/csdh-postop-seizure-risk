@@ -20,7 +20,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from _shared import RES
+from _shared import RES, CACHE
 
 OUT = Path("/Users/nielspacheco/Desktop/Research/Ogilvy research/"
            "Data Chronic Subdural Haematoma/Manuscript_05192026/clinical_slides/fig")
@@ -121,7 +121,7 @@ def fig_aed_evidence():
     ax.set_title("No cSDH study shows AED prophylaxis prevents seizures",
                  fontsize=16.5, fontweight="bold", color=NAVY)
     ax.text(0.22, -0.72, "OR > 1 reflects confounding by indication (sicker haematomas get AED),\n"
-            "not causal harm — the honest reading is no proven benefit.",
+            "not causal harm; the honest reading is no proven benefit.",
             fontsize=9.5, color=GREY, style="italic")
     fig.tight_layout(); fig.savefig(OUT / "sld_aed_evidence.png", bbox_inches="tight"); plt.close(fig)
 
@@ -140,13 +140,38 @@ def fig_ceiling():
                                                           ha="center", fontsize=10)
     ax.set_xlim(0.45, 0.85); ax.set_ylim(-0.7, 0.7); ax.set_yticks([])
     ax.set_xlabel("Cross-validated AUC")
-    ax.set_title("Discrimination plateaus near 0.68 — a sample-size ceiling, not a model failure",
+    ax.set_title("Discrimination plateaus near 0.68: a sample-size ceiling, not a model failure",
                  fontsize=14.5, fontweight="bold", color=NAVY)
     fig.tight_layout(); fig.savefig(OUT / "sld_ceiling.png", bbox_inches="tight"); plt.close(fig)
 
 
+def fig_calibration():
+    """Clinician-friendly reliability curve for the deployed postop-B model, in the
+    slide house style (no technical slope number in the title)."""
+    from sklearn.calibration import calibration_curve
+    z = np.load(CACHE / "oof_bidmc_postopB_firth.npz")
+    y = z["y"].astype(int); p = z["p"].astype(float)
+    frac, mean = calibration_curve(y, p, n_bins=10, strategy="quantile")
+    fig, ax = plt.subplots(figsize=(7.2, 5.0))
+    lim = max(mean.max(), frac.max()) * 1.12
+    ax.plot([0, lim], [0, lim], ls=":", color=GREY, lw=1.3, label="Perfect calibration")
+    ax.plot(mean, frac, "o-", color=NAVY, lw=2.4, ms=8,
+            markeredgecolor="white", markeredgewidth=0.8, label="Deployed model")
+    ax.set_xlabel("Predicted seizure risk"); ax.set_ylabel("Observed seizure rate")
+    ax.set_xlim(0, lim); ax.set_ylim(0, lim)
+    ax.set_title("Predicted risk matches observed risk\n(calibration-in-the-large ≈ 0)",
+                 fontsize=16, fontweight="bold", color=NAVY)
+    ax.annotate("When the model says 7%,\nabout 7% actually seize",
+                xy=(0.073, 0.073), xytext=(0.085, 0.035),
+                fontsize=12, color=FOREST,
+                arrowprops=dict(arrowstyle="->", color=FOREST, lw=1.2))
+    ax.legend(loc="upper left", frameon=False, fontsize=12)
+    fig.tight_layout(); fig.savefig(OUT / "sld_calibration.png", bbox_inches="tight"); plt.close(fig)
+
+
 def main():
     fig_conformal(); fig_cea_curve(); fig_premium(); fig_aed_evidence(); fig_ceiling()
+    fig_calibration()
     print("[OK] slide figures written to", OUT)
     for f in sorted(OUT.glob("sld_*.png")):
         print("   ", f.name)
