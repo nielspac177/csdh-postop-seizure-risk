@@ -167,7 +167,11 @@ def build_main():
     add_para(doc, "Manuscript type: Original Research (proof of concept)", size=10)
     add_para(doc, "Word count, abstract: 250 · main text: ~4,050 · "
                    "Figures: 6 · Tables: 1 · Supplementary: yes · "
-                   "References: 42", size=10)
+                   "References: 46", size=10)
+    add_runs(doc, [("Keywords: ", {"bold": True}),
+        ("chronic subdural haematoma; postoperative seizure; clinical "
+         "prediction model; conformal prediction; cost-effectiveness and "
+         "value-of-information analysis", {})], indent=False)
     add_para(doc, "Reporting: TRIPOD-AI (checklist in Supplementary Appendix S1).", size=10)
     add_para(doc, "Code and data availability:  The analysis code, six "
                    "main figures, eight supplementary figures, the TRIPOD-AI "
@@ -193,7 +197,26 @@ def build_main():
                    "github.com/nielspac177/csdh-postop-seizure-risk/tree/"
                    "reviewer-access-template.",
               size=10)
-    add_para(doc, "Conflicts: None.", size=10)
+    add_para(doc, "Funding: This study received no specific grant from any "
+                   "funding agency in the public, commercial or not-for-profit "
+                   "sectors.", size=10)
+    add_para(doc, "Conflicts of interest: None declared.", size=10)
+    add_para(doc, "Author contributions: N.P.-B. is the sole author and was "
+                   "responsible for study conception and design, data curation, "
+                   "analysis, interpretation, and drafting and revising the "
+                   "manuscript.", size=10)
+    add_para(doc, "Ethics: Approved by the Beth Israel Deaconess Medical Center "
+                   "Institutional Review Board (Protocol [IRB number to be "
+                   "inserted]); the eICU Collaborative Research Database v2.0 was "
+                   "accessed under its data-use agreement.", size=10)
+    add_para(doc, "Data availability: Analysis code, figures, the TRIPOD-AI "
+                   "checklist and aggregate results are openly available at "
+                   "github.com/nielspac177/csdh-postop-seizure-risk and archived "
+                   "on Zenodo (DOI to be minted at acceptance). Patient-level "
+                   "data are restricted by the BIDMC IRB and the eICU data-use "
+                   "agreement; filtered de-identified subsets are available to "
+                   "authorised reviewers via the documented reviewer-access "
+                   "protocol.", size=10)
     add_page_break(doc)
 
     # Abstract (~250 words, structured)
@@ -235,8 +258,9 @@ def build_main():
          "events. Eleven model classes converged on an AUC ceiling near 0.68 "
          "consistent with 2022–2025 meta-evidence. In external evaluation on a "
          "related (mixed-acuity ICU) population, AUC was 0.750 (0.711–0.774); "
-         "random-effects pooled AUC across 42 hospitals was 0.684 "
-         "(prediction interval 0.53–0.95). Class-conditional conformal "
+         "random-effects pooled AUC across 42 hospitals was 0.684 (95% CI "
+         "0.651–0.714; logit-scale I²=0%, raw-scale 95% prediction interval "
+         "0.53–0.95). Class-conditional conformal "
          "prediction at α=0.10 gave confident singleton predictions in 22% of "
          "patients (rule-out 11%; rule-in 11%). ML-guided allocation beat "
          "watchful observation and, at a matched treated fraction, beat random "
@@ -343,7 +367,7 @@ def build_main():
          "machine learning (Supplementary Appendix S1).", {}),
         ("²²", {"superscript": True}),
         (" The BIDMC analysis was approved by the institutional review "
-         "board (Protocol 2024P000XXX); the eICU Collaborative Research "
+         "board (Protocol [IRB number to be inserted]); the eICU Collaborative Research "
          "Database v2.0 was accessed under its data-use agreement.", {})],
         indent=True)
     add_heading(doc, "Cohort assembly", level=2)
@@ -743,7 +767,9 @@ def build_main():
          "parameters that the evidence leaves genuinely uncertain, the "
          "efficacy of AED prophylaxis (no randomised trial exists, and pooled "
          "observational estimates, including our own, show no significant "
-         "seizure reduction) and its disutility in elderly patients (falls, "
+         "seizure reduction)", {}),
+        ("⁴³⁻⁴⁶", {"superscript": True}),
+        (" and its disutility in elderly patients (falls, "
          "sedation, cognition). Under cSDH-plausible values (relative-risk "
          "reduction ≤0.30 or non-trivial disutility) ML-guided allocation had "
          "the highest expected net benefit; universal AED was preferable only "
@@ -778,10 +804,13 @@ def build_main():
          "Goertz and colleagues (n = 101) identified preoperative midline "
          "shift and membranectomy as independent predictors, and Hamou and "
          "colleagues (n = 349) identified depressed postoperative brain "
-         "volume, but neither reported an AUC or external validation; "
-         "radiomic seizure models with reported discrimination (e.g. AUC 0.82) "
+         "volume, but neither reported an AUC or external validation;", {}),
+        ("¹⁴,¹⁵", {"superscript": True}),
+        (" radiomic seizure models with reported discrimination (e.g. AUC 0.82) "
          "exist for acute, not chronic, subdural haematoma and address a "
-         "different disease entity. To our knowledge no externally validated, "
+         "different disease entity.", {}),
+        ("¹⁶", {"superscript": True}),
+        (" To our knowledge no externally validated, "
          "calibration-focused seizure-prediction model specific to chronic "
          "SDH has been published, which positions the present multi-database, "
          "conformal, decision-analytic approach as a methodological "
@@ -842,9 +871,9 @@ def build_main():
         "Vespa PM, Olson DM, John S, et al. Evaluating the clinical impact of rapid-response electroencephalography (DECIDE). Crit Care Med. 2020;48(9):1249–57.",
         "Parvizi J, Cole AJ, Hirsch LJ. Economic value of rapid-EEG. J Med Econ. 2021;24(1):318–26.",
         "Kamousi B, Vespa P, Hirsch LJ, et al. Multicenter rapid-EEG vs conventional EEG seizure capture. Front Neurol. 2022;13:937515.",
-        "Mohammadi M, Habibzadeh F, Smith J. Machine-learning prediction of seizure after cSDH: pilot. Cureus. 2021;13:e1234. [example placeholder]",
-        "Cohen JT, Patel A, Smith P. Random-forest seizure prediction in neurocritical care. JAMIA. 2020;27(6):987–95. [example placeholder]",
-        "Singh A, Brown B, Garcia D. Limitations of single-centre ML models in neurosurgery. NeurosurgFocus. 2022;52(4):E10. [example placeholder]",
+        "Hamou HA, Alzaiyani M, Pjontek R, et al. Seizure after surgical treatment of chronic subdural haematoma: associated factors and effect on outcome. Front Neurol. 2022;13:977329.",
+        "Goertz L, Speier J, Schulte AP, et al. Independent risk factors for postoperative seizures in chronic subdural haematoma identified by multiple logistic regression analysis. World Neurosurg. 2019;132:e716–e721.",
+        "Guranda A, Richter A, Wach J, et al. Radiomic shape features predict early postoperative seizures after acute subdural haematoma evacuation. Brain Sci. 2025;15(2):204.",
         "van den Goorbergh R, et al. The harm of class-imbalance corrections for risk prediction. JAMIA. 2022;29(9):1525–34.",
         "Carriero J, et al. Tipping the Balance: class imbalance corrections in clinical prediction. arXiv:2404.19494. 2024.",
         "Piccininni M, Wechsung M, Van Calster B. Random resampling and calibration. J Biomed Inform. 2024;155:104666.",
@@ -871,6 +900,10 @@ def build_main():
         "Vovk V. Conditional validity of inductive conformal predictors. Proc Mach Learn Res (ACML). 2012;25:475–90.",
         "Romano Y, Sesia M, Candès EJ. Classification with valid and adaptive coverage. NeurIPS. 2020. arXiv:2006.02544.",
         "Olsson H, Kartasalo K, Mulliqi N, et al. Conformal selective prediction with cost-aware deferral for safe clinical triage under distribution shift. Sci Rep. 2026 (in press).",
+        "Pacheco-Barrios N, Pacheco-Barrios K, et al. Prophylactic antiepileptic drugs in chronic subdural haematoma: systematic review and meta-analysis. Neurosurgery. 2024; doi:10.1227/neu.0000000000003183.",
+        "Nachiappan DS, Garg K. Role of prophylactic antiepileptic drugs in chronic subdural haematoma: a systematic review and meta-analysis. Neurosurg Rev. 2021;44(4):2069–77.",
+        "Ratilal BO, Pappamikail L, Costa J, Sampaio C. Anticonvulsants for preventing seizures in patients with chronic subdural haematoma. Cochrane Database Syst Rev. 2013;(6):CD004893.",
+        "Lavergne P, Labidi M, Brunette-Clément T, et al. Efficacy of antiseizure prophylaxis in chronic subdural haematoma: a cohort study on routinely collected health data. J Neurosurg. 2019;132(1):284–91.",
     ]
     for i, r in enumerate(refs, 1):
         p = doc.add_paragraph()
