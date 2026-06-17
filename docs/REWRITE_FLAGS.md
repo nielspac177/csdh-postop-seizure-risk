@@ -15,6 +15,13 @@ honest recomputation. The adversarial review pass (Phase 4) must verify each is 
 - **Fix in text:** report calibration evidence as CITL ≈ 0 + low ECE + low Brier (all robust),
   and state the slope honestly (>1, under-dispersion) as a limitation consistent with the weak
   discrimination — do NOT claim slope ≈ 1. Source: `results/40_postopB_calibration_post_platt.csv`.
+- **Magnitude depends on the Platt protocol** (`scripts/43`): direct-train Platt → slope ≈ 1.6;
+  nested-3-fold Platt → slope ≈ 2.8. Both > 1. Report the value for whichever protocol is
+  described in Methods (deployment uses nested), and state the slope honestly either way.
+- **C1 corollary (FLIC/FLAC):** raw Firth is over-dispersed (slope 0.55); FLIC corrects only the
+  intercept (CITL→0, slope stays 0.55); Platt corrects both → best Brier/ECE. This *justifies*
+  the Platt choice over Firth's own FLIC/FLAC correction (cite Puhr 2017).
+  Source: `results/43_flic_vs_platt.csv`.
 
 ## F2 — CEA optimal strategy (see ADR 0005)
 - **Old:** "ML-guided cEEG is optimal at $100k/QALY."
