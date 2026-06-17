@@ -1,4 +1,4 @@
-"""Task 47 — Clinical 15-minute talk (PowerPoint).
+"""Task 47, Clinical 15-minute talk (PowerPoint).
 
 Audience: neurosurgery / clinical. Message: a calibrated risk tool that knows when to
 abstain (rule-out / rule-in / defer), honest about modest discrimination, with a
@@ -32,7 +32,7 @@ prs = Presentation()
 prs.slide_width = Inches(13.333); prs.slide_height = Inches(7.5)
 BLANK = prs.slide_layouts[6]
 SW, SH = prs.slide_width, prs.slide_height
-FOOTER = "Postoperative seizure after cSDH — a calibrated, conformal decision tool"
+FOOTER = "Postoperative seizure after cSDH, a calibrated, conformal decision tool"
 _n = [0]
 
 
@@ -113,19 +113,31 @@ def split_slide(title, bullet_items, img, kicker=None, caption=None):
     return s
 
 
+def divider(title, sub):
+    s = prs.slides.add_slide(BLANK); _bg(s, NAVY)
+    _rect(s, Inches(4.67), Inches(3.0), Inches(4.0), Emu(38100), RUST)
+    tf = _box(s, Inches(1.0), Inches(3.2), SW - Inches(2.0), Inches(1.6))
+    _set(tf.paragraphs[0], title, 40, WHITE, bold=True, align=PP_ALIGN.CENTER)
+    p = tf.add_paragraph(); _set(p, sub, 18, RGBColor(0xAF, 0xC0, 0xCF), align=PP_ALIGN.CENTER)
+    _n[0] += 1
+    return s
+
+
 # ── 1. Title ──
 s = prs.slides.add_slide(BLANK); _bg(s, NAVY)
 _rect(s, 0, Inches(2.5), SW, Inches(0.04), RUST)
 tf = _box(s, Inches(0.9), Inches(2.7), SW - Inches(1.8), Inches(2.2))
 _set(tf.paragraphs[0], "Predicting seizures after chronic subdural haematoma surgery",
      34, WHITE, bold=True)
-p = tf.add_paragraph(); _set(p, "A calibrated risk tool that knows when to abstain — "
+p = tf.add_paragraph(); _set(p, "A calibrated risk tool that knows when to abstain, "
                              "and what it means for AED prophylaxis", 20, RGBColor(0xCF, 0xDA, 0xE5))
 tf2 = _box(s, Inches(0.9), Inches(5.4), SW - Inches(1.8), Inches(1.3))
 _set(tf2.paragraphs[0], "Niels Pacheco-Barrios, MD", 18, WHITE, bold=True)
 p = tf2.add_paragraph(); _set(p, "Department of Neurosurgery, Beth Israel Deaconess Medical Center · "
                              "Harvard Medical School", 14, RGBColor(0xCF, 0xDA, 0xE5))
 p = tf2.add_paragraph(); _set(p, "15-minute presentation", 12, RGBColor(0x9F, 0xB3, 0xC4), italic=True)
+
+divider("Introduction", "The clinical problem and why current practice is uncertain")
 
 # ── 2. The clinical problem ──
 s = prs.slides.add_slide(BLANK); _chrome(s, "The clinical dilemma", "Background")
@@ -144,30 +156,43 @@ figure_slide("Routine AED prophylaxis after cSDH is unproven", FIG / "sld_aed_ev
              kicker="Why this matters",
              caption="No randomised trial; pooled and adjusted estimates show no significant seizure reduction.")
 
+divider("Methods", "Cohorts, model, and decision analysis")
+
 # ── 4. What we built ──
 s = prs.slides.add_slide(BLANK); _chrome(s, "What we built", "Approach")
 bullets(s, [
-    ("A risk model optimised for CALIBRATION and DECISION SUPPORT — not for chasing AUC", 0, NAVY, True),
+    ("A risk model optimised for CALIBRATION and DECISION SUPPORT, not for chasing AUC", 0, NAVY, True),
     ("Firth penalised logistic regression on 18 variables available at the end of surgery", 0),
-    ("(before the AED/EEG decision — no information leakage)", 1, GREY),
+    ("(before the AED/EEG decision, no information leakage)", 1, GREY),
     ("A conformal layer that returns rule-out / rule-in / or 'defer to clinician'", 0, FOREST, True),
     ("A cost-effectiveness + value-of-information analysis linking risk to action", 0),
-    ("Developed at BIDMC (655 operations, 48 seizures); evaluated across 42 eICU hospitals", 0),
 ])
 
+# ── 4b. Design & cohorts ──
+s = prs.slides.add_slide(BLANK); _chrome(s, "Design and cohorts", "Methods")
+bullets(s, [
+    ("Development: BIDMC, 655 cSDH evacuations, 48 postoperative seizures (2010–2023)", 0, NAVY, True),
+    ("External evaluation: eICU, 3,297 non-traumatic subdural ICU stays across 42 hospitals (300 seizures), from a 5,376-stay screen", 0, NAVY, True),
+    ("5×5 repeated cross-validation; Platt calibration; class-conditional conformal sets", 0),
+    ("Decision tree + 10-year Markov; probabilistic sensitivity (10,000 iterations)", 0),
+    ("eICU is a related, mixed-acuity ICU population, not operative cSDH — a deliberate transportability test", 0, GREY),
+])
+
+divider("Results", "Model performance, abstention, and the decision analysis")
+
 # ── 5. The model & the honest ceiling ──
-s = figure_slide("Discrimination is modest — and that is the point", FIG / "sld_ceiling.png",
+s = figure_slide("Discrimination is modest, and that is the point", FIG / "sld_ceiling.png",
              kicker="The model", img_w=Inches(9.0),
              caption="Flexible models 'win' AUC only by over-fitting 48 events; we optimise calibration "
-                     "and honest uncertainty — what a bedside tool actually needs.")
+                     "and honest uncertainty, what a bedside tool actually needs.")
 
 # ── 6. Calibration ──
-figure_slide("Calibrated on average — deliberately conservative", FIG / "calibration.png",
+figure_slide("Calibrated on average, deliberately conservative", FIG / "calibration.png",
              kicker="Calibration",
              caption="When the model says '5%', about 5% of such patients seize; predictions are "
                      "deliberately compressed (conservative) given only 48 events.")
 
-# ── 7. Conformal — knows when to abstain ──
+# ── 7. Conformal, knows when to abstain ──
 figure_slide("A tool that knows when it doesn't know", FIG / "sld_conformal.png",
              kicker="Conformal prediction",
              caption="Conformal = a guarantee that ~90% of 'rule-out' patients truly won't seize; "
@@ -177,9 +202,9 @@ figure_slide("A tool that knows when it doesn't know", FIG / "sld_conformal.png"
 s = prs.slides.add_slide(BLANK); _chrome(s, "What it looks like at the bedside", "Worked example (illustrative)")
 bullets(s, [
     ("At end of evacuation, enter routine variables:", 0, NAVY, True),
-    ("Patient A — older, MMA-embolisation, decompression, no prior seizure", 0, FOREST, True),
+    ("Patient A, older, MMA-embolisation, decompression, no prior seizure", 0, FOREST, True),
     ("→ low risk → rule-OUT → observe, spare AED", 1, FOREST),
-    ("Patient B — re-accumulation needing drainage, dense collection", 0, RUST, True),
+    ("Patient B, re-accumulation needing drainage, dense collection", 0, RUST, True),
     ("→ high risk → rule-IN → cEEG + targeted AED", 1, RUST),
     ("Most patients fall in between → the tool defers to judgement", 0, GREY),
 ], left=Inches(0.7), top=Inches(1.85), width=Inches(6.0), size=17, gap=8)
@@ -187,7 +212,7 @@ bullets(s, [
     ("What moves the estimate", 0, NAVY, True),
     ("↑ drainage / re-accumulation, denser collection, midline shift", 1, DARK),
     ("↓ MMA embolisation, surgical decompression", 1, DARK),
-    ("Strong predictors are procedure variables — they reflect which "
+    ("Strong predictors are procedure variables, they reflect which "
      "operation was needed (confounding by indication), so this is a "
      "decision-support prompt, not an autonomous rule.", 0, GREY),
 ], left=Inches(7.0), top=Inches(1.85), width=Inches(5.8), size=15, gap=10)
@@ -215,15 +240,17 @@ bullets(s, [
     ("The decision hinges on two numbers we don't yet have for cSDH:", 0, NAVY, True),
     ("how well AED prevents seizures (efficacy)", 1, RUST),
     ("how much AED harms elderly patients (disutility)", 1, RUST),
-    ("Value of information — the expected payoff of running the trial that answers this — ≈ $23M over 10 years (US)", 0, DARK, True),
+    ("Value of information, the expected payoff of running the trial that answers this, ≈ $23M over 10 years (US)", 0, DARK, True),
     ("The model's discrimination is honestly a smaller lever than the AED question itself", 0, GREY),
     ("Priority: a focused cSDH AED-prophylaxis trial + per-day cEEG cost data", 0, FOREST, True),
 ])
 
+divider("Discussion & limitations", "What this is, what it isn't, and what comes next")
+
 # ── 11. Limitations ──
-s = prs.slides.add_slide(BLANK); _chrome(s, "What this is — and isn't", "Honest limitations")
+s = prs.slides.add_slide(BLANK); _chrome(s, "What this is, and isn't", "Honest limitations")
 bullets(s, [
-    ("Single-centre development (48 events) — a proof of concept, not a finished tool", 0, RUST, True),
+    ("Single-centre development (48 events), a proof of concept, not a finished tool", 0, RUST, True),
     ("External cohort (eICU) is ICU subdural patients, not all operative cSDH", 0),
     ("Discrimination is modest; predictions are conservative (under-dispersed)", 0),
     ("Outcome is chart/structured-flag, not EEG-adjudicated", 0),
@@ -239,10 +266,10 @@ _set(tf.paragraphs[0], "Take-home", 30, WHITE, bold=True)
 tf2 = _box(s, Inches(0.9), Inches(2.0), SW - Inches(1.8), Inches(4.6))
 takeaways = [
     "A calibrated risk model can give trustworthy, individual seizure probabilities after cSDH surgery.",
-    "Conformal prediction lets the tool abstain — confident rule-out/rule-in for ~22%, defer for the rest.",
-    "Because cSDH AED efficacy is unproven, treating everyone can do net harm — universal AED was worse "
+    "Conformal prediction lets the tool abstain, confident rule-out/rule-in for ~22%, defer for the rest.",
+    "Because cSDH AED efficacy is unproven, treating everyone can do net harm, universal AED was worse "
     "than observation when AED is ineffective. Selective, risk-guided use is the rational target.",
-    "The decision is governed by AED efficacy and harm — the priorities for the next trial.",
+    "The decision is governed by AED efficacy and harm, the priorities for the next trial.",
 ]
 for i, t in enumerate(takeaways):
     p = tf2.paragraphs[0] if i == 0 else tf2.add_paragraph()
