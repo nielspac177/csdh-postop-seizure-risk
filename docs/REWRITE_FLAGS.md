@@ -34,4 +34,15 @@ honest recomputation. The adversarial review pass (Phase 4) must verify each is 
   the BRF conformal base model, NOT the deployed Firth model. Any text citing "postop-B
   calibration" must point to the Firth numbers in `results/40_*`, not this row.
 
+## F5 — LOHO "I²=0%" is correct on the logit scale but scale-sensitive (S7, strengthening not correction)
+- **Reproduced:** the manuscript's full/Set_C pooled AUC 0.684 (0.651–0.714), I²=0% is exactly the
+  **logit-scale** (delta-method) random-effects result (`scripts/41`, `04_loho`). Set_A logit I²=2.8%.
+- **Sensitivity:** on the **raw-AUC scale** I²=33.7% (Set_A) / 55.7% (Set_C) with significant Q
+  (p=0.019 / p<0.0001). The logit scale stabilises variance and down-weights extreme-AUC sites,
+  collapsing I² toward 0 — defensible, but the homogeneity claim is not scale-robust.
+- **Fix in text (S7):** keep logit-scale I²≈0% as primary, but ADD τ² (now reported under DL /
+  Paule-Mandel / REML), the per-site descriptive table (`results/41_loho_per_site.csv`), and the
+  **prediction interval** as the honest transportability summary (logit PI ~[0.65,0.72] for Set_C;
+  raw-scale PI ~[0.53,0.95]). Do not present I²=0% as proof of homogeneity without the PI.
+
 _Add further flags here as Phase 3 analytical items complete._
