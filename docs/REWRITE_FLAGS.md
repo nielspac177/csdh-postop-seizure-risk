@@ -52,4 +52,12 @@ honest recomputation. The adversarial review pass (Phase 4) must verify each is 
   **prediction interval** as the honest transportability summary (logit PI ~[0.65,0.72] for Set_C;
   raw-scale PI ~[0.53,0.95]). Do not present I²=0% as proof of homogeneity without the PI.
 
-_Add further flags here as Phase 3 analytical items complete._
+## C2 — Conformal coverage under domain shift (resolved by Discussion, per plan)
+Per the revision plan, C2's preferred resolution for this revision is a Discussion paragraph
+(full leave-one-hospital-out conformal-coverage analysis is a prospective-study item). Text to
+add (see [ADR 0004](adr/0004-conformal-to-action-mapping.md)): conformal guarantees hold under
+exchangeability; under site-level domain shift, deployment should recalibrate the conformal
+quantiles on each site's first ~50 cases to restore class-conditional coverage. No new figure
+required for this submission.
+
+_Phase 3 analytical items complete (S6, S12, S7, S11, C1 done; C2 by Discussion)._
