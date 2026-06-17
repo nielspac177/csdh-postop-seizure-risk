@@ -351,7 +351,7 @@ def build_main():
         ("The BIDMC development cohort comprised all consecutive patients "
          "undergoing burr-hole or craniotomy for cSDH between January 2010 "
          "and December 2023 (n = 655; 48 in-admission postoperative "
-         "seizures). For external validation, the eICU Collaborative Research "
+         "seizures). For external evaluation, the eICU Collaborative Research "
          "Database was screened in stages: 5,376 ICU stays with any subdural "
          "haematoma diagnosis across 139 hospitals were identified, from "
          "which the pre-specified primary stratum — non-traumatic SDH stays "
@@ -507,7 +507,7 @@ def build_main():
     ])
     register_table("Table 1", tbl1,
                     "Table 1.  Cohort characteristics across the BIDMC "
-                    "development cohort and the eICU external-validation "
+                    "development cohort and the eICU external-evaluation "
                     "cohort (non-traumatic SDH stratum).")
     add_para(doc, "Cohort characteristics are summarised in Table 1.", indent=True)
 
@@ -617,7 +617,7 @@ def build_main():
     # 3.4 Conformal
     add_heading(doc, "Conformal risk stratification", level=2)
     add_runs(doc, [
-        ("On the deployed Firth postoperative-B model, class-conditional "
+        ("On the candidate Firth postoperative-B model, class-conditional "
          "(Mondrian) conformal prediction achieved class-conditional coverage "
          "close to target at α = 0.10 (90.3% for the no-seizure class, 93.8% "
          "for the seizure class). At this level the procedure produced a "
@@ -625,13 +625,13 @@ def build_main():
          "seizure in 11% (AED-avoidance candidates) and rule-in in 11% "
          "(intensive-monitoring candidates). The remaining 78% were explicitly "
          "deferred to clinical judgment with a two-class prediction set "
-         "(Figure 4). The deployed model abstains more often than the "
+         "(Figure 4). The candidate model abstains more often than the "
          "BalancedRandomForest reference because its calibrated probabilities "
          "occupy a narrow range — a conservative, honest behaviour for a "
          "weak-signal rare outcome.", {})], indent=True)
     register_figure("Figure 4", FIG / "F4_conformal.png",
                 "Figure 4.  Class-conditional conformal prediction on the "
-                "deployed Firth postoperative-B model. "
+                "candidate Firth postoperative-B model. "
                 "A — Empirical class-conditional coverage near the target 1−α "
                 "across α ∈ {0.05, 0.10, 0.20}. B — Rule-out and rule-in "
                 "singleton fractions versus α; at α = 0.10 the procedure "
@@ -999,7 +999,7 @@ def build_supplementary():
     add_heading(doc, "Appendix S4.  Nationwide Inpatient Sample (NIS) — "
                        "excluded from the primary analysis", level=1)
     add_para(doc,
-        "A preliminary analysis attempted to extend external validation to "
+        "A preliminary analysis attempted to extend external evaluation to "
         "the HCUP Nationwide Inpatient Sample (NIS, 2016–2019), restricted "
         "to admissions with chronic-SDH coding and a craniotomy or burr-hole "
         "procedure in the same admission (n = 2,518). On methodological "
@@ -1039,8 +1039,8 @@ def build_supplementary():
     add_heading(doc, "Appendix S5.  Missing-data sensitivity", level=1)
     add_para(doc,
         "Background.  We evaluated whether the discrimination of the "
-        "deployment pipeline depends on the missing-data assumption. "
-        "The deployment pipeline imputes each feature by its median and "
+        "candidate pipeline depends on the missing-data assumption. "
+        "The candidate pipeline imputes each feature by its median and "
         "appends a per-feature binary missing-indicator covariate; "
         "sensitivity to this choice is reported below.")
     add_para(doc,
@@ -1099,7 +1099,7 @@ def build_supplementary():
         "imputer-method range and the missing-indicator augmentation "
         "the upper end. The Rubin's-rules pooled estimate on eICU pure "
         "Set C (0.644, 95% CI 0.600–0.688; FMI 0.33) is concordant with "
-        "the primary external-validation AUC reported in the main "
+        "the primary external-evaluation AUC reported in the main "
         "manuscript. The non-trivial FMI (0.33) is a useful pre-"
         "registered upper bound on the additional uncertainty injected "
         "by the imputation step alone and should be carried forward in "
@@ -1149,6 +1149,24 @@ def build_supplementary():
         intl = pd.read_csv(RES / "42_international_perspectives.csv")
         add_table_from_df(doc, intl.round(1),
             caption="Table S6c.  International cost perspectives (US, UK NICE, Eurozone).")
+    add_para(doc,
+        "Model-versus-random comparator. To isolate the value contributed by "
+        "the model's discrimination from the value of merely treating fewer "
+        "patients, ML-guided allocation was compared with random allocation at "
+        "the same treated fraction (32.4%). The net-monetary-benefit difference "
+        "(discrimination premium) is $996–$1,612 per patient across the "
+        "AED-efficacy range, confirming that the model — not the treated "
+        "fraction alone — drives the incremental value.")
+    if (RES / "44_model_vs_random.csv").exists():
+        mvr = pd.read_csv(RES / "44_model_vs_random.csv")
+        mvr["aed_rrr"] = mvr["aed_rrr"].round(2)
+        mvr["treated_fraction"] = mvr["treated_fraction"].round(3)
+        for c in ["NMB_obs", "NMB_universal_aed", "NMB_ml_guided",
+                  "NMB_random_matched", "discrimination_premium"]:
+            mvr[c] = mvr[c].round(0).astype(int)
+        add_table_from_df(doc, mvr,
+            caption="Table S6d.  Model-vs-random comparator: discrimination "
+                    "premium at matched treated fraction.")
     add_page_break(doc)
 
     # Appendix S7 — LOHO heterogeneity (S7)
@@ -1173,28 +1191,35 @@ def build_supplementary():
                   "hospital) are released as results/41_loho_per_site.csv.")
     add_page_break(doc)
 
-    # Appendix S8 — CONSORT flow + deployed-model coefficients & calibration (M2, S12)
-    add_heading(doc, "Appendix S8.  Cohort inclusion flow and deployed-model "
+    # Appendix S8 — CONSORT flow + candidate-model coefficients & calibration (M2, S12)
+    add_heading(doc, "Appendix S8.  Cohort inclusion flow and candidate-model "
                      "coefficients and calibration", level=1)
     add_para(doc,
         "Cohort inclusion (eICU). 5,376 ICU stays with any subdural-haematoma "
         "diagnosis (139 hospitals) → restrict to non-traumatic SDH and to "
         "hospitals contributing ≥10 such stays → 3,297 stays (42 hospitals; "
-        "300 seizures), the primary external-validation stratum. The broader "
+        "300 seizures), the primary external-evaluation stratum. The broader "
         "5,376/139 screen and three alternative definitions are reported as "
         "sensitivity analyses (Table S2).")
     add_para(doc,
-        "Deployed-model coefficients. Firth penalized logistic regression on "
+        "Candidate-model coefficients. Firth penalized logistic regression on "
         "the postoperative-B set; coefficients are on the per-standard-"
         "deviation scale, with odds ratios per 1-SD increase:")
     if (RES / "40_postopB_firth_coefficients.csv").exists():
         co = pd.read_csv(RES / "40_postopB_firth_coefficients.csv")
         co = co[["feature", "coef", "se", "ci_lo", "ci_hi", "p_value", "OR_per_SD"]]
         add_table_from_df(doc, co.round(3),
-            caption="Table S8.  Firth coefficients for the deployed postoperative-B model "
+            caption="Table S8.  Firth coefficients for the candidate postoperative-B model "
                     "(per-SD scale; OR per 1-SD increase).")
     add_para(doc,
-        "Deployed-model calibration. Out-of-fold, the deployed model achieves "
+        "The only coefficients reaching statistical significance are procedure "
+        "variables (surgical decompression, middle-meningeal-artery "
+        "embolization, and drainage); these reflect confounding by indication "
+        "rather than causal seizure biology — for example, drainage carries an "
+        "odds ratio of 1.44, a direction inconsistent with a plausible causal "
+        "protective effect — which is a limitation of the candidate model.")
+    add_para(doc,
+        "Candidate-model calibration. Out-of-fold, the candidate model achieves "
         "calibration-in-the-large near zero and low expected calibration "
         "error; the recalibration slope exceeds one (under-dispersion), "
         "reflecting weak discrimination over a narrow probability range "
@@ -1202,7 +1227,7 @@ def build_supplementary():
         "results/40_postopB_calibration_post_platt.csv.")
     if (FIG / "40_postopB_calibration.png").exists():
         add_figure(doc, FIG / "40_postopB_calibration.png",
-                   caption="Figure S8.  Reliability curve of the deployed postoperative-B "
+                   caption="Figure S8.  Reliability curve of the candidate postoperative-B "
                            "model after Platt scaling.")
     add_page_break(doc)
 
@@ -1217,15 +1242,20 @@ def build_supplementary():
          "Table S3.  Calibration metrics with bootstrap 95% CIs across all six cohort-model combinations."),
         (RES / "10_pairwise_summary.csv",
          "Table S4.  Cost-effectiveness analysis — PSA summary at WTP $50k, $100k, $150k."),
-        (RES / "16_voi_evppi.csv",
-         "Table S5.  Per-parameter EVPPI ranking at WTP $100,000/QALY."),
+        (RES / "45_voi_postopB.csv",
+         "Table S5.  Value-of-information under the deployable postoperative-B "
+         "candidate model and cSDH-grounded AED priors: expected value of "
+         "perfect information (EVPI) and per-parameter expected value of "
+         "partial perfect information (EVPPI) at WTP $100,000/QALY "
+         "(per-patient and 10-year population, $M)."),
     ]:
         if tbl_path.exists():
             df = pd.read_csv(tbl_path)
             if len(df.columns) > 9:
                 # truncate excessively wide tables — show selected columns
                 df = df.iloc[:, :9]
-            add_table_from_df(doc, df.round(3), caption=label)
+            df = df.round(3).fillna("")
+            add_table_from_df(doc, df, caption=label)
             add_para(doc, "")
 
     add_page_break(doc)

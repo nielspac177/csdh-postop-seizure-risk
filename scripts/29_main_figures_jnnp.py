@@ -429,63 +429,59 @@ def figure_3():
     print("[OK] F3_method_battery — JNNP style")
 
 
-# ─── F4 — Conformal (rebuilt native) ────────────────────────
+# ─── F4 — Conformal (rebuilt native, DEPLOYED Firth postop-B) ──────────
 def figure_4():
-    out = pd.read_csv(RES / "25_conformal.csv")
+    # Sourced from the DEPLOYED candidate model (Firth postop-B), not the
+    # BalancedRF conformal base. See results/44_conformal_postopB_firth.csv.
+    out = pd.read_csv(RES / "44_conformal_postopB_firth.csv").sort_values("alpha")
 
     fig, axes = plt.subplots(1, 2, figsize=(7.0, 4.4))
     plt.subplots_adjust(wspace=0.34, bottom=0.30, top=0.93)
 
-    # Panel A: coverage validation
+    # Panel A: class-conditional coverage validation
     axA = axes[0]
     a_line = np.linspace(0.01, 0.30, 60)
     axA.plot(a_line, 1 - a_line, color=COL["grey"], ls="--", lw=0.8,
               label="Target (1−α)")
-    for fset, color, marker in [("postop_A", COL["navy"], "o"),
-                                  ("postop_B", COL["rust"], "s")]:
-        sub = out[out["feature_set"] == fset]
-        axA.plot(sub["alpha"], sub["coverage_mean"], marker=marker,
-                   color=color, lw=1.6, ms=6,
-                   markeredgecolor="black", markeredgewidth=0.4,
-                   label=f"{fset} (empirical)")
-        axA.errorbar(sub["alpha"], sub["coverage_mean"],
-                       yerr=sub["coverage_sd"], fmt="none",
-                       ecolor=color, capsize=2.5, alpha=0.6, lw=0.8)
+    axA.plot(out["alpha"], out["coverage_class1"], marker="o",
+               color=COL["rust"], lw=1.6, ms=6,
+               markeredgecolor="black", markeredgewidth=0.4,
+               label="Seizure class (class 1)")
+    axA.plot(out["alpha"], out["coverage_class0"], marker="s",
+               color=COL["navy"], lw=1.6, ms=6,
+               markeredgecolor="black", markeredgewidth=0.4,
+               label="No-seizure class (class 0)")
     axA.set_xlim(0, 0.30); axA.set_ylim(0.72, 1.00)
     axA.set_xlabel("α (target miscoverage)")
     axA.set_ylabel("Empirical coverage")
-    axA.set_title("Coverage validation")
+    axA.set_title("Class-conditional coverage")
     style_axis(axA, ygrid=True, xgrid=True)
     add_panel_label(axA, "A")
-    # Panel-local legend (lower-left empty region)
     axA.legend(loc="lower left", fontsize=7.5, frameon=False,
                 handlelength=2.0, handletextpad=0.5)
 
-    # Panel B: clinical utility
+    # Panel B: clinical utility (confident decisions)
     axB = axes[1]
-    for fset, color, marker in [("postop_A", COL["navy"], "o"),
-                                  ("postop_B", COL["rust"], "s")]:
-        sub = out[out["feature_set"] == fset]
-        axB.plot(sub["alpha"], sub["rule_out_rate"], marker=marker,
-                   color=color, lw=1.8, ms=6,
-                   markeredgecolor="black", markeredgewidth=0.4,
-                   label=f"{fset} — rule-out")
-        axB.plot(sub["alpha"], sub["rule_in_rate"], marker=marker,
-                   color=color, lw=1.2, ls=":", ms=5,
-                   markeredgecolor="black", markeredgewidth=0.4,
-                   label=f"{fset} — rule-in", alpha=0.7)
-    # Working-point annotation at α=0.10 — placed lower-right where the chart is
-    # empty (rule-in fraction is small there), so it does not overlap the data
-    # lines or the legend.
-    sub_A = out[(out["feature_set"] == "postop_A") & (out["alpha"] == 0.10)]
-    if len(sub_A) > 0:
-        sub_A = sub_A.iloc[0]
+    axB.plot(out["alpha"], out["rule_out_rate"], marker="o",
+               color=COL["navy"], lw=1.8, ms=6,
+               markeredgecolor="black", markeredgewidth=0.4,
+               label="Rule-out")
+    axB.plot(out["alpha"], out["rule_in_rate"], marker="s",
+               color=COL["rust"], lw=1.8, ms=6,
+               markeredgecolor="black", markeredgewidth=0.4,
+               label="Rule-in")
+    # Working-point annotation at α=0.10 (90% target coverage).
+    sub = out[out["alpha"] == 0.10]
+    if len(sub) > 0:
+        sub = sub.iloc[0]
+        defer = 1.0 - sub["rule_out_rate"] - sub["rule_in_rate"]
         axB.axvline(0.10, color=COL["grey"], ls=":", lw=0.7)
         axB.annotate(f"α = 0.10 (90% coverage):\n"
-                       f"  rule-out = {sub_A['rule_out_rate']:.0%}\n"
-                       f"  rule-in  = {sub_A['rule_in_rate']:.0%}",
-                       xy=(0.10, sub_A["rule_out_rate"]),
-                       xytext=(0.215, 0.03),
+                       f"  rule-out = {sub['rule_out_rate']:.0%}\n"
+                       f"  rule-in  = {sub['rule_in_rate']:.0%}\n"
+                       f"  defer    = {defer:.0%}",
+                       xy=(0.10, sub["rule_out_rate"]),
+                       xytext=(0.205, 0.03),
                        fontsize=7.5, fontweight="bold",
                        bbox=dict(boxstyle="round,pad=0.3",
                                  facecolor="#fffaf0",
@@ -499,7 +495,6 @@ def figure_4():
     style_axis(axB, ygrid=True, xgrid=True)
     add_panel_label(axB, "B")
 
-    # Panel-local legend in the upper-left.
     from matplotlib.lines import Line2D
     legend_handles = [
         Line2D([0],[0], color=COL["navy"], marker="o", lw=1.8,
@@ -508,12 +503,8 @@ def figure_4():
         Line2D([0],[0], color=COL["rust"], marker="s", lw=1.8,
                 markeredgecolor="black", markeredgewidth=0.4,
                 markerfacecolor=COL["rust"]),
-        Line2D([0],[0], color=COL["slate"], lw=1.8),
-        Line2D([0],[0], color=COL["slate"], lw=1.2, ls=":"),
     ]
     legend_labels = [
-        "postop_A (21 features)",
-        "postop_B (18 features, leakage-safe)",
         "Rule-out — singleton {no seizure}",
         "Rule-in  — singleton {seizure}",
     ]
@@ -521,11 +512,6 @@ def figure_4():
                 loc="upper left", fontsize=7.0, frameon=False,
                 handlelength=2.0, handletextpad=0.5)
 
-    # Move the prediction-set explanation and the postop_A/B difference note
-    # below the figure (as figure-level text) so they no longer compete with
-    # the working-point callout for space inside the panel.  Wrapped onto
-    # multiple short lines so the text block is ~5 cm narrower than the
-    # full figure width.
     fig.text(0.14, 0.05,
              "Prediction-set categories:\n"
              "    {no seizure}              →  rule-out (skip AED)\n"
@@ -534,9 +520,9 @@ def figure_4():
              fontsize=7.5, color="#262320", ha="left",
              family="DejaVu Sans", linespacing=1.5)
     fig.text(0.14, -0.04,
-             "postop_A and postop_B differ only in postop_B omitting\n"
-             "three variables (AED timing, prophylactic AED, abnormal\n"
-             "EEG) that could be charted after seizure onset.",
+             "Deployed candidate model (Firth, leakage-safe postop-B feature\n"
+             "set). Conformal quantiles fit on a held-out calibration split;\n"
+             "rates and class-conditional coverage are out-of-fold.",
              fontsize=7.0, color=COL["grey"], style="italic", ha="left",
              family="DejaVu Sans", linespacing=1.4)
     plt.subplots_adjust(bottom=0.36)
@@ -544,7 +530,7 @@ def figure_4():
     plt.savefig(FIG / "F4_conformal.png")
     plt.savefig(FIG / "F4_conformal.pdf")
     plt.close()
-    print("[OK] F4_conformal — JNNP style")
+    print("[OK] F4_conformal — JNNP style (deployed Firth postop-B)")
 
 
 # ─── F5 — CEA (decision tree + plane + CEAC) ────────────────
