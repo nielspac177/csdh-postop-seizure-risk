@@ -1,0 +1,5 @@
+aed_rrr,treated_fraction,NMB_obs,NMB_universal_aed,NMB_ml_guided,NMB_random_matched,discrimination_premium,best_strategy
+0.0,0.324,637133.5,634623.9,637887.6,636892.0,995.6,ml_guided
+0.15,0.324,637133.5,636639.5,638471.1,637270.1,1201.0,ml_guided
+0.3,0.324,637133.5,638655.1,639054.7,637648.2,1406.4,ml_guided
+0.45,0.324,637133.5,640670.8,639638.2,638026.4,1611.8,universal_aed

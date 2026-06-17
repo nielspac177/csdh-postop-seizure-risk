@@ -1,0 +1,4 @@
+alpha,model,n,rule_out_rate,rule_in_rate,singleton_rate,doubleton_rate,empty_rate,coverage_class1,coverage_class0
+0.05,firth_postopB (deployed),655,0.026,0.0534,0.0794,0.9206,0.0,0.9792,0.9522
+0.1,firth_postopB (deployed),655,0.1084,0.1069,0.2153,0.7847,0.0,0.9375,0.9028
+0.2,firth_postopB (deployed),655,0.3191,0.2076,0.5267,0.4733,0.0,0.8333,0.8023
