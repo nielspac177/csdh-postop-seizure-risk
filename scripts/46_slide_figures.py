@@ -60,13 +60,11 @@ def fig_cea_curve():
     incr = mr["NMB_ml_guided"].values - mr["NMB_universal_aed"].values
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.axhline(0, color=GREY, lw=1.2, ls="--")
-    ax.plot(rrr, incr, "-o", color=NAVY, lw=3, ms=9)
-    ax.fill_between(rrr, incr, 0, where=(incr >= 0), color=FOREST, alpha=0.18)
-    ax.fill_between(rrr, incr, 0, where=(incr < 0), color=RUST, alpha=0.18)
+    ax.axvspan(0, 0.30, color=FOREST, alpha=0.12, lw=0)
+    ax.plot(rrr, incr, "-o", color=NAVY, lw=3, ms=9, zorder=5)
     ax.annotate("ML-guided preferred", (0.02, max(incr) * 0.7), color=FOREST, fontsize=14, fontweight="bold")
-    ax.annotate("Universal AED\npreferred", (0.40, min(incr) * 0.9), color=RUST, fontsize=13,
+    ax.annotate("Universal AED\npreferred", (0.43, min(incr) * 0.9), color=RUST, fontsize=13,
                 fontweight="bold", ha="right")
-    ax.axvspan(0, 0.30, color=FOREST, alpha=0.05)
     ax.text(0.15, ax.get_ylim()[1]*0.05, "cSDH-plausible\n(no proven AED effect)", ha="center",
             fontsize=12, color=FOREST)
     ax.set_xlabel("Assumed AED relative-risk reduction"); ax.set_ylabel("Net benefit:\nML-guided − universal AED ($/patient)")
@@ -107,7 +105,7 @@ def fig_aed_evidence():
     fig, ax = plt.subplots(figsize=(9.2, 4.6))
     ys = [3, 2, 1, 0]
     ax.axvline(1.0, color=GREY, ls="--", lw=1.5)
-    ax.text(1.0, 3.7, "no effect", color=GREY, fontsize=12, ha="center")
+    ax.text(1.0, 4.05, "no effect", color=GREY, fontsize=12, ha="center")
     for y, (lbl, pt, lo, hi, note) in zip(ys, rows):
         ax.text(0.12, y, lbl, va="center", fontsize=12.5, color="#222222")
         if pt is not None:
@@ -120,9 +118,9 @@ def fig_aed_evidence():
     ax.set_yticks([]); ax.set_xlabel("Odds ratio for seizure, AED vs none (log scale)")
     ax.set_title("No cSDH study shows AED prophylaxis prevents seizures",
                  fontsize=16.5, fontweight="bold", color=NAVY)
-    ax.text(0.22, -0.72, "OR > 1 reflects confounding by indication (sicker haematomas get AED),\n"
+    ax.text(0.22, -0.78, "OR > 1 reflects confounding by indication (sicker haematomas get AED),\n"
             "not causal harm; the honest reading is no proven benefit.",
-            fontsize=9.5, color=GREY, style="italic")
+            fontsize=11, color="#3f4a57")
     fig.tight_layout(); fig.savefig(OUT / "sld_aed_evidence.png", bbox_inches="tight"); plt.close(fig)
 
 
@@ -151,7 +149,7 @@ def fig_calibration():
     from sklearn.calibration import calibration_curve
     z = np.load(CACHE / "oof_bidmc_postopB_firth.npz")
     y = z["y"].astype(int); p = z["p"].astype(float)
-    frac, mean = calibration_curve(y, p, n_bins=10, strategy="quantile")
+    frac, mean = calibration_curve(y, p, n_bins=6, strategy="quantile")
     fig, ax = plt.subplots(figsize=(7.2, 5.0))
     lim = max(mean.max(), frac.max()) * 1.12
     ax.plot([0, lim], [0, lim], ls=":", color=GREY, lw=1.3, label="Perfect calibration")
