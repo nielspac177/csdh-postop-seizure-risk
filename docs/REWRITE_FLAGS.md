@@ -70,4 +70,44 @@ required for this submission.
   (`16_voi_evpi.py` under postop-B Se/Sp + new AED priors) before re-inserting any dollar figure.
 
 _Phase 3 analytical items complete (S6, S12, S7, S11, C1 done; C2 by Discussion)._
-_Phase 4 in progress: Title/Abstract/Discussion rewritten (M1/M3/S1/S2/S3/F1/F2/F3/F5 applied)._
+_Phase 4 in progress: Title/Abstract/Discussion/Methods/Results rewritten + appendices S6–S8._
+
+---
+
+# Adversarial-review findings (Phase 4 critique by 4 independent agents)
+
+## F7 — CEA circularity / "observation is dominated" vs "AED RRR≈0" (SUBSTANTIVE, all agents)
+Under RRR≈0 with AED harm, universal AED cannot *dominate* observation — yet the text says "all
+active strategies dominated observation." ML-guided "winning" partly reflects treating fewer people
+with a near-useless drug (its edge scales with specificity, not seizure signal).
+**Fix:** (a) reconcile observation-domination with low RRR; (b) add a random-allocation-at-matched-
+treated-fraction comparator to prove the *model* drives value; (c) present base case (RRR 0.45) →
+universal AED wins, ML wins only in the sensitivity region — don't tilt the prose. (Needs analysis + decision.)
+
+## F8 — AED RRR base case stated inconsistently (FIXED)
+Methods (no-effect/0.30) vs Results (0.45); model default is 0.45. Fixed: Methods now anchors the
+base case at 0.45 (optimistic reference) with cSDH-plausible 0–0.30 in sensitivity.
+
+## F9 — Conformal numbers (37%/27%/11%) are from postop-A/BalancedRF, not deployment Firth/postop-B
+Deployment-model conformal is 35%/25%/10%. Fix: recompute/report conformal on Firth postop-B or
+state the conformal base model. (Needs analysis.)
+
+## F10 — VOI headline contradicts its own EVPPI table
+Abstract/Discussion say AED efficacy/harm dominate VOI, but Table S5 ranks cEEG cost #1, prevalence
+#2; AED harm trivial. Also the VOI is the stale postop-A run (F6). Fix: recompute VOI under postop-B,
+align headline with table. (Needs analysis.)
+
+## F11 — "deployable/deployment" (~10×) vs intended "candidate" (polish)
+"deployment model"→"candidate/lead model"; "deployable set"→"leakage-safe set"; "deployable
+operating point"→"candidate operating point."
+
+## F12 — eICU is a related (mixed-acuity ICU) population, not cSDH-evacuation
+cSDH-faithful strata are 0.57–0.61 (own Tables S2/S7); 0.750 is the least-cSDH-like slice. Fix: call
+it "external evaluation in a related population," demote 0.750, foreground the prediction interval.
+
+## F13 — Minor concordance (polish)
+Brier 0.069/0.068/0.067 → standardise to 0.068; Title "calibrated"→"calibration-focused"; abstract
+should carry the prediction interval and slope>1 caveat; "biological ceiling"→"sample-size/measured-
+feature limit"; degenerate Firth coeffs (demographic/procedures — drop or explain); 7→8 supplementary
+figures; international cost_scale 0.79/0.92 (CSV) vs 0.800/0.900 (table); replace placeholder refs
+14–16; real IRB number; cross-database phenotype "agreement" asserted not demonstrated — soften.
