@@ -144,26 +144,33 @@ def fig_ceiling():
 
 
 def fig_calibration():
-    """Clinician-friendly reliability curve for the deployed postop-B model, in the
-    slide house style (no technical slope number in the title)."""
+    """Clinician-friendly reliability curve for the deployed postop-B model. Honest
+    framing: the AVERAGE prediction is right (calibration-in-the-large near 0) but the
+    SPREAD is too narrow (slope >1 = under-dispersion), so the curve is steeper than the
+    diagonal. The slide says exactly that instead of claiming point-wise agreement."""
     from sklearn.calibration import calibration_curve
     z = np.load(CACHE / "oof_bidmc_postopB_firth.npz")
     y = z["y"].astype(int); p = z["p"].astype(float)
     frac, mean = calibration_curve(y, p, n_bins=6, strategy="quantile")
+    base = y.mean()                       # observed base rate (~0.073)
     fig, ax = plt.subplots(figsize=(7.2, 5.0))
     lim = max(mean.max(), frac.max()) * 1.12
     ax.plot([0, lim], [0, lim], ls=":", color=GREY, lw=1.3, label="Perfect calibration")
+    # base-rate crosshair: predictions are pulled toward this line
+    ax.axhline(base, color=OCHRE, lw=1.1, ls="--", alpha=0.7)
+    ax.text(lim*0.985, base + lim*0.012, f"average risk ≈ {base*100:.0f}%",
+            ha="right", va="bottom", fontsize=10.5, color=OCHRE)
     ax.plot(mean, frac, "o-", color=NAVY, lw=2.4, ms=8,
             markeredgecolor="white", markeredgewidth=0.8, label="Deployed model")
     ax.set_xlabel("Predicted seizure risk"); ax.set_ylabel("Observed seizure rate")
     ax.set_xlim(0, lim); ax.set_ylim(0, lim)
-    ax.set_title("Predicted risk matches observed risk\n(calibration-in-the-large ≈ 0)",
-                 fontsize=16, fontweight="bold", color=NAVY)
-    ax.annotate("When the model says 7%,\nabout 7% actually seize",
-                xy=(0.073, 0.073), xytext=(0.085, 0.035),
-                fontsize=12, color=FOREST,
-                arrowprops=dict(arrowstyle="->", color=FOREST, lw=1.2))
-    ax.legend(loc="upper left", frameon=False, fontsize=12)
+    ax.set_title("Average prediction is right; the spread is too narrow",
+                 fontsize=15.5, fontweight="bold", color=NAVY)
+    ax.annotate("Curve steeper than the line:\nthe model compresses risk\ntoward the average",
+                xy=(mean[-1], frac[-1]), xytext=(lim*0.30, lim*0.86),
+                fontsize=11.5, color=RUST, va="top",
+                arrowprops=dict(arrowstyle="->", color=RUST, lw=1.3))
+    ax.legend(loc="lower right", frameon=False, fontsize=11.5)
     fig.tight_layout(); fig.savefig(OUT / "sld_calibration.png", bbox_inches="tight"); plt.close(fig)
 
 

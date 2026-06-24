@@ -186,6 +186,24 @@ def figure_1():
     axC = fig.add_subplot(gs[1, :])
     leak_p = leak[leak["cohort"].str.contains("eICU", case=False, na=False)].copy()
     leak_p = leak_p.dropna(subset=["auc"]).reset_index(drop=True)
+    # The three exclusion-window rows all carry spec="Set C original"; the cohort
+    # column is what distinguishes them (seizures kept only if >=1h/24h/72h after
+    # index). Build informative y-labels so they don't read as duplicates.
+    def _panelC_label(row):
+        import re
+        spec, cohort, ev = str(row["spec"]), str(row["cohort"]), int(row["events"])
+        if spec == "Set C original":
+            m = re.search(r"(\d+)h", cohort)
+            win = m.group(1) if m else "?"
+            return f"Exclude seizures <{win}h ({ev} events)"
+        if "103 features" in spec:
+            return "Full Set C (103 features)"
+        if "pre-seizure features only" in spec:
+            return "Pre-seizure features only (22)"
+        if "0-72h" in spec:
+            return "0–72h seizure outcome (strict feats)"
+        return spec
+    leak_p["plot_label"] = [_panelC_label(r) for _, r in leak_p.iterrows()]
     if len(leak_p) > 0:
         pos = np.arange(len(leak_p))
         axC.errorbar(leak_p["auc"], pos,
@@ -198,7 +216,7 @@ def figure_1():
             axC.scatter(row["auc"], i, color=color, s=42, zorder=3,
                          edgecolor="black", linewidth=0.5)
         axC.set_yticks(pos)
-        axC.set_yticklabels(leak_p["spec"], fontsize=8)
+        axC.set_yticklabels(leak_p["plot_label"], fontsize=8)
         axC.invert_yaxis()
         axC.axvline(0.5, ls=":", color=COL["grey"], lw=0.7)
         axC.set_xlim(0.45, 0.85)

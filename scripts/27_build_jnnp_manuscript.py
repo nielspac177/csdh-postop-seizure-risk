@@ -565,9 +565,17 @@ def build_main():
                 "regression and BalancedRandomForest with bootstrap 95% CIs. "
                 "B, eICU leave-one-hospital-out random-effects pooled "
                 "estimates (REML; estimators compared in Appendix S7) across "
-                "cohort × feature-set combinations. C, Temporal-leakage audit: the strict "
-                "pre-seizure feature subset (green) preserves discrimination "
-                "in the full eICU cohort.")
+                "cohort × feature-set combinations. C, Temporal-leakage audit. "
+                "Discrimination is re-estimated under progressively stricter exclusion "
+                "of seizures occurring soon after index (retaining only events at "
+                "≥1h, ≥24h and ≥72h, so that the time-windowed features "
+                "provably predate the event), alongside the strict pre-seizure feature "
+                "subset (green). Discrimination is preserved rather than collapsing toward "
+                "chance, indicating the signal is not a leakage artefact; event counts are "
+                "shown because the ≥72h restriction leaves only 40 events, so its "
+                "higher point estimate (AUC 0.78, widest CI) reflects small-sample "
+                "variability rather than a genuine gain, and the ≥24h restriction "
+                "(76 events, AUC 0.72) is the most reliable leakage-controlled estimate.")
 
     # 3.2 Calibration + DCA
     add_heading(doc, "Calibration and clinical utility", level=2)
