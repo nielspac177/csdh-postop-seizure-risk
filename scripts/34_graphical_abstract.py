@@ -76,15 +76,15 @@ def datasource(ax, x0, x1, top, bottom, color, name, role, lines):
         boxstyle="round,pad=0.02,rounding_size=0.08",
         facecolor="white", edgecolor=color, linewidth=1.3, zorder=4))
     xc = (x0 + x1) / 2
-    ax.text(xc, top - 0.30, name, ha="center", va="center",
+    ax.text(xc, top - 0.32, name, ha="center", va="center",
             fontsize=11.5, fontweight="bold", color=color, zorder=5)
-    ax.text(xc, top - 0.62, role, ha="center", va="center",
+    ax.text(xc, top - 0.66, role, ha="center", va="center",
             fontsize=9.0, style="italic", color=COL["grey"], zorder=5)
-    y = top - 1.02
+    y = top - 1.06
     for ln in lines:
         ax.text(xc, y, ln, ha="center", va="center", fontsize=9.8,
                 color=COL["ink"], zorder=5)
-        y -= 0.34
+        y -= 0.36
 
 
 def main():
@@ -94,28 +94,30 @@ def main():
         "pdf.fonttype": 42, "ps.fonttype": 42,
     })
 
-    fig, ax = plt.subplots(figsize=(10.5, 12.6))
-    ax.set_xlim(0, 10); ax.set_ylim(0, 12.6)
+    fig, ax = plt.subplots(figsize=(10.5, 13.0))
+    ax.set_xlim(0, 10); ax.set_ylim(0, 13.0)
     ax.axis("off")
 
     # ---- Title -------------------------------------------------------------
-    ax.text(X0, 12.18,
+    ax.text(X0, 12.62,
             "Predicting postoperative seizure after chronic subdural "
             "haematoma evacuation",
             ha="left", va="center", fontsize=14.5, fontweight="bold",
             color=COL["navy"])
-    ax.text(X0, 11.78, "Study design and analysis workflow",
+    ax.text(X0, 12.22, "Study design and analysis workflow",
             ha="left", va="center", fontsize=11.5, style="italic",
             color=COL["grey"])
 
+    GAP = 0.38   # arrow gap between cards
+
     # ---- STEP 1 · DATA SOURCES --------------------------------------------
-    top1, bot1 = 11.45, 8.10
+    top1, bot1 = 11.80, 8.40
     body = card(ax, top1, bot1, COL["navy"], "STEP 1", "DATA SOURCES")
-    ax.text((X0 + X1) / 2, body - 0.30,
+    ax.text((X0 + X1) / 2, body - 0.34,
             "Outcome:  postoperative seizure after cSDH evacuation",
             ha="center", va="center", fontsize=10.3, fontweight="bold",
             color=COL["navy"])
-    ctop, cbot = body - 0.64, bot1 + 0.24
+    ctop, cbot = body - 0.72, bot1 + 0.20
     datasource(ax, 0.85, 4.85, ctop, cbot, COL["navy"],
                "BIDMC", "development cohort (single centre)",
                ["655 cSDH evacuations", "48 postoperative seizures",
@@ -125,12 +127,12 @@ def main():
                ["3,297 subdural-haematoma ICU stays", "300 seizures",
                 "external evaluation, related population"])
 
-    arrow(ax, bot1, bot1 - 0.34)
+    arrow(ax, bot1, bot1 - GAP)
 
     # ---- STEP 2 · RISK MODEL ----------------------------------------------
-    top2, bot2 = bot1 - 0.34, bot1 - 2.50
+    top2, bot2 = bot1 - GAP, 5.75
     body = card(ax, top2, bot2, COL["teal"], "STEP 2", "RISK MODEL")
-    bx, y, dy = 0.95, body - 0.34, 0.42
+    bx, y, dy = 0.95, body - 0.40, 0.42
     bullet(ax, bx, y, "Firth penalized logistic regression "
            "(chosen for stable, calibrated estimates at few events)", COL["teal"])
     bullet(ax, bx, y - dy, "Leakage-safe feature set: 18 variables known at "
@@ -140,21 +142,21 @@ def main():
     bullet(ax, bx, y - 3 * dy, "External validation by leave-one-hospital-out "
            "random-effects meta-analysis", COL["teal"])
 
-    arrow(ax, bot2, bot2 - 0.34)
+    arrow(ax, bot2, bot2 - GAP)
 
     # ---- STEP 3 · CONFORMAL DECISION SUPPORT ------------------------------
-    top3, bot3 = bot2 - 0.34, bot2 - 2.45
+    top3, bot3 = bot2 - GAP, 2.80
     body = card(ax, top3, bot3, COL["ochre"], "STEP 3",
                 "CONFORMAL DECISION SUPPORT")
-    bx, y, dy = 0.95, body - 0.34, 0.42
+    bx, y, dy = 0.95, body - 0.40, 0.42
     bullet(ax, bx, y, "Class-conditional (Mondrian) split-conformal "
            "prediction", COL["ochre"])
     bullet(ax, bx, y - dy, "90% guaranteed coverage within each class "
            "(α = 0.10)", COL["ochre"])
     bullet(ax, bx, y - 2 * dy, "Each patient receives one of three decision "
            "sets:", COL["ochre"])
-    # three pills
-    pill_y = y - 3 * dy + 0.02
+    # three decision-set pills, placed a fixed margin above the card bottom
+    pill_y = bot3 + 0.42
     pills = [("Rule OUT seizure", COL["teal"]),
              ("Rule IN seizure", COL["rust"]),
              ("Defer  (model abstains)", COL["grey"])]
@@ -169,12 +171,12 @@ def main():
                 fontsize=9.6, fontweight="bold", color=c, zorder=5)
         px += w + 0.40
 
-    arrow(ax, bot3, bot3 - 0.34)
+    arrow(ax, bot3, bot3 - GAP)
 
     # ---- STEP 4 · DECISION ANALYSIS ---------------------------------------
-    top4, bot4 = bot3 - 0.34, bot3 - 2.30
+    top4, bot4 = bot3 - GAP, 0.62
     body = card(ax, top4, bot4, COL["rust"], "STEP 4", "DECISION ANALYSIS")
-    bx, y, dy = 0.95, body - 0.34, 0.42
+    bx, y, dy = 0.95, body - 0.40, 0.42
     bullet(ax, bx, y, "Cost-effectiveness: decision tree + 10-year Markov "
            "model", COL["rust"])
     bullet(ax, bx, y - dy, "Four management strategies compared by "
@@ -183,7 +185,7 @@ def main():
            "future research priorities", COL["rust"])
 
     # ---- Footer ------------------------------------------------------------
-    ax.text(5.0, bot4 - 0.45,
+    ax.text(5.0, bot4 - 0.40,
             "Fully reproducible analysis  ·  "
             "github.com/nielspac177/csdh-postop-seizure-risk  ·  MIT licensed",
             ha="center", va="center", fontsize=9.2, color=COL["grey"])
