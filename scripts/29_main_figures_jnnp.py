@@ -550,134 +550,88 @@ def figure_4():
     print("[OK] F4_conformal — JNNP style (deployed Firth postop-B)")
 
 
-# ─── F5 — CEA (decision tree + plane + CEAC) ────────────────
+# ─── F5 — CEA: CE plane + scenario acceptability curves ─────
 def figure_5():
-    # Native rebuild from the deployable postop-B PSA (the decision tree is a
-    # supplementary figure). Panel A: cost-effectiveness plane (incremental vs
-    # observation); Panel B: cost-effectiveness acceptability curves.
-    psa = pd.read_csv(RES / "38_postopB_psa.csv")
+    """Cost-effectiveness of the deployable postop-B model as a 2x2:
+    A, cost-effectiveness plane (base case); B-D, acceptability curves under
+    three assumption scenarios showing the optimal strategy is conditional.
+    Plane data: 38_postopB_psa.csv; scenario CEACs: 38c_scenario_ceacs.csv."""
+    from matplotlib.lines import Line2D
+    psa  = pd.read_csv(RES / "38_postopB_psa.csv")
+    scen = pd.read_csv(RES / "38c_scenario_ceacs.csv")
     labels = {"obs": "Observation", "aed": "Universal AED",
               "mla": "ML-guided AED", "mlg": "ML-guided cEEG"}
     cmap = {"obs": COL["grey"], "aed": COL["rust"],
             "mla": COL["ochre"], "mlg": COL["navy"]}
+    order = ["obs", "aed", "mla", "mlg"]
 
-    fig, (axA, axB) = plt.subplots(1, 2, figsize=(7.2, 3.6))
-    plt.subplots_adjust(wspace=0.34, bottom=0.20, top=0.90)
+    fig, axes = plt.subplots(2, 2, figsize=(9.6, 7.6))
+    plt.subplots_adjust(wspace=0.26, hspace=0.46, bottom=0.12,
+                         top=0.92, left=0.085, right=0.975)
+    axA, axB, axC, axD = axes[0, 0], axes[0, 1], axes[1, 0], axes[1, 1]
 
-    # Panel A — CE plane: each active strategy incremental to observation
+    # Panel A — CE plane (base case): each active strategy incremental to obs
     for s in ["aed", "mla", "mlg"]:
         dq = (psa[f"qaly_{s}"] - psa["qaly_obs"])
         dc = (psa[f"cost_{s}"] - psa["cost_obs"])
         axA.scatter(dq, dc, s=3, alpha=0.10, color=cmap[s], edgecolors="none")
         axA.scatter(dq.mean(), dc.mean(), s=70, color=cmap[s],
-                    edgecolors="black", linewidths=0.5, zorder=5, label=labels[s])
+                    edgecolors="black", linewidths=0.5, zorder=5)
     axA.axhline(0, color=COL["grey"], lw=0.6)
     axA.axvline(0, color=COL["grey"], lw=0.6)
     xl = axA.get_xlim()
     xs = np.array([min(0, xl[0]), max(0, xl[1])])
-    axA.plot(xs, 100_000 * xs, ls="--", color=COL["ochre"], lw=0.8,
-             label="WTP $100k/QALY")
+    axA.plot(xs, 100_000 * xs, ls="--", color=COL["ochre"], lw=0.9)
+    axA.text(0.97, 0.05, "WTP $100k/QALY", transform=axA.transAxes,
+             ha="right", va="bottom", fontsize=6.6, color=COL["ochre"])
     axA.set_xlabel("Incremental QALYs vs observation")
     axA.set_ylabel("Incremental cost vs observation (US$)")
-    axA.set_title("Cost-effectiveness plane")
+    axA.set_title("Cost-effectiveness plane (base case)",
+                  fontsize=9.5, fontweight="bold", color=COL["navy"])
     style_axis(axA, ygrid=True, xgrid=True)
     add_panel_label(axA, "A")
-    axA.legend(loc="lower right", fontsize=6.8, frameon=False)
 
-    # Panel B — CEAC: probability each strategy is optimal vs WTP
-    S = ["obs", "aed", "mla", "mlg"]
-    wtp = np.arange(0, 200_001, 5_000)
-    prob = {s: [] for s in S}
-    for w in wtp:
-        nmb = np.column_stack([w * psa[f"qaly_{s}"].values - psa[f"cost_{s}"].values
-                               for s in S])
-        win = np.argmax(nmb, axis=1)
-        for i, s in enumerate(S):
-            prob[s].append((win == i).mean())
-    for s in S:
-        axB.plot(wtp / 1000, prob[s], color=cmap[s], lw=1.8, label=labels[s])
-    axB.axvline(100, color=COL["grey"], ls=":", lw=0.7)
-    # State the base-case AED efficacy prior so the ranking is interpretable:
-    # cSDH-grounded (no proven effect), matching the VOI analysis. Universal AED
-    # becomes optimal only under an optimistic imported efficacy (see F6).
-    axB.text(0.015, 0.985,
-              "Base case: cSDH-grounded AED prior\n"
-              "(RRR 0.15, 95% CI 0.01–0.45; no proven effect).\n"
-              "Universal AED is optimal only under\n"
-              "optimistic imported efficacy (see Fig 6)",
-              transform=axB.transAxes, fontsize=6.0, color=COL["slate"],
-              va="top", ha="left", linespacing=1.3)
-    axB.set_xlim(0, 200); axB.set_ylim(0, 1)
-    axB.set_xlabel("WTP threshold (US$1000/QALY)")
-    axB.set_ylabel("Probability strategy is optimal")
-    axB.set_title("Cost-effectiveness acceptability")
-    style_axis(axB, ygrid=True, xgrid=True)
-    add_panel_label(axB, "B")
-    axB.legend(loc="center right", fontsize=6.8, frameon=False)
-
-    plt.savefig(FIG / "F5_cea.png")
-    plt.savefig(FIG / "F5_cea.pdf")
-    plt.close()
-    print("[OK] F5_cea — native JNNP (CE plane + CEAC)")
-
-
-# ─── F5b — Scenario CEACs (the winner is assumption-dependent) ──
-def figure_5b():
-    """Three cost-effectiveness acceptability curves showing how the optimal
-    strategy changes with what one assumes about AED efficacy, AED harm and the
-    cost/yield of continuous EEG. Data from 38c_scenario_ceacs.py."""
-    from matplotlib.lines import Line2D
-    df = pd.read_csv(RES / "38c_scenario_ceacs.csv")
-    labels = {"obs": "Observation", "aed": "Universal AED",
-              "mla": "ML-guided AED", "mlg": "ML-guided cEEG"}
-    cmap = {"obs": COL["grey"], "aed": COL["rust"],
-            "mla": COL["ochre"], "mlg": COL["navy"]}
-    panels = [
-        ("A_base", "Base case: cSDH-grounded",
-         "AED RRR ~0.15 (no proven effect),\ncEEG cost-effective",
-         "Most consistent with current evidence", "mlg"),
-        ("B_ml_aed", "AED effective, monitoring costly",
+    # Panels B-D — scenario acceptability curves (winner is assumption-dependent)
+    scen_panels = [
+        (axB, "B", "A_base", "Base case",
+         "cSDH-grounded: AED RRR ~0.15\n(no proven effect), cEEG cost-effective",
+         "most consistent with evidence", "mlg"),
+        (axC, "C", "B_ml_aed", "AED works, monitoring costly",
          "AED RRR ~0.20 with real harm,\ncEEG cost ×2.5",
-         "Plausible if AED works and cEEG is dear", "mla"),
-        ("C_universal", "Optimistic AED (least supported)",
+         "plausible if AED works and cEEG is dear", "mla"),
+        (axD, "D", "C_universal", "Optimistic AED",
          "AED RRR ~0.45 (TBI-imported),\nno AED harm",
-         "Requires assumptions cSDH evidence lacks", "aed"),
+         "needs assumptions cSDH evidence lacks", "aed"),
     ]
-    fig, axes = plt.subplots(1, 3, figsize=(10.6, 3.7), sharey=True)
-    plt.subplots_adjust(wspace=0.12, bottom=0.30, top=0.80, left=0.07, right=0.985)
-    for ax, (key, title, assume, plaus, win) in zip(axes, panels):
-        sub = df[df["scenario"] == key].sort_values("wtp")
-        for s in ["obs", "aed", "mla", "mlg"]:
+    for ax, lab, key, title, assume, plaus, win in scen_panels:
+        sub = scen[scen["scenario"] == key].sort_values("wtp")
+        for s in order:
             ax.plot(sub["wtp"] / 1000, sub[f"p_{s}"], color=cmap[s],
-                    lw=2.4 if s == win else 1.3,
-                    alpha=1.0 if s == win else 0.55,
-                    zorder=4 if s == win else 2, label=labels[s])
+                    lw=2.4 if s == win else 1.2,
+                    alpha=1.0 if s == win else 0.5,
+                    zorder=4 if s == win else 2)
         ax.axvline(100, color=COL["grey"], ls=":", lw=0.7)
         ax.set_xlim(0, 200); ax.set_ylim(0, 1)
         ax.set_xlabel("WTP (US$1000/QALY)")
+        ax.set_ylabel("P(strategy optimal)")
         ax.set_title(title, fontsize=9.5, fontweight="bold", color=COL["navy"])
-        # assumption + winner banner
-        ax.text(0.04, 0.97, assume, transform=ax.transAxes, fontsize=6.8,
+        ax.text(0.04, 0.97, assume, transform=ax.transAxes, fontsize=6.4,
                 color=COL["slate"], va="top", ha="left", linespacing=1.25)
-        ax.text(0.96, 0.06, f"→ {labels[win]}", transform=ax.transAxes,
-                fontsize=8.5, fontweight="bold", color=cmap[win],
-                va="bottom", ha="right")
-        ax.text(0.5, -0.30, plaus, transform=ax.transAxes, fontsize=6.8,
-                style="italic", color=COL["grey"], va="top", ha="center")
+        ax.text(0.04, 0.62, plaus, transform=ax.transAxes, fontsize=6.2,
+                style="italic", color=COL["grey"], va="top", ha="left")
+        ax.text(0.96, 0.86, f"→ {labels[win]}", transform=ax.transAxes,
+                fontsize=8.2, fontweight="bold", color=cmap[win],
+                va="top", ha="right")
         style_axis(ax, ygrid=True, xgrid=True)
-    axes[0].set_ylabel("Probability strategy is optimal")
-    # shared legend across the top
-    handles = [Line2D([0], [0], color=cmap[s], lw=2.4) for s in
-               ["obs", "aed", "mla", "mlg"]]
-    fig.legend(handles, [labels[s] for s in ["obs", "aed", "mla", "mlg"]],
-               loc="upper center", ncol=4, frameon=False, fontsize=8,
-               bbox_to_anchor=(0.5, 1.005))
-    add_panel_label(axes[0], "A"); add_panel_label(axes[1], "B")
-    add_panel_label(axes[2], "C")
-    plt.savefig(FIG / "F5b_scenario_ceacs.png")
-    plt.savefig(FIG / "F5b_scenario_ceacs.pdf")
+        add_panel_label(ax, lab)
+
+    handles = [Line2D([0], [0], color=cmap[s], lw=2.4) for s in order]
+    fig.legend(handles, [labels[s] for s in order], loc="lower center",
+               ncol=4, frameon=False, fontsize=8.5, bbox_to_anchor=(0.5, 0.005))
+    plt.savefig(FIG / "F5_cea.png")
+    plt.savefig(FIG / "F5_cea.pdf")
     plt.close()
-    print("[OK] F5b_scenario_ceacs — scenario acceptability curves")
+    print("[OK] F5_cea — CE plane + 3 scenario acceptability curves")
 
 
 # ─── F6 — VOI (rebuilt native) ──────────────────────────────
@@ -747,7 +701,6 @@ def main():
     figure_3()
     figure_4()
     figure_5()
-    figure_5b()
     figure_6()
     print("\nAll 6 main figures rebuilt in JNNP aesthetic.")
     print("Output: figures/F[1-6].{png,pdf}  300 dpi PNG · vector PDF")
