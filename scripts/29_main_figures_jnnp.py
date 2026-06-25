@@ -268,13 +268,16 @@ def figure_2():
     axA = axes[0]
     axA.plot([0, 0.5], [0, 0.5], color=COL["grey"], lw=0.9, ls=":",
               label="Perfect calibration", zorder=1)
+    # frac = LOWESS smoothing span; the deployed BIDMC model's predictions are
+    # squeezed into a very narrow band (~0.065-0.134), so it needs a wider span
+    # to read as a clean line rather than a wiggle.
     cal_models = [
-        ("eicu_setC",           "eICU Set C",                COL["navy"], "-"),
-        ("bidmc_postopB_firth", "BIDMC postop-B (deployed)", COL["rust"], "--"),
+        ("eicu_setC",           "eICU Set C",                COL["navy"], "-",  0.60),
+        ("bidmc_postopB_firth", "BIDMC postop-B (deployed)", COL["rust"], "--", 0.90),
     ]
     rng = np.random.default_rng(42)
     rug_base = -0.018
-    for key, label, color, ls in cal_models:
+    for key, label, color, ls, frac in cal_models:
         cache_path = CACHE / f"oof_{key}.npz"
         if not cache_path.exists():
             continue
@@ -286,7 +289,7 @@ def figure_2():
         for _ in range(200):
             idx = rng.integers(0, len(y), len(y))
             try:
-                sm = lowess(y[idx], p[idx], frac=0.6, return_sorted=True,
+                sm = lowess(y[idx], p[idx], frac=frac, return_sorted=True,
                               it=0, missing="drop")
             except Exception:
                 continue
