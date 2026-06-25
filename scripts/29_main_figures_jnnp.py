@@ -621,6 +621,65 @@ def figure_5():
     print("[OK] F5_cea — native JNNP (CE plane + CEAC)")
 
 
+# ─── F5b — Scenario CEACs (the winner is assumption-dependent) ──
+def figure_5b():
+    """Three cost-effectiveness acceptability curves showing how the optimal
+    strategy changes with what one assumes about AED efficacy, AED harm and the
+    cost/yield of continuous EEG. Data from 38c_scenario_ceacs.py."""
+    from matplotlib.lines import Line2D
+    df = pd.read_csv(RES / "38c_scenario_ceacs.csv")
+    labels = {"obs": "Observation", "aed": "Universal AED",
+              "mla": "ML-guided AED", "mlg": "ML-guided cEEG"}
+    cmap = {"obs": COL["grey"], "aed": COL["rust"],
+            "mla": COL["ochre"], "mlg": COL["navy"]}
+    panels = [
+        ("A_base", "Base case: cSDH-grounded",
+         "AED RRR ~0.15 (no proven effect),\ncEEG cost-effective",
+         "Most consistent with current evidence", "mlg"),
+        ("B_ml_aed", "AED effective, monitoring costly",
+         "AED RRR ~0.20 with real harm,\ncEEG cost ×2.5",
+         "Plausible if AED works and cEEG is dear", "mla"),
+        ("C_universal", "Optimistic AED (least supported)",
+         "AED RRR ~0.45 (TBI-imported),\nno AED harm",
+         "Requires assumptions cSDH evidence lacks", "aed"),
+    ]
+    fig, axes = plt.subplots(1, 3, figsize=(10.6, 3.7), sharey=True)
+    plt.subplots_adjust(wspace=0.12, bottom=0.30, top=0.80, left=0.07, right=0.985)
+    for ax, (key, title, assume, plaus, win) in zip(axes, panels):
+        sub = df[df["scenario"] == key].sort_values("wtp")
+        for s in ["obs", "aed", "mla", "mlg"]:
+            ax.plot(sub["wtp"] / 1000, sub[f"p_{s}"], color=cmap[s],
+                    lw=2.4 if s == win else 1.3,
+                    alpha=1.0 if s == win else 0.55,
+                    zorder=4 if s == win else 2, label=labels[s])
+        ax.axvline(100, color=COL["grey"], ls=":", lw=0.7)
+        ax.set_xlim(0, 200); ax.set_ylim(0, 1)
+        ax.set_xlabel("WTP (US$1000/QALY)")
+        ax.set_title(title, fontsize=9.5, fontweight="bold", color=COL["navy"])
+        # assumption + winner banner
+        ax.text(0.04, 0.97, assume, transform=ax.transAxes, fontsize=6.8,
+                color=COL["slate"], va="top", ha="left", linespacing=1.25)
+        ax.text(0.96, 0.06, f"→ {labels[win]}", transform=ax.transAxes,
+                fontsize=8.5, fontweight="bold", color=cmap[win],
+                va="bottom", ha="right")
+        ax.text(0.5, -0.30, plaus, transform=ax.transAxes, fontsize=6.8,
+                style="italic", color=COL["grey"], va="top", ha="center")
+        style_axis(ax, ygrid=True, xgrid=True)
+    axes[0].set_ylabel("Probability strategy is optimal")
+    # shared legend across the top
+    handles = [Line2D([0], [0], color=cmap[s], lw=2.4) for s in
+               ["obs", "aed", "mla", "mlg"]]
+    fig.legend(handles, [labels[s] for s in ["obs", "aed", "mla", "mlg"]],
+               loc="upper center", ncol=4, frameon=False, fontsize=8,
+               bbox_to_anchor=(0.5, 1.005))
+    add_panel_label(axes[0], "A"); add_panel_label(axes[1], "B")
+    add_panel_label(axes[2], "C")
+    plt.savefig(FIG / "F5b_scenario_ceacs.png")
+    plt.savefig(FIG / "F5b_scenario_ceacs.pdf")
+    plt.close()
+    print("[OK] F5b_scenario_ceacs — scenario acceptability curves")
+
+
 # ─── F6 — VOI (rebuilt native) ──────────────────────────────
 def figure_6():
     # Decision-sensitivity / value-of-information under the deployable model.
@@ -688,6 +747,7 @@ def main():
     figure_3()
     figure_4()
     figure_5()
+    figure_5b()
     figure_6()
     print("\nAll 6 main figures rebuilt in JNNP aesthetic.")
     print("Output: figures/F[1-6].{png,pdf}  300 dpi PNG · vector PDF")
