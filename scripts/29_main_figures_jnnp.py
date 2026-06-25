@@ -595,15 +595,15 @@ def figure_5():
     scen_panels = [
         (axB, "B", "A_base", "Base case",
          "cSDH-grounded: AED RRR ~0.15\n(no proven effect), cEEG cost-effective",
-         "most consistent with evidence", "mlg"),
+         "mlg"),
         (axC, "C", "B_ml_aed", "AED works, monitoring costly",
          "AED RRR ~0.20 with real harm,\ncEEG cost ×2.5",
-         "plausible if AED works and cEEG is dear", "mla"),
+         "mla"),
         (axD, "D", "C_universal", "Optimistic AED",
-         "AED RRR ~0.45 (TBI-imported),\nno AED harm",
-         "needs assumptions cSDH evidence lacks", "aed"),
+         "AED RRR ~0.45, no AED harm",
+         "aed"),
     ]
-    for ax, lab, key, title, assume, plaus, win in scen_panels:
+    for ax, lab, key, title, assume, win in scen_panels:
         sub = scen[scen["scenario"] == key].sort_values("wtp")
         for s in order:
             ax.plot(sub["wtp"] / 1000, sub[f"p_{s}"], color=cmap[s],
@@ -617,11 +617,9 @@ def figure_5():
         ax.set_title(title, fontsize=9.5, fontweight="bold", color=COL["navy"])
         ax.text(0.04, 0.97, assume, transform=ax.transAxes, fontsize=6.4,
                 color=COL["slate"], va="top", ha="left", linespacing=1.25)
-        ax.text(0.04, 0.62, plaus, transform=ax.transAxes, fontsize=6.2,
-                style="italic", color=COL["grey"], va="top", ha="left")
-        ax.text(0.96, 0.86, f"→ {labels[win]}", transform=ax.transAxes,
+        ax.text(0.96, 0.50, f"→ {labels[win]}", transform=ax.transAxes,
                 fontsize=8.2, fontweight="bold", color=cmap[win],
-                va="top", ha="right")
+                va="center", ha="right")
         style_axis(ax, ygrid=True, xgrid=True)
         add_panel_label(ax, lab)
 
