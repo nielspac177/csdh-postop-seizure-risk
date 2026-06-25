@@ -724,11 +724,20 @@ def build_main():
          "parameters governing the universal-versus-selective comparison "
          "(Figure 6).", {})], indent=True)
     register_figure("Figure 5", FIG / "F5_cea.png",
-                "Figure 5.  Cost-effectiveness analysis. A, Decision tree "
-                "with base-case rollback per strategy. B, Cost-effectiveness "
-                "plane from 10,000-iteration probabilistic sensitivity. "
-                "C, Cost-effectiveness acceptability curves over willingness-"
-                "to-pay.")
+                "Figure 5.  Cost-effectiveness of the deployable "
+                "postoperative-B model, from 10,000-iteration probabilistic "
+                "sensitivity analysis (the base-case decision tree is shown in "
+                "the Supplementary Appendix). A, Cost-effectiveness plane: "
+                "incremental cost and QALYs of each active strategy versus "
+                "observation (faint points, PSA iterations; solid markers, "
+                "means; dashed line, $100,000/QALY willingness-to-pay). "
+                "B, Cost-effectiveness acceptability curves: probability each "
+                "strategy is optimal across willingness-to-pay. The base case "
+                "assumes an antiepileptic-drug relative-risk reduction of 0.45 "
+                "and minimal AED disutility (0.02); neither is established in "
+                "cSDH, and the preferred strategy is sensitive to both "
+                "(Figure 6). Universal AED is most often optimal only under "
+                "these favourable AED assumptions.")
     register_figure("Figure 6", FIG / "F6_voi.png",
                 "Figure 6.  Decision sensitivity and value of information. "
                 "A, One-way sensitivity at WTP $100,000/QALY: net-benefit swing "
