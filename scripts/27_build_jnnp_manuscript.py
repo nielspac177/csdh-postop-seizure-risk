@@ -606,12 +606,18 @@ def build_main():
          "rather than on raw decision-curve performance.",
          {})], indent=True)
     register_figure("Figure 2", FIG / "F2_calibration_dca.png",
-                "Figure 2.  Calibration and clinical utility. "
-                "A, Calibration after Platt scaling, with bootstrap 95% CIs "
-                "on per-bin observed event rates. B, Decision-curve net "
-                "benefit across probability thresholds; the model outperforms "
-                "'treat all' and 'treat none' in the clinically relevant "
-                "5–15% band.")
+                "Figure 2.  Calibration and clinical utility of the deployed "
+                "model. A, LOWESS-smoothed calibration of the deployed BIDMC "
+                "postoperative-B (Firth) model and the external eICU Set C "
+                "model, each drawn over the range of predicted risk it "
+                "actually produces (to the 97.5th percentile) with a 95% "
+                "bootstrap envelope. The deployed model is well calibrated in "
+                "the mean (mean predicted risk equals the 7% base rate) but "
+                "under-dispersed, so its predictions occupy a narrow low range "
+                "rather than extending up the diagonal. B, Decision-curve net "
+                "benefit computed from the same out-of-fold predictions; both "
+                "models exceed 'treat all' and 'treat none' across the "
+                "clinically relevant 5–15% threshold band.")
 
     # 3.3 Eleven-method battery
     add_heading(doc, "Eleven-method modelling battery", level=2)

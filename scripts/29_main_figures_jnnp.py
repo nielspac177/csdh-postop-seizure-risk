@@ -263,22 +263,32 @@ def figure_2():
     # the calibration plot through coarse decile bins (which are noisy on
     # BIDMC's 48 events).  A 95% bootstrap envelope shows the uncertainty.
     axA = axes[0]
+    # Use the DEPLOYED Firth model (oof_*_firth), not the BalancedRandomForest /
+    # LR-EN+SMOTE caches: those are the comparator models the paper rejects and
+    # are badly miscalibrated (BRF mean prediction ~0.47 vs 0.07 base rate),
+    # which previously made the BIDMC calibration line look spuriously flat and
+    # contradicted the manuscript's calibration claims for the deployed model.
     models_to_plot = [
-        ("eicu_setC",     "eICU Set C",     COL["navy"], "-"),
-        ("bidmc_postopA", "BIDMC postop-A", COL["rust"], "--"),
+        ("eicu_setC",           "eICU Set C",                COL["navy"], "-"),
+        ("bidmc_postopB_firth", "BIDMC postop-B (deployed)", COL["rust"], "--"),
     ]
     axA.plot([0, 0.6], [0, 0.6], color=COL["grey"], lw=0.8, ls=":",
               label="Perfect calibration", zorder=1)
 
     rng = np.random.default_rng(42)
-    grid = np.linspace(0.0, 0.55, 80)
     for key, label, color, ls in models_to_plot:
         cache_path = CACHE / f"oof_{key}.npz"
         if not cache_path.exists():
             continue
         z = np.load(cache_path)
         y = z["y"].astype(float); p = np.clip(z["p"], 1e-6, 1 - 1e-6)
-        # bootstrap LOWESS envelope: 200 resamples
+        # Restrict the LOWESS grid to where the model's predictions actually
+        # have support (up to the 97.5th percentile). Plotting beyond that is
+        # extrapolation: the deployed Firth model is under-dispersed, so its
+        # predictions are compressed into a narrow low range, and a fixed
+        # 0-0.55 grid produced a spurious flat tail with a huge envelope.
+        p_hi = float(np.percentile(p, 97.5))
+        grid = np.linspace(float(p.min()), p_hi, 60)
         smooths = []
         for _ in range(200):
             idx = rng.integers(0, len(y), len(y))
@@ -298,7 +308,7 @@ def figure_2():
         axA.fill_between(grid, lo, hi, color=color, alpha=0.18, lw=0, zorder=2)
         axA.plot(grid, mid, color=color, lw=2.2, ls=ls,
                   label=label, zorder=3)
-    axA.set_xlim(0, 0.55); axA.set_ylim(0, 0.55)
+    axA.set_xlim(0, 0.45); axA.set_ylim(0, 0.45)
     axA.set_xlabel("Predicted probability")
     axA.set_ylabel("Observed event rate")
     axA.set_title("Calibration after Platt scaling")
@@ -311,31 +321,44 @@ def figure_2():
                 title_fontsize=7)
     axA_handles, axA_labels = [], []  # nothing to forward to the shared legend
 
-    # Panel B: decision-curve net benefit
+    # Panel B: decision-curve net benefit, computed from the SAME deployed
+    # Firth OOF predictions as panel A (not the stale BRF/LR-EN DCA CSV, whose
+    # inflated predictions drove the BIDMC curve sharply negative in the 5-15%
+    # band — a calibration artefact, not a true loss of clinical utility).
     axB = axes[1]
-    dca = pd.read_csv(RES / "03_dca_summary_at_thresholds.csv") \
-            if (RES / "03_dca_summary_at_thresholds.csv").exists() else None
-    if dca is not None:
-        # DCA CSV schema: columns model, threshold, model_nb, treat_all_nb, incremental
-        model_col = "model" if "model" in dca.columns else "cohort"
-        nb_model_col = "model_nb" if "model_nb" in dca.columns else "nb_model"
-        nb_all_col   = "treat_all_nb" if "treat_all_nb" in dca.columns else "nb_all"
-        models_to_plot = [c for c in dca[model_col].unique()
-                           if c in ("bidmc_postopA", "eicu_setC")]
-        for ci, c in enumerate(models_to_plot):
-            sub = dca[dca[model_col] == c].sort_values("threshold")
-            color = COL["rust"] if "bidmc" in c else COL["navy"]
-            label = "BIDMC postop-A" if "bidmc" in c else "eICU Set C"
-            axB.plot(sub["threshold"]*100, sub[nb_model_col], lw=1.8,
-                      color=color, label=f"{label} — model")
-            if ci == 0:
-                axB.plot(sub["threshold"]*100, sub[nb_all_col], lw=1.0,
-                          color=COL["grey"], ls="--", label="Treat all")
-                axB.plot(sub["threshold"]*100, [0]*len(sub),
-                          lw=1.0, color=COL["slate"], ls=":", label="Treat none")
-        axB.axvspan(5, 15, color=COL["soft"], alpha=0.20,
-                     label="Clinical threshold band")
-        axB.set_xlim(0, 30); axB.set_ylim(-0.10, 0.10)
+
+    def net_benefit(y, p, thresholds):
+        y = y.astype(int); n = len(y); prev = y.mean()
+        nb_m, nb_all = [], []
+        for t in thresholds:
+            pos = p >= t
+            tp = np.sum(pos & (y == 1)) / n
+            fp = np.sum(pos & (y == 0)) / n
+            w = t / (1.0 - t)
+            nb_m.append(tp - fp * w)
+            nb_all.append(prev - (1.0 - prev) * w)
+        return np.array(nb_m), np.array(nb_all)
+
+    thr = np.linspace(0.01, 0.30, 60)
+    dca_models = [
+        ("eicu_setC",           "eICU Set C",                COL["navy"]),
+        ("bidmc_postopB_firth", "BIDMC postop-B (deployed)", COL["rust"]),
+    ]
+    for ci, (key, label, color) in enumerate(dca_models):
+        cp = CACHE / f"oof_{key}.npz"
+        if not cp.exists():
+            continue
+        z = np.load(cp); y = z["y"].astype(int); p = z["p"].astype(float)
+        nb_m, nb_all = net_benefit(y, p, thr)
+        axB.plot(thr * 100, nb_m, lw=1.8, color=color, label=f"{label} — model")
+        if ci == 0:
+            axB.plot(thr * 100, nb_all, lw=1.0, color=COL["grey"], ls="--",
+                      label="Treat all")
+            axB.plot(thr * 100, np.zeros_like(thr), lw=1.0, color=COL["slate"],
+                      ls=":", label="Treat none")
+    axB.axvspan(5, 15, color=COL["soft"], alpha=0.20,
+                 label="Clinical threshold band")
+    axB.set_xlim(0, 30); axB.set_ylim(-0.04, 0.10)
     axB.set_xlabel("Probability threshold (%)")
     axB.set_ylabel("Net benefit")
     axB.set_title("Decision-curve net benefit")
