@@ -747,18 +747,21 @@ def build_main():
                 "preferred only under the least cSDH-supported assumptions "
                 "(panel D); see Figure 6 for the formal threshold analysis.")
     register_figure("Figure 6", FIG / "F6_voi.png",
-                "Figure 6.  Decision sensitivity and value of information. "
-                "A, One-way sensitivity at WTP $100,000/QALY: net-benefit swing "
-                "of ML-guided allocation versus universal AED across each "
-                "parameter's plausible range; AED efficacy and AED disutility "
-                "(highlighted) dominate the decision. B, Two-way optimal-"
-                "strategy map over AED relative-risk reduction and AED "
-                "disutility: ML-guided allocation is preferred across the "
+                "Figure 6.  Decision sensitivity and value of information, "
+                "anchored at the cSDH-grounded base case (AED relative-risk "
+                "reduction 0.15), where ML-guided allocation is preferred by "
+                "≈$1,800/patient. A, One-way sensitivity at WTP $100,000/QALY: "
+                "net-benefit swing of the best ML-guided strategy (AED-only or "
+                "with cEEG) versus universal AED across each parameter's "
+                "plausible range. AED efficacy is the only parameter whose range "
+                "can make universal AED optimal (rust); ML-guided allocation "
+                "stays optimal across the range of every other parameter (navy). "
+                "B, Two-way optimal-strategy map over AED relative-risk reduction "
+                "and AED disutility: ML-guided allocation is preferred across the "
                 "cSDH-plausible region, universal AED only under high efficacy "
                 "and negligible harm. Under cSDH-grounded priors the population "
                 "expected value of perfect information at $100k/QALY is "
-                "approximately $23M over 10 years; no single parameter "
-                "individually reverses the decision within its prior range.")
+                "approximately $23M over 10 years.")
 
     # NIS results are not reported in the main manuscript. The cohort was
     # excluded from the primary analysis because available ICD-10 coding

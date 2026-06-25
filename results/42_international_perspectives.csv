@@ -1,7 +1,7 @@
 perspective,currency,cost_scale,wtp_local,best_strategy,incr_NMB_ml_vs_aed,ml_preferred
-US,USD,1.0,50000,aed,-836.3,False
-US,USD,1.0,100000,aed,-1032.6,False
-US,USD,1.0,150000,aed,-1228.8,False
-UK_NICE,GBP,0.79,20000,aed,-538.3,False
-UK_NICE,GBP,0.79,30000,aed,-623.4,False
-Eurozone,EUR,0.92,40000,aed,-745.9,False
+US,USD,1.0,50000,ml-cEEG,1510.7,True
+US,USD,1.0,100000,ml-cEEG,1831.6,True
+US,USD,1.0,150000,ml-cEEG,2152.5,True
+UK_NICE,GBP,0.79,20000,ml-cEEG,1068.3,True
+UK_NICE,GBP,0.79,30000,ml-cEEG,1132.4,True
+Eurozone,EUR,0.92,40000,ml-cEEG,1351.3,True

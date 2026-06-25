@@ -645,10 +645,14 @@ def figure_6():
                                    gridspec_kw={"width_ratios": [1.5, 1.0]})
     plt.subplots_adjust(wspace=0.5, left=0.30, right=0.97, bottom=0.16, top=0.90)
 
-    # Panel A — one-way tornado: AED efficacy & harm dominate
+    # Panel A — one-way tornado. Colour is DATA-DRIVEN: a parameter is rust if
+    # its plausible range can make universal AED optimal (ML does not win at both
+    # extremes), navy if ML-guided allocation stays optimal across the whole
+    # range. Anchored at the cSDH-grounded base case (RRR 0.15), only AED
+    # efficacy can flip the decision.
     pos = np.arange(len(tor))
-    top = tor["parameter"].isin(["AED efficacy (RRR)", "AED disutility"])
-    colors = [COL["rust"] if t else COL["navy"] for t in top]
+    can_flip = ~(tor["ml_wins_low"].astype(bool) & tor["ml_wins_high"].astype(bool))
+    colors = [COL["rust"] if f else COL["navy"] for f in can_flip]
     axA.barh(pos, tor["swing"], color=colors, edgecolor="black", linewidth=0.4)
     axA.set_yticks(pos)
     axA.set_yticklabels(tor["parameter"], fontsize=7.5)
@@ -682,7 +686,8 @@ def figure_6():
         mpatches.Patch(facecolor=COL["rust"], edgecolor="black", linewidth=0.4),
     ]
     figure_legend_below(fig, legend_handles,
-                        ["ML-guided allocation optimal", "Universal AED optimal"],
+                        ["ML-guided allocation optimal",
+                         "Universal AED optimal (within this parameter's range / region)"],
                         ncol=2, y=0.02, fontsize=7.5)
 
     plt.savefig(FIG / "F6_voi.png")

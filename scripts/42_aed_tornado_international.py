@@ -36,9 +36,15 @@ STRATS = ["observation", "universal_aed", "ml_aed_only", "ml_guided"]
 LABEL = {"observation": "obs", "universal_aed": "aed",
          "ml_aed_only": "ml-aed", "ml_guided": "ml-cEEG"}
 
+# cSDH-grounded base case (matches the headline PSA in script 38 and the VOI in
+# script 45): AED efficacy prior mean 0.15. Anchoring the tornado and the
+# international analysis here keeps F6 consistent with F5; the optimistic
+# RRR 0.45 is the high end of the AED-efficacy range, not the base case.
+BASE = {"aed_rrr": 0.15}
+
 
 def nmb(strategy, wtp, cost_scale=1.0, **over):
-    o = dict(sens=SENS, spec=SPEC, **over)
+    o = {"sens": SENS, "spec": SPEC, **BASE, **over}   # over overrides BASE
     c, q = run_strategy(strategy, P, **o)
     return wtp * q - c * cost_scale
 
@@ -50,7 +56,7 @@ def best(wtp, cost_scale=1.0, **over):
 
 # Parameter ranges for the tornado: (kwarg, low, high, base, label)
 TORNADO = [
-    ("aed_rrr",                0.0,  0.45, P.aed_rrr,                "AED efficacy (RRR)"),
+    ("aed_rrr",                0.0,  0.45, BASE["aed_rrr"],           "AED efficacy (RRR)"),
     ("utility_aed_decrement",  0.02, 0.15, P.utility_aed_decrement,  "AED disutility"),
     ("p_seizure_base",         0.07, 0.18, P.p_seizure_base,         "Baseline seizure risk"),
     ("cost_ceeg",              900,  2200, P.cost_ceeg_per_day,       "cEEG cost/day"),
