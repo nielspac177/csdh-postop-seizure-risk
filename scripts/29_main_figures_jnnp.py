@@ -411,8 +411,10 @@ def figure_3():
     # the long labels.
     fig, axes = plt.subplots(1, 2, figsize=(9.5, 6.4),
                               gridspec_kw={"width_ratios": [1.9, 1.0]})
-    plt.subplots_adjust(wspace=0.08, bottom=0.22, top=0.94,
+    plt.subplots_adjust(wspace=0.08, bottom=0.22, top=0.90,
                           left=0.20, right=0.97)
+    fig.suptitle("BIDMC development cohort  ·  postoperative-A feature set",
+                 fontsize=10.5, fontweight="bold", color=COL["navy"], y=0.975)
 
     # Panel A: AUC + CI
     axA = axes[0]
