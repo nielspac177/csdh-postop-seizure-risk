@@ -532,7 +532,7 @@ def figure_4():
             f"α = 0.10:\n{conf*100:.0f}% confident\n"
             f"({ro*100:.0f}% rule-out + {ri*100:.0f}% rule-in)\n"
             f"{(1-conf)*100:.0f}% defer",
-            xy=(0.10, max(ro, ri)), xytext=(0.05, 0.37),
+            xy=(0.10, max(ro, ri)), xytext=(0.045, 0.37),
             fontsize=6.8, color=COL["slate"], va="top", linespacing=1.3,
             arrowprops=dict(arrowstyle="->", color=COL["slate"], lw=0.8))
     axB.set_xlim(0, 0.30); axB.set_ylim(0, 0.50)
