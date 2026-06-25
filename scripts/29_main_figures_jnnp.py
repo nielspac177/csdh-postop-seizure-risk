@@ -257,61 +257,53 @@ def figure_2():
     plt.subplots_adjust(wspace=0.34, bottom=0.16, top=0.92,
                           left=0.08, right=0.97)
 
-    # ── Panel A: quantile-binned reliability diagram ──
-    # Standard reliability diagram (observed vs mean-predicted per quantile bin,
-    # with Wilson 95% CIs) on the DEPLOYED Firth model (oof_*_firth), not the
-    # BalancedRandomForest / LR-EN+SMOTE comparator caches the paper rejects.
-    # Binned points read cleanly even when predictions are compressed; a LOWESS
-    # curve over the deployed model's narrow support produced a stubby, balloon-
-    # enveloped line that misrepresented its (good) calibration. A marginal rug
-    # shows where the predictions actually sit (under-dispersed, near the base
-    # rate). XLIM = 0.30 covers the bulk of both models; the few eICU predictions
-    # above that are sparse and omitted to keep the deployed-model curve legible.
+    # ── Panel A: LOWESS-smoothed calibration curves ──
+    # Smooth non-parametric calibration (E[y | p_pred]) of the DEPLOYED Firth
+    # model (oof_*_firth), not the BalancedRandomForest / LR-EN+SMOTE comparator
+    # caches the paper rejects. Each curve is drawn only over the range of
+    # predicted risk the model actually produces (to its 97.5th percentile,
+    # capped at the 0.30 axis); a light 95% bootstrap band shows uncertainty and
+    # a marginal rug shows predicted-risk density, making the deployed model's
+    # under-dispersion (predictions compressed near the base rate) visible.
     axA = axes[0]
-
-    def _binned_reliability(y, p, n_bins):
-        y = y.astype(int)
-        order = np.argsort(p); y, p = y[order], p[order]
-        mp, obs, lo, hi = [], [], [], []
-        zc = 1.96
-        for b in np.array_split(np.arange(len(y)), n_bins):
-            if len(b) == 0:
-                continue
-            pi, yi = p[b], y[b]
-            n = len(yi); k = int(yi.sum()); ph = k / n
-            cen = (ph + zc * zc / (2 * n)) / (1 + zc * zc / n)
-            half = (zc * np.sqrt(ph * (1 - ph) / n + zc * zc / (4 * n * n))
-                    / (1 + zc * zc / n))
-            mp.append(float(pi.mean())); obs.append(ph)
-            lo.append(max(0.0, cen - half)); hi.append(min(1.0, cen + half))
-        return (np.array(mp), np.array(obs), np.array(lo), np.array(hi))
-
     axA.plot([0, 0.5], [0, 0.5], color=COL["grey"], lw=0.9, ls=":",
               label="Perfect calibration", zorder=1)
     cal_models = [
-        ("eicu_setC",           "eICU Set C",                COL["navy"], "-",  10),
-        ("bidmc_postopB_firth", "BIDMC postop-B (deployed)", COL["rust"], "--",  5),
+        ("eicu_setC",           "eICU Set C",                COL["navy"], "-"),
+        ("bidmc_postopB_firth", "BIDMC postop-B (deployed)", COL["rust"], "--"),
     ]
+    rng = np.random.default_rng(42)
     rug_base = -0.018
-    for key, label, color, ls, nbin in cal_models:
+    for key, label, color, ls in cal_models:
         cache_path = CACHE / f"oof_{key}.npz"
         if not cache_path.exists():
             continue
         z = np.load(cache_path)
-        y = z["y"].astype(int); p = z["p"].astype(float)
-        mp, obs, lo, hi = _binned_reliability(y, p, nbin)
-        keep = mp <= 0.305
-        axA.plot(mp[keep], obs[keep], ls=ls, color=color, lw=1.6, zorder=3)
-        axA.errorbar(mp[keep], obs[keep],
-                      yerr=[obs[keep] - lo[keep], hi[keep] - obs[keep]],
-                      fmt="o", color=color, ms=5, lw=1.3, capsize=2.5,
-                      label=label, zorder=4)
-        # marginal rug of predicted risk (subsample for density legibility)
+        y = z["y"].astype(float); p = np.clip(z["p"], 1e-6, 1 - 1e-6)
+        hi_cap = min(float(np.percentile(p, 97.5)), 0.305)
+        grid = np.linspace(float(p.min()), hi_cap, 60)
+        smooths = []
+        for _ in range(200):
+            idx = rng.integers(0, len(y), len(y))
+            try:
+                sm = lowess(y[idx], p[idx], frac=0.6, return_sorted=True,
+                              it=0, missing="drop")
+            except Exception:
+                continue
+            if len(sm) < 5: continue
+            smooths.append(np.interp(grid, sm[:, 0], sm[:, 1]))
+        if not smooths: continue
+        smooths = np.clip(np.vstack(smooths), 0, 1)
+        lo  = np.percentile(smooths, 2.5,  axis=0)
+        hi  = np.percentile(smooths, 97.5, axis=0)
+        mid = np.percentile(smooths, 50,   axis=0)
+        axA.fill_between(grid, lo, hi, color=color, alpha=0.10, lw=0, zorder=2)
+        axA.plot(grid, mid, color=color, lw=2.2, ls=ls, label=label, zorder=3)
+        # marginal rug of predicted risk (under the curve)
         rug = p[p <= 0.305]
-        axA.plot(np.repeat(rug, 1), np.full(rug.shape, rug_base),
-                  marker="|", ls="none", color=color, alpha=0.10, ms=6,
-                  zorder=1, clip_on=False)
-        rug_base -= 0.022
+        axA.plot(rug, np.full(rug.shape, rug_base), marker="|", ls="none",
+                  color=color, alpha=0.10, ms=6, zorder=1, clip_on=False)
+        rug_base -= 0.020
     axA.set_xlim(0, 0.305); axA.set_ylim(-0.05, 0.45)
     axA.set_xlabel("Predicted probability")
     axA.set_ylabel("Observed event rate")
@@ -321,7 +313,7 @@ def figure_2():
     # Panel-local legend: place inside the panel rather than the shared bottom
     axA.legend(loc="upper left", fontsize=7.5, frameon=False,
                 handlelength=2.0, handletextpad=0.5,
-                title="(quantile bins · Wilson 95% CI; rug = predicted-risk density)",
+                title="(LOWESS · 95% bootstrap band; rug = predicted-risk density)",
                 title_fontsize=6.5)
     axA_handles, axA_labels = [], []  # nothing to forward to the shared legend
 
