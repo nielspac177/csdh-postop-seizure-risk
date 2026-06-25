@@ -483,6 +483,13 @@ def figure_4():
     # Panel A: class-conditional coverage validation
     axA = axes[0]
     a_line = np.linspace(0.01, 0.30, 60)
+    # Shade the region at/above the target line: points landing here mean the
+    # coverage guarantee is kept.
+    axA.fill_between(a_line, 1 - a_line, 1.0, color=COL["forest"], alpha=0.08,
+                      lw=0, zorder=0)
+    axA.text(0.015, 0.995, "guarantee met\n(on or above the line)",
+              fontsize=6.6, color=COL["forest"], va="top", ha="left",
+              linespacing=1.2, zorder=1)
     axA.plot(a_line, 1 - a_line, color=COL["grey"], ls="--", lw=0.8,
               label="Target (1−α)")
     axA.plot(out["alpha"], out["coverage_class1"], marker="o",
@@ -512,12 +519,22 @@ def figure_4():
                color=COL["rust"], lw=1.8, ms=6,
                markeredgecolor="black", markeredgewidth=0.4,
                label="Rule-in")
-    # Working-point reference line at α=0.10 (90% target coverage); the
-    # numeric rates live in the manuscript figure legend, not on the figure.
+    # Working-point callout at α=0.10 (90% target coverage): mark the rule-out
+    # and rule-in points and annotate the confident-vs-defer split so the
+    # operating point is readable straight off the figure.
     sub = out[out["alpha"] == 0.10]
     if len(sub) > 0:
+        ro = float(sub["rule_out_rate"].iloc[0])
+        ri = float(sub["rule_in_rate"].iloc[0])
+        conf = ro + ri
         axB.axvline(0.10, color=COL["grey"], ls=":", lw=0.7)
-        axB.text(0.105, 0.46, "α = 0.10", fontsize=7.5, color=COL["grey"])
+        axB.annotate(
+            f"α = 0.10:\n{conf*100:.0f}% confident\n"
+            f"({ro*100:.0f}% rule-out + {ri*100:.0f}% rule-in)\n"
+            f"{(1-conf)*100:.0f}% defer",
+            xy=(0.10, max(ro, ri)), xytext=(0.135, 0.40),
+            fontsize=6.8, color=COL["slate"], va="top", linespacing=1.3,
+            arrowprops=dict(arrowstyle="->", color=COL["slate"], lw=0.8))
     axB.set_xlim(0, 0.30); axB.set_ylim(0, 0.50)
     axB.set_xlabel("α (target miscoverage)")
     axB.set_ylabel("Fraction of patients")
