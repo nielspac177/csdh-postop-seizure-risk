@@ -123,7 +123,13 @@ def run_psa_custom(sens_mu, sens_lo, sens_hi, spec_mu, spec_lo, spec_hi,
     a_sens, b_sens   = beta_params_from_ci(sens_mu, sens_lo, sens_hi)
     a_spec, b_spec   = beta_params_from_ci(spec_mu, spec_lo, spec_hi)
     a_pse, b_pse     = beta_params_from_ci(0.10, 0.03, 0.20)
-    a_rrr, b_rrr     = beta_params_from_ci(0.45, 0.25, 0.65)
+    # AED efficacy prior: cSDH-grounded (no proven protective effect; mean 0.15,
+    # 95% interval 0.01-0.45), matching the value-of-information analysis
+    # (script 45). The previous base case (0.45, imported from TBI/tumour
+    # prophylaxis) is optimistic for cSDH and is retained only as a sensitivity
+    # scenario (Figure 6); it is the single setting under which universal AED
+    # outranks ML-guided allocation.
+    a_rrr, b_rrr     = beta_params_from_ci(0.15, 0.01, 0.45)
     a_pe_det, b_pe_det = beta_params_from_ci(0.03, 0.01, 0.06)
     a_pe_und, b_pe_und = beta_params_from_ci(0.12, 0.06, 0.20)
     sh_aed_drug, sc_aed_drug = gamma_params(200, 80)

@@ -597,13 +597,15 @@ def figure_5():
     for s in S:
         axB.plot(wtp / 1000, prob[s], color=cmap[s], lw=1.8, label=labels[s])
     axB.axvline(100, color=COL["grey"], ls=":", lw=0.7)
-    # Surface the assumptions that drive "Universal AED optimal" so the panel is
-    # not read as evidence that AED is best: the base case assumes AED works
-    # (RRR 0.45) with minimal disutility, neither established in cSDH (see F6).
+    # State the base-case AED efficacy prior so the ranking is interpretable:
+    # cSDH-grounded (no proven effect), matching the VOI analysis. Universal AED
+    # becomes optimal only under an optimistic imported efficacy (see F6).
     axB.text(0.015, 0.985,
-              "Base case: AED RRR 0.45,\nminimal AED disutility —\n"
-              "both unproven in cSDH (see Fig 6)",
-              transform=axB.transAxes, fontsize=6.2, color=COL["slate"],
+              "Base case: cSDH-grounded AED prior\n"
+              "(RRR 0.15, 95% CI 0.01–0.45; no proven effect).\n"
+              "Universal AED is optimal only under\n"
+              "optimistic imported efficacy (see Fig 6)",
+              transform=axB.transAxes, fontsize=6.0, color=COL["slate"],
               va="top", ha="left", linespacing=1.3)
     axB.set_xlim(0, 200); axB.set_ylim(0, 1)
     axB.set_xlabel("WTP threshold (US$1000/QALY)")

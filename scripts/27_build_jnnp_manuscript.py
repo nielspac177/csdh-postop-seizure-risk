@@ -733,11 +733,14 @@ def build_main():
                 "means; dashed line, $100,000/QALY willingness-to-pay). "
                 "B, Cost-effectiveness acceptability curves: probability each "
                 "strategy is optimal across willingness-to-pay. The base case "
-                "assumes an antiepileptic-drug relative-risk reduction of 0.45 "
-                "and minimal AED disutility (0.02); neither is established in "
-                "cSDH, and the preferred strategy is sensitive to both "
-                "(Figure 6). Universal AED is most often optimal only under "
-                "these favourable AED assumptions.")
+                "uses a cSDH-grounded antiepileptic-drug efficacy prior "
+                "(relative-risk reduction mean 0.15, 95% interval 0.01–0.45; no "
+                "cSDH study demonstrates a protective effect), matching the "
+                "value-of-information analysis; under this prior ML-guided "
+                "allocation is most often optimal. Universal AED becomes optimal "
+                "only under an optimistic imported efficacy (relative-risk "
+                "reduction 0.45) with negligible disutility, shown as a "
+                "sensitivity scenario in Figure 6.")
     register_figure("Figure 6", FIG / "F6_voi.png",
                 "Figure 6.  Decision sensitivity and value of information. "
                 "A, One-way sensitivity at WTP $100,000/QALY: net-benefit swing "
