@@ -487,8 +487,8 @@ def figure_4():
     # coverage guarantee is kept.
     axA.fill_between(a_line, 1 - a_line, 1.0, color=COL["forest"], alpha=0.08,
                       lw=0, zorder=0)
-    axA.text(0.015, 0.995, "guarantee met\n(on or above the line)",
-              fontsize=6.6, color=COL["forest"], va="top", ha="left",
+    axA.text(0.295, 0.995, "guarantee met\n(on or above the line)",
+              fontsize=6.6, color=COL["forest"], va="top", ha="right",
               linespacing=1.2, zorder=1)
     axA.plot(a_line, 1 - a_line, color=COL["grey"], ls="--", lw=0.8,
               label="Target (1−α)")
@@ -532,7 +532,7 @@ def figure_4():
             f"α = 0.10:\n{conf*100:.0f}% confident\n"
             f"({ro*100:.0f}% rule-out + {ri*100:.0f}% rule-in)\n"
             f"{(1-conf)*100:.0f}% defer",
-            xy=(0.10, max(ro, ri)), xytext=(0.03, 0.37),
+            xy=(0.10, max(ro, ri)), xytext=(0.05, 0.37),
             fontsize=6.8, color=COL["slate"], va="top", linespacing=1.3,
             arrowprops=dict(arrowstyle="->", color=COL["slate"], lw=0.8))
     axB.set_xlim(0, 0.30); axB.set_ylim(0, 0.50)
