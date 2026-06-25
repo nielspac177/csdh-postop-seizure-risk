@@ -257,68 +257,72 @@ def figure_2():
     plt.subplots_adjust(wspace=0.34, bottom=0.16, top=0.92,
                           left=0.08, right=0.97)
 
-    # ── Panel A: LOWESS-smoothed calibration curves ──
-    # Load raw OOF predictions from cache instead of quantile-binned points;
-    # LOWESS gives a non-parametric estimate of E[y | p_pred] without forcing
-    # the calibration plot through coarse decile bins (which are noisy on
-    # BIDMC's 48 events).  A 95% bootstrap envelope shows the uncertainty.
+    # ── Panel A: quantile-binned reliability diagram ──
+    # Standard reliability diagram (observed vs mean-predicted per quantile bin,
+    # with Wilson 95% CIs) on the DEPLOYED Firth model (oof_*_firth), not the
+    # BalancedRandomForest / LR-EN+SMOTE comparator caches the paper rejects.
+    # Binned points read cleanly even when predictions are compressed; a LOWESS
+    # curve over the deployed model's narrow support produced a stubby, balloon-
+    # enveloped line that misrepresented its (good) calibration. A marginal rug
+    # shows where the predictions actually sit (under-dispersed, near the base
+    # rate). XLIM = 0.30 covers the bulk of both models; the few eICU predictions
+    # above that are sparse and omitted to keep the deployed-model curve legible.
     axA = axes[0]
-    # Use the DEPLOYED Firth model (oof_*_firth), not the BalancedRandomForest /
-    # LR-EN+SMOTE caches: those are the comparator models the paper rejects and
-    # are badly miscalibrated (BRF mean prediction ~0.47 vs 0.07 base rate),
-    # which previously made the BIDMC calibration line look spuriously flat and
-    # contradicted the manuscript's calibration claims for the deployed model.
-    models_to_plot = [
-        ("eicu_setC",           "eICU Set C",                COL["navy"], "-"),
-        ("bidmc_postopB_firth", "BIDMC postop-B (deployed)", COL["rust"], "--"),
-    ]
-    axA.plot([0, 0.6], [0, 0.6], color=COL["grey"], lw=0.8, ls=":",
-              label="Perfect calibration", zorder=1)
 
-    rng = np.random.default_rng(42)
-    for key, label, color, ls in models_to_plot:
+    def _binned_reliability(y, p, n_bins):
+        y = y.astype(int)
+        order = np.argsort(p); y, p = y[order], p[order]
+        mp, obs, lo, hi = [], [], [], []
+        zc = 1.96
+        for b in np.array_split(np.arange(len(y)), n_bins):
+            if len(b) == 0:
+                continue
+            pi, yi = p[b], y[b]
+            n = len(yi); k = int(yi.sum()); ph = k / n
+            cen = (ph + zc * zc / (2 * n)) / (1 + zc * zc / n)
+            half = (zc * np.sqrt(ph * (1 - ph) / n + zc * zc / (4 * n * n))
+                    / (1 + zc * zc / n))
+            mp.append(float(pi.mean())); obs.append(ph)
+            lo.append(max(0.0, cen - half)); hi.append(min(1.0, cen + half))
+        return (np.array(mp), np.array(obs), np.array(lo), np.array(hi))
+
+    axA.plot([0, 0.5], [0, 0.5], color=COL["grey"], lw=0.9, ls=":",
+              label="Perfect calibration", zorder=1)
+    cal_models = [
+        ("eicu_setC",           "eICU Set C",                COL["navy"], "-",  10),
+        ("bidmc_postopB_firth", "BIDMC postop-B (deployed)", COL["rust"], "--",  5),
+    ]
+    rug_base = -0.018
+    for key, label, color, ls, nbin in cal_models:
         cache_path = CACHE / f"oof_{key}.npz"
         if not cache_path.exists():
             continue
         z = np.load(cache_path)
-        y = z["y"].astype(float); p = np.clip(z["p"], 1e-6, 1 - 1e-6)
-        # Restrict the LOWESS grid to where the model's predictions actually
-        # have support (up to the 97.5th percentile). Plotting beyond that is
-        # extrapolation: the deployed Firth model is under-dispersed, so its
-        # predictions are compressed into a narrow low range, and a fixed
-        # 0-0.55 grid produced a spurious flat tail with a huge envelope.
-        p_hi = float(np.percentile(p, 97.5))
-        grid = np.linspace(float(p.min()), p_hi, 60)
-        smooths = []
-        for _ in range(200):
-            idx = rng.integers(0, len(y), len(y))
-            try:
-                sm = lowess(y[idx], p[idx], frac=0.5, return_sorted=True,
-                              it=0, missing="drop")
-            except Exception:
-                continue
-            if len(sm) < 5: continue
-            smooths.append(np.interp(grid, sm[:, 0], sm[:, 1]))
-        if not smooths: continue
-        smooths = np.vstack(smooths)
-        smooths = np.clip(smooths, 0, 1)
-        lo  = np.percentile(smooths, 2.5,  axis=0)
-        hi  = np.percentile(smooths, 97.5, axis=0)
-        mid = np.percentile(smooths, 50,   axis=0)
-        axA.fill_between(grid, lo, hi, color=color, alpha=0.18, lw=0, zorder=2)
-        axA.plot(grid, mid, color=color, lw=2.2, ls=ls,
-                  label=label, zorder=3)
-    axA.set_xlim(0, 0.45); axA.set_ylim(0, 0.45)
+        y = z["y"].astype(int); p = z["p"].astype(float)
+        mp, obs, lo, hi = _binned_reliability(y, p, nbin)
+        keep = mp <= 0.305
+        axA.plot(mp[keep], obs[keep], ls=ls, color=color, lw=1.6, zorder=3)
+        axA.errorbar(mp[keep], obs[keep],
+                      yerr=[obs[keep] - lo[keep], hi[keep] - obs[keep]],
+                      fmt="o", color=color, ms=5, lw=1.3, capsize=2.5,
+                      label=label, zorder=4)
+        # marginal rug of predicted risk (subsample for density legibility)
+        rug = p[p <= 0.305]
+        axA.plot(np.repeat(rug, 1), np.full(rug.shape, rug_base),
+                  marker="|", ls="none", color=color, alpha=0.10, ms=6,
+                  zorder=1, clip_on=False)
+        rug_base -= 0.022
+    axA.set_xlim(0, 0.305); axA.set_ylim(-0.05, 0.45)
     axA.set_xlabel("Predicted probability")
     axA.set_ylabel("Observed event rate")
-    axA.set_title("Calibration after Platt scaling")
+    axA.set_title("Calibration of the deployed model")
     style_axis(axA, ygrid=True, xgrid=True)
     add_panel_label(axA, "A")
     # Panel-local legend: place inside the panel rather than the shared bottom
     axA.legend(loc="upper left", fontsize=7.5, frameon=False,
                 handlelength=2.0, handletextpad=0.5,
-                title="(LOWESS · 95% bootstrap envelope)",
-                title_fontsize=7)
+                title="(quantile bins · Wilson 95% CI; rug = predicted-risk density)",
+                title_fontsize=6.5)
     axA_handles, axA_labels = [], []  # nothing to forward to the shared legend
 
     # Panel B: decision-curve net benefit, computed from the SAME deployed
