@@ -12,16 +12,17 @@ This repository contains the analysis code, figure-generation scripts, decision-
 
 The manuscript is a proof of concept: small-cohort clinical machine learning can be honestly deployable when calibration and decision-integration replace AUC as the optimisation target. This repository lets reviewers and the wider community reproduce the eleven-method modelling battery, the conformal risk stratification, the cost-effectiveness analysis with value-of-information, and the four-strategy decision tree.
 
-![Graphical abstract](figures/F0_graphical_abstract.png)
+![Study design and analysis workflow](figures/F0_graphical_abstract.png)
 
-## Analysis pipeline at a glance
+> The Nationwide Inpatient Sample (NIS) was assessed but **excluded** from the primary analysis because available ICD-10 coding cannot reliably distinguish postoperative seizure after cSDH; it is documented in Supplementary Appendix S4 only. The main study uses two databases.
+
+## Analysis pipeline
 
 ```mermaid
 flowchart LR
   subgraph A[Data sources]
-    A1[BIDMC<br/>n=655, 48 events]
-    A2[eICU CRD<br/>n=5,376<br/>139 hospitals]
-    A3[NIS HCUP<br/>n=218,244<br/>corrected outcome]
+    A1[BIDMC<br/>development<br/>n=655, 48 events]
+    A2[eICU-CRD<br/>external evaluation<br/>3,297 stays · 42 hospitals]
   end
   subgraph B[Modelling]
     B1[Firth penalized LR<br/>deployment model]
@@ -33,14 +34,13 @@ flowchart LR
     C2[Decision-curve<br/>net benefit]
   end
   subgraph D[Economic layer]
-    D1[4-strategy<br/>decision tree]
+    D1[4-strategy<br/>cost-effectiveness]
     D2[Probabilistic<br/>sensitivity analysis]
     D3[EVPI / EVPPI<br/>research priorities]
   end
   A1 --> B1
   A1 --> B2
   A2 --> B3
-  A3 -.outcome-correction.-> B1
   B1 --> C1
   B1 --> C2
   C1 --> D1
@@ -51,7 +51,7 @@ flowchart LR
   classDef forest fill:#E8F2EC,stroke:#2E6B45,stroke-width:1.5px,color:#1B4029;
   classDef rust fill:#FBEFE9,stroke:#B5532C,stroke-width:1.5px,color:#7A371C;
   classDef ochre fill:#FBF4E0,stroke:#B58A2E,stroke-width:1.5px,color:#785A18;
-  class A1,A2,A3 navy;
+  class A1,A2 navy;
   class B1,B2,B3 navy;
   class C1,C2 forest;
   class D1,D2 rust;
@@ -201,7 +201,7 @@ A static companion site at <https://nielspac177.github.io/csdh-postop-seizure-ri
 
 - **Risk calculator** — enter a patient's features and obtain the Firth model's probability, the conformal prediction set at a user-chosen confidence level, and the resulting AED-versus-cEEG recommendation.
 - **Population savings calculator** — enter an institutional or national operative volume and obtain the expected cost and QALY differential of ML-guided AED prophylaxis versus current standard of care.
-- **Interactive callgraph** — node-link visualisation of all 28 scripts with click-to-inspect function inventories.
+- **Interactive callgraph** — node-link visualisation of the analysis scripts with click-to-inspect function inventories.
 
 ## Citation
 
