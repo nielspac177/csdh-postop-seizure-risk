@@ -497,10 +497,12 @@ def build_main():
         ("⁷⁻¹⁰", {"superscript": True}),
         (" Because cSDH-specific AED efficacy is unproven, no randomised "
          "trial exists and pooled observational estimates show no significant "
-         "seizure reduction, the AED relative-risk reduction was anchored at "
-         "an imported base case of 0.45 (post-traumatic/tumour literature) "
-         "purely as an optimistic reference, with the cSDH-plausible range of "
-         "0–0.30 and the AED disutility (0.02–0.15) explored in one-way and "
+         "seizure reduction, the base case anchored the AED relative-risk "
+         "reduction at a cSDH-grounded prior (mean 0.15, 95% interval "
+         "0.01–0.45), matching the value-of-information analysis. An imported "
+         "value of 0.45 (post-traumatic/tumour literature) was carried only as "
+         "an optimistic upper reference. AED relative-risk reduction "
+         "(0–0.45) and AED disutility (0.02–0.15) were explored in one-way and "
          "two-way sensitivity analyses, alongside UK (NICE) and Eurozone cost "
          "perspectives. The ML strategies act on the conformal partition "
          "described above. "
@@ -610,13 +612,13 @@ def build_main():
          "rather than on raw decision-curve performance.",
          {})], indent=True)
     register_figure("Figure 2", FIG / "F2_calibration_dca.png",
-                "Figure 2.  Calibration and clinical utility of the deployed "
+                "Figure 2.  Calibration and clinical utility of the candidate "
                 "model. A, LOWESS-smoothed calibration (observed event rate "
                 "versus predicted risk, with a 95% bootstrap band) for the "
-                "deployed BIDMC postoperative-B (Firth) model and the external "
+                "candidate BIDMC postoperative-B (Firth) model and the external "
                 "eICU Set C model, each drawn over the range of predicted risk "
                 "it actually produces; the marginal rug shows the density of "
-                "predicted risk. The deployed model is well calibrated in the "
+                "predicted risk. The candidate model is well calibrated in the "
                 "mean (mean predicted risk equals the 7% base rate) but "
                 "under-dispersed, so its predictions are compressed into a "
                 "narrow low range near the base rate rather than extending up "
