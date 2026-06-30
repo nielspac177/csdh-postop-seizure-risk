@@ -150,8 +150,7 @@ def build_main():
     t = doc.add_paragraph(); t.alignment = WD_ALIGN_PARAGRAPH.CENTER
     tr = t.add_run("Postoperative seizure after chronic subdural haematoma "
                     "evacuation: a calibration-focused, conformal-prediction "
-                    "proof-of-concept with multi-database evaluation and "
-                    "value-of-information analysis")
+                    "proof-of-concept with value-of-information analysis")
     tr.bold = True; tr.font.size = Pt(15); tr.font.name = "Times New Roman"
     add_para(doc, "")
     add_para(doc, "Niels Pacheco-Barrios MD",
@@ -165,7 +164,7 @@ def build_main():
                    "nielspacheco1997@gmail.com", size=10)
     add_para(doc, "")
     add_para(doc, "Manuscript type: Original Research (proof of concept)", size=10)
-    add_para(doc, "Word count, abstract: 250 · main text: ~4,050 · "
+    add_para(doc, "Word count, abstract: 250 · main text: ~3,400 · "
                    "Figures: 6 · Tables: 1 · Supplementary: yes · "
                    "References: 46", size=10)
     add_runs(doc, [("Keywords: ", {"bold": True}),
@@ -395,8 +394,9 @@ def build_main():
     add_runs(doc, [
         ("The primary outcome was any postoperative seizure within the "
          "index admission, ascertained from chart documentation at BIDMC "
-         "and from the structured seizure flag in eICU; cross-database "
-         "phenotype agreement supports the external-validity claim. Two "
+         "and from the structured seizure flag in eICU; the two phenotypes "
+         "are related but not identical, and the resulting limits on "
+         "cross-cohort comparability are addressed in the Discussion. Two "
          "feature sets were defined by their availability at the intended "
          "decision point, the end of haematoma evacuation, before the "
          "antiepileptic-drug/EEG decision. The leakage-safe postoperative-B set "
@@ -957,7 +957,7 @@ def build_main():
         "van den Goorbergh R, et al. The harm of class-imbalance corrections for risk prediction. JAMIA. 2022;29(9):1525–34.",
         "Carriero J, et al. Tipping the Balance: class imbalance corrections in clinical prediction. arXiv:2404.19494. 2024.",
         "Piccininni M, Wechsung M, Van Calster B. Random resampling and calibration. J Biomed Inform. 2024;155:104666.",
-        "Anonymous. Tabular foundation models in clinical predictions: head-to-head benchmark. medRxiv. 2026; doi:10.64898/2026.02.02.26345274v1.",
+        "Tabular foundation models in clinical predictions: a head-to-head benchmark. medRxiv 2026 [preprint]. doi:10.64898/2026.02.02.26345274v1.",
         "Hollmann N, et al. Accurate predictions on small data with a tabular foundation model. Nature. 2025;637:319–26.",
         "Collins GS, Moons KGM, Dhiman P, et al. TRIPOD+AI statement. BMJ. 2024;385:e078378.",
         "Vovk V, Gammerman A, Shafer G. Algorithmic Learning in a Random World. Springer; 2005.",
