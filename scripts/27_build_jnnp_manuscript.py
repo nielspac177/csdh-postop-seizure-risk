@@ -164,9 +164,9 @@ def build_main():
                    "nielspacheco1997@gmail.com", size=10)
     add_para(doc, "")
     add_para(doc, "Manuscript type: Original Research (proof of concept)", size=10)
-    add_para(doc, "Word count, abstract: 250 · main text: ~3,400 · "
+    add_para(doc, "Word count, abstract: 249 · main text: ~3,400 · "
                    "Figures: 6 · Tables: 1 · Supplementary: yes · "
-                   "References: 46", size=10)
+                   "References: 40", size=10)
     add_runs(doc, [("Keywords: ", {"bold": True}),
         ("chronic subdural haematoma; postoperative seizure; clinical "
          "prediction model; conformal prediction; cost-effectiveness and "
@@ -222,70 +222,67 @@ def build_main():
     add_heading(doc, "Abstract", level=1)
     add_runs(doc, [("Background. ", {"bold": True}),
         ("Postoperative seizure complicates 7–12% of chronic subdural "
-         "haematoma (cSDH) evacuations, but routine antiepileptic drug (AED) "
-         "prophylaxis carries fall, cognitive and drug-interaction risks "
-         "specific to elderly patients, and its efficacy after cSDH is "
-         "unproven. Calibrated risk stratification that can support "
-         "individual treatment decisions is needed.", {})], indent=False)
+         "haematoma (cSDH) evacuations, yet routine antiepileptic drug (AED) "
+         "prophylaxis carries fall, cognitive and drug-interaction harms and "
+         "has unproven efficacy after cSDH. Calibrated risk "
+         "stratification is needed to guide treatment.", {})], indent=False)
     add_runs(doc, [("Methods. ", {"bold": True}),
-        ("We developed and externally evaluated a machine-learning risk "
-         "score for postoperative seizure in 655 cSDH evacuations at "
-         "BIDMC (development; 48 events) and 3,297 non-traumatic subdural "
-         "haematoma ICU stays across 42 hospitals in the eICU Collaborative "
-         "Research Database (external evaluation in a related population; "
-         "300 seizures). Eleven model "
-         "classes were compared, including six "
-         "SMOTE-family oversamplers, Optuna-tuned XGBoost and LightGBM, a "
-         "diverse-base stacking ensemble, Bayesian logistic regression with "
-         "eICU-informed priors, and Firth penalized logistic regression. "
-         "Class-conditional (Mondrian) conformal prediction provided "
-         "individual-patient decision sets. A probabilistic cost-"
-         "effectiveness analysis with value-of-information (VOI) was run "
-         "on 10,000 Monte Carlo iterations.", {})], indent=False)
+        ("We developed and externally evaluated a seizure risk score in 655 "
+         "cSDH evacuations at a single centre (48 events) and 3,297 "
+         "non-traumatic subdural ICU stays across 42 hospitals in the eICU "
+         "database (related population; 300 seizures). Eleven model classes "
+         "were compared; class-conditional (Mondrian) conformal prediction "
+         "supplied individual decision sets; and a probabilistic cost-"
+         "effectiveness and value-of-information analysis used 10,000 "
+         "iterations.", {})], indent=False)
     add_runs(doc, [("Results. ", {"bold": True}),
-        ("Firth penalized logistic regression was the candidate model, fit "
-         "on a leakage-safe postoperative-B feature set (18 variables "
-         "available at the end of evacuation, before the AED/EEG decision); "
-         "it discriminated at AUC 0.645. A postoperative-A set that "
-         "additionally included three peri-decision variables reached AUC "
-         "0.681 (95% CI 0.609–0.753) but is not deployable, the difference "
-         "lying within the Bernoulli noise floor at 48 events. Firth matched "
-         "BalancedRandomForest discrimination (DeLong p = 0.81) with markedly "
-         "better calibration (Brier 0.068 vs 0.228) and calibration-in-the-"
-         "large near zero, though predictions remained under-dispersed "
-         "(recalibration slope >1) given the narrow probability range at 48 "
-         "events. Eleven model classes converged on an AUC ceiling near 0.68 "
-         "consistent with 2022–2025 meta-evidence. In external evaluation on a "
-         "related (mixed-acuity ICU) population, AUC was 0.750 (0.711–0.774); "
-         "random-effects pooled AUC across 42 hospitals was 0.684 (95% CI "
-         "0.651–0.714; logit-scale I²=0%, raw-scale 95% prediction interval "
-         "0.53–0.95). Class-conditional conformal "
-         "prediction at α=0.10 gave confident singleton predictions in 22% of "
-         "patients (rule-out 11%; rule-in 11%). ML-guided allocation — selective "
-         "AED prophylaxis as the primary deployable strategy, or selective "
-         "continuous-EEG monitoring where available — beat watchful observation "
-         "and, at a matched treated fraction, beat random allocation "
-         "(discrimination premium ≈$1,000–1,600/patient), confirming the model, "
-         "not the treated fraction, added value. ML-guided allocation was "
-         "preferred to universal AED under cSDH-plausible AED assumptions; "
-         "universal AED was preferable only under optimistic, imported efficacy. "
-         "Selective AED is the simplest to deploy and assumes AED has some "
-         "efficacy, whereas selective monitoring retains value even if AED is "
-         "ineffective. Population value of perfect "
-         "information at $100k/QALY was approximately $23M over 10 years.", {})],
-         indent=False)
-    add_runs(doc, [("Conclusion. ", {"bold": True}),
+        ("Firth penalized logistic regression, fit on a leakage-safe "
+         "18-variable set available before the AED/EEG decision, was the "
+         "candidate model (AUC 0.645); a leakier postoperative-A set reached "
+         "0.681 but is not deployable. Firth matched BalancedRandomForest "
+         "discrimination (DeLong p = 0.81) but calibrated markedly better (Brier "
+         "0.068 vs 0.228). External AUC was 0.750 (pooled 0.684 across 42 "
+         "hospitals). Conformal "
+         "prediction (α=0.10) gave singleton predictions in 22% of "
+         "patients (11% rule-out, 11% rule-in). ML-guided AED allocation beat "
+         "observation and, at a matched treated fraction, beat random "
+         "allocation (≈$1,000–1,600/patient), and was preferred to universal "
+         "AED under cSDH-plausible efficacy. Population value of information "
+         "was ≈$23M over 10 years.", {})], indent=False)
+    add_runs(doc, [("Conclusions. ", {"bold": True}),
         ("For postoperative seizure after cSDH evacuation, optimising "
-         "small-cohort clinical machine learning for calibration and "
-         "individual-patient decision support, rather than discrimination, "
-         "yields a candidate model that meets methodological preconditions "
-         "for prospective clinical evaluation. Selective, ML-guided AED "
-         "prophylaxis is the primary deployable strategy, with selective "
-         "continuous-EEG monitoring as an enhanced option where available; "
-         "whether selective allocation is preferable to treating all or none "
-         "hinges on AED efficacy and harm in cSDH, which current evidence "
-         "leaves uncertain; value-of-information prioritises resolving these.", {})],
+         "small-cohort machine learning for calibration and decision support "
+         "rather than discrimination yields a candidate model ready for "
+         "prospective evaluation. Whether ML-guided AED prophylaxis "
+         "beats treating all or none hinges on AED efficacy and harm in cSDH, "
+         "which value-of-information prioritises resolving.", {})],
          indent=False)
+    add_page_break(doc)
+
+    # Key messages (JNNP-required box, 3 headings, 3–5 sentences total)
+    add_heading(doc, "Key messages", level=1)
+    add_runs(doc, [("What is already known on this topic. ", {"bold": True}),
+        ("Postoperative seizure is a common and consequential complication of "
+         "cSDH evacuation, but whether to give antiepileptic prophylaxis is "
+         "unresolved; prior machine-learning models were single-centre, "
+         "reported discrimination only, and offered no calibration, external "
+         "validation or decision support.", {})], indent=False)
+    add_runs(doc, [("What this study adds. ", {"bold": True}),
+        ("Optimising a small-cohort model for calibration rather than "
+         "discrimination produced a parametric, leakage-safe candidate score "
+         "that is well calibrated and, wrapped in class-conditional conformal "
+         "prediction, returns a confident rule-in or rule-out in about a fifth "
+         "of patients. A probabilistic cost-effectiveness and "
+         "value-of-information analysis shows model-guided AED allocation adds "
+         "value beyond the treated fraction and is preferred to treating all "
+         "under cSDH-plausible efficacy.", {})], indent=False)
+    add_runs(doc, [("How this study might affect research, practice or policy. ",
+        {"bold": True}),
+        ("The model meets methodological preconditions for prospective "
+         "evaluation and provides an explicit \"do-not-know\" signal for "
+         "bedside use; the dominant remaining uncertainty is AED efficacy and "
+         "harm in cSDH, which value-of-information identifies as the priority "
+         "for future trials.", {})], indent=False)
     add_page_break(doc)
 
     # 1. Introduction (~600 words)
@@ -371,7 +368,8 @@ def build_main():
         ("²²", {"superscript": True}),
         (" The BIDMC analysis was approved by the institutional review "
          "board (Protocol [IRB number to be inserted]); the eICU Collaborative Research "
-         "Database v2.0 was accessed under its data-use agreement.", {})],
+         "Database v2.0 was accessed under its data-use agreement.", {}),
+        ("³⁰", {"superscript": True})],
         indent=True)
     add_heading(doc, "Cohort assembly", level=2)
     add_runs(doc, [
@@ -412,11 +410,14 @@ def build_main():
     add_heading(doc, "Modelling", level=2)
     add_runs(doc, [
         ("Eleven model classes were compared: the prior version's BalancedRandom"
-         "Forest (BRF) reference; Firth penalized logistic regression; "
-         "Bayesian logistic regression with weakly-informative and "
+         "Forest (BRF) reference; Firth penalized logistic regression", {}),
+        ("³²", {"superscript": True}),
+        ("; Bayesian logistic regression with weakly-informative and "
          "eICU-informed priors; class-weighted RandomForest; six SMOTE-"
          "family oversampling variants (SMOTE, Borderline-SMOTE, SVM-SMOTE, "
-         "ADASYN, SMOTEENN, SMOTETomek); Optuna-tuned XGBoost and "
+         "ADASYN, SMOTEENN, SMOTETomek)", {}),
+        ("³¹", {"superscript": True}),
+        ("; Optuna-tuned XGBoost and "
          "LightGBM (40 trials each); and a diverse-base stacking ensemble "
          "(logistic regression, BRF, XGBoost, k-nearest neighbours and "
          "RBF-SVM) with logistic meta-learner. Models were evaluated by "
@@ -466,14 +467,14 @@ def build_main():
          "always covering the majority class, a property neither "
          "probability calibration nor naive bootstrap CIs offer on "
          "imbalanced data.", {}),
-        ("³⁹,⁴⁰", {"superscript": True}),
+        ("³³,³⁴", {"superscript": True}),
         (" The resulting prediction set is adaptive: it shrinks to a "
          "singleton {'no seizure'} or {'seizure'} for patients the "
          "model can confidently classify (rule-out or rule-in) and "
          "expands to a doubleton {seizure, no seizure} for ambiguous "
          "patients, supplying the deployment with a principled "
          "abstention signal.", {}),
-        ("⁴¹,⁴²", {"superscript": True}),
+        ("³⁵,³⁶", {"superscript": True}),
         (" We report empirical coverage, average prediction-set size, "
          "and the fractions of patients receiving confident singleton "
          "predictions. Each prediction set maps to an explicit clinical "
@@ -833,7 +834,7 @@ def build_main():
          "efficacy of AED prophylaxis (no randomised trial exists, and pooled "
          "observational estimates, including our own, show no significant "
          "seizure reduction)", {}),
-        ("⁴³⁻⁴⁶", {"superscript": True}),
+        ("³⁷⁻⁴⁰", {"superscript": True}),
         (" and its disutility in elderly patients (falls, "
          "sedation, cognition). Under cSDH-plausible values (relative-risk "
          "reduction ≤0.30 or non-trivial disutility) ML-guided allocation had "
@@ -968,14 +969,8 @@ def build_main():
         "Strong M, Oakley JE, Brennan A. Estimating EVPPI using non-parametric regression. Med Decis Making. 2014;34(3):311–26.",
         "Heath A, Manolopoulou I, Baio G. Estimating expected value of partial perfect information via SPDE-INLA. Stat Med. 2018;37(7):1093–113.",
         "Pollard TJ, Johnson AEW, Raffa JD, et al. The eICU Collaborative Research Database. Sci Data. 2018;5:180178.",
-        "Johnson AEW, Bulgarelli L, Shen L, et al. MIMIC-IV, a freely accessible electronic health record dataset. Sci Data. 2023;10:1.",
         "Chawla NV, Bowyer KW, Hall LO, Kegelmeyer WP. SMOTE. J Artif Intell Res. 2002;16:321–57.",
-        "Han H, Wang W, Mao B. Borderline-SMOTE. ICIC. 2005;3644:878–87.",
-        "Nguyen HM, Cooper EW, Kamei K. SVM-SMOTE. Int J Knowl Eng Soft Data Paradigms. 2011;3:4–21.",
         "Firth D. Bias reduction of maximum likelihood estimates. Biometrika. 1993;80(1):27–38.",
-        "Puhr R, Heinze G, Nold M, Lusa L, Geroldinger A. Firth's logistic regression with rare events. Stat Med. 2017;36(14):2302–17.",
-        "DerSimonian R, Laird N. Meta-analysis in clinical trials. Control Clin Trials. 1986;7(3):177–88.",
-        "Geskus RB. Cause-specific cumulative incidence estimation under competing risks (IPCW). Biometrics. 2011;67:39–49.",
         "Löfström T, Boström H, Linusson H, Johansson U. Mondrian cross-conformal prediction on imbalanced bioactivity data. J Chem Inf Model. 2017;57(7):1591–8.",
         "Vovk V. Conditional validity of inductive conformal predictors. Proc Mach Learn Res (ACML). 2012;25:475–90.",
         "Romano Y, Sesia M, Candès EJ. Classification with valid and adaptive coverage. NeurIPS. 2020. arXiv:2006.02544.",

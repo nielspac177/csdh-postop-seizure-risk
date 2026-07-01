@@ -4,15 +4,18 @@
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](#requirements)
 [![Reproducibility](https://img.shields.io/badge/n__jobs-1-green.svg)](#reproducibility)
 
-Companion code for the manuscript **"A calibrated and conformally-deployable risk score for postoperative seizure after chronic subdural haematoma evacuation: a proof-of-concept multi-database study with value-of-information analysis."**
+<p align="center">
+  <img src="figures/F0_graphical_abstract.png" alt="Study design and analysis workflow: BIDMC development and eICU external evaluation feed an eleven-method modelling battery, a calibrated Firth candidate model, class-conditional conformal prediction, and a cost-effectiveness / value-of-information layer." width="760">
+</p>
+<p align="center"><sub><b>Figure F0.</b> Study design and analysis workflow — from the two databases through the modelling battery and calibrated Firth candidate model to conformal risk stratification and the cost-effectiveness / value-of-information layer.</sub></p>
+
+Companion code for the manuscript **"Postoperative seizure after chronic subdural haematoma evacuation: a calibration-focused, conformal-prediction proof-of-concept with value-of-information analysis."**
 
 This repository contains the analysis code, figure-generation scripts, decision-analytic implementation, and reporting artefacts. **No patient-level data are included.** Filtered, de-identified working subsets used in the manuscript are documented at [`docs/reviewer_access.md`](docs/reviewer_access.md) and released to authorised peer reviewers on request under the BIDMC IRB, eICU CRD, and HCUP NIS data-use agreements.
 
 ## Why this repository exists
 
-The manuscript is a proof of concept: small-cohort clinical machine learning can be honestly deployable when calibration and decision-integration replace AUC as the optimisation target. This repository lets reviewers and the wider community reproduce the eleven-method modelling battery, the conformal risk stratification, the cost-effectiveness analysis with value-of-information, and the four-strategy decision tree.
-
-![Study design and analysis workflow](figures/F0_graphical_abstract.png)
+The manuscript is a proof of concept: small-cohort clinical machine learning can be honestly deployable when calibration and decision-integration replace AUC as the optimisation target. This repository lets reviewers and the wider community reproduce the eleven-method modelling battery, the conformal risk stratification, the cost-effectiveness analysis with value-of-information, and the four-strategy decision tree (see **Figure F0** above).
 
 > The Nationwide Inpatient Sample (NIS) was assessed but **excluded** from the primary analysis because available ICD-10 coding cannot reliably distinguish postoperative seizure after cSDH; it is documented in Supplementary Appendix S4 only. The main study uses two databases.
 
