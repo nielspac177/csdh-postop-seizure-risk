@@ -186,6 +186,24 @@ def figure_1():
     axC = fig.add_subplot(gs[1, :])
     leak_p = leak[leak["cohort"].str.contains("eICU", case=False, na=False)].copy()
     leak_p = leak_p.dropna(subset=["auc"]).reset_index(drop=True)
+    # The three exclusion-window rows all carry spec="Set C original"; the cohort
+    # column is what distinguishes them (seizures kept only if >=1h/24h/72h after
+    # index). Build informative y-labels so they don't read as duplicates.
+    def _panelC_label(row):
+        import re
+        spec, cohort, ev = str(row["spec"]), str(row["cohort"]), int(row["events"])
+        if spec == "Set C original":
+            m = re.search(r"(\d+)h", cohort)
+            win = m.group(1) if m else "?"
+            return f"Exclude seizures <{win}h ({ev} events)"
+        if "103 features" in spec:
+            return "Full Set C (103 features)"
+        if "pre-seizure features only" in spec:
+            return "Pre-seizure features only (22)"
+        if "0-72h" in spec:
+            return "0–72h seizure outcome (strict feats)"
+        return spec
+    leak_p["plot_label"] = [_panelC_label(r) for _, r in leak_p.iterrows()]
     if len(leak_p) > 0:
         pos = np.arange(len(leak_p))
         axC.errorbar(leak_p["auc"], pos,
@@ -198,7 +216,7 @@ def figure_1():
             axC.scatter(row["auc"], i, color=color, s=42, zorder=3,
                          edgecolor="black", linewidth=0.5)
         axC.set_yticks(pos)
-        axC.set_yticklabels(leak_p["spec"], fontsize=8)
+        axC.set_yticklabels(leak_p["plot_label"], fontsize=8)
         axC.invert_yaxis()
         axC.axvline(0.5, ls=":", color=COL["grey"], lw=0.7)
         axC.set_xlim(0.45, 0.85)
@@ -240,84 +258,106 @@ def figure_2():
                           left=0.08, right=0.97)
 
     # ── Panel A: LOWESS-smoothed calibration curves ──
-    # Load raw OOF predictions from cache instead of quantile-binned points;
-    # LOWESS gives a non-parametric estimate of E[y | p_pred] without forcing
-    # the calibration plot through coarse decile bins (which are noisy on
-    # BIDMC's 48 events).  A 95% bootstrap envelope shows the uncertainty.
+    # Smooth non-parametric calibration (E[y | p_pred]) of the DEPLOYED Firth
+    # model (oof_*_firth), not the BalancedRandomForest / LR-EN+SMOTE comparator
+    # caches the paper rejects. Each curve is drawn only over the range of
+    # predicted risk the model actually produces (to its 97.5th percentile,
+    # capped at the 0.30 axis); a light 95% bootstrap band shows uncertainty and
+    # a marginal rug shows predicted-risk density, making the deployed model's
+    # under-dispersion (predictions compressed near the base rate) visible.
     axA = axes[0]
-    models_to_plot = [
-        ("eicu_setC",     "eICU Set C",     COL["navy"], "-"),
-        ("bidmc_postopA", "BIDMC postop-A", COL["rust"], "--"),
-    ]
-    axA.plot([0, 0.6], [0, 0.6], color=COL["grey"], lw=0.8, ls=":",
+    axA.plot([0, 0.5], [0, 0.5], color=COL["grey"], lw=0.9, ls=":",
               label="Perfect calibration", zorder=1)
-
+    # frac = LOWESS smoothing span; the deployed BIDMC model's predictions are
+    # squeezed into a very narrow band (~0.065-0.134), so it needs a wider span
+    # to read as a clean line rather than a wiggle.
+    cal_models = [
+        ("eicu_setC",           "eICU Set C",                COL["navy"], "-",  0.60),
+        ("bidmc_postopB_firth", "BIDMC postop-B (deployed)", COL["rust"], "--", 0.90),
+    ]
     rng = np.random.default_rng(42)
-    grid = np.linspace(0.0, 0.55, 80)
-    for key, label, color, ls in models_to_plot:
+    rug_base = -0.018
+    for key, label, color, ls, frac in cal_models:
         cache_path = CACHE / f"oof_{key}.npz"
         if not cache_path.exists():
             continue
         z = np.load(cache_path)
         y = z["y"].astype(float); p = np.clip(z["p"], 1e-6, 1 - 1e-6)
-        # bootstrap LOWESS envelope: 200 resamples
+        hi_cap = min(float(np.percentile(p, 97.5)), 0.305)
+        grid = np.linspace(float(p.min()), hi_cap, 60)
         smooths = []
         for _ in range(200):
             idx = rng.integers(0, len(y), len(y))
             try:
-                sm = lowess(y[idx], p[idx], frac=0.5, return_sorted=True,
+                sm = lowess(y[idx], p[idx], frac=frac, return_sorted=True,
                               it=0, missing="drop")
             except Exception:
                 continue
             if len(sm) < 5: continue
             smooths.append(np.interp(grid, sm[:, 0], sm[:, 1]))
         if not smooths: continue
-        smooths = np.vstack(smooths)
-        smooths = np.clip(smooths, 0, 1)
+        smooths = np.clip(np.vstack(smooths), 0, 1)
         lo  = np.percentile(smooths, 2.5,  axis=0)
         hi  = np.percentile(smooths, 97.5, axis=0)
         mid = np.percentile(smooths, 50,   axis=0)
-        axA.fill_between(grid, lo, hi, color=color, alpha=0.18, lw=0, zorder=2)
-        axA.plot(grid, mid, color=color, lw=2.2, ls=ls,
-                  label=label, zorder=3)
-    axA.set_xlim(0, 0.55); axA.set_ylim(0, 0.55)
+        axA.fill_between(grid, lo, hi, color=color, alpha=0.10, lw=0, zorder=2)
+        axA.plot(grid, mid, color=color, lw=2.2, ls=ls, label=label, zorder=3)
+        # marginal rug of predicted risk (under the curve)
+        rug = p[p <= 0.305]
+        axA.plot(rug, np.full(rug.shape, rug_base), marker="|", ls="none",
+                  color=color, alpha=0.10, ms=6, zorder=1, clip_on=False)
+        rug_base -= 0.020
+    axA.set_xlim(0, 0.305); axA.set_ylim(-0.05, 0.45)
     axA.set_xlabel("Predicted probability")
     axA.set_ylabel("Observed event rate")
-    axA.set_title("Calibration after Platt scaling")
+    axA.set_title("Calibration of the deployed model")
     style_axis(axA, ygrid=True, xgrid=True)
     add_panel_label(axA, "A")
     # Panel-local legend: place inside the panel rather than the shared bottom
     axA.legend(loc="upper left", fontsize=7.5, frameon=False,
                 handlelength=2.0, handletextpad=0.5,
-                title="(LOWESS · 95% bootstrap envelope)",
-                title_fontsize=7)
+                title="(LOWESS · 95% bootstrap band; rug = predicted-risk density)",
+                title_fontsize=6.5)
     axA_handles, axA_labels = [], []  # nothing to forward to the shared legend
 
-    # Panel B: decision-curve net benefit
+    # Panel B: decision-curve net benefit, computed from the SAME deployed
+    # Firth OOF predictions as panel A (not the stale BRF/LR-EN DCA CSV, whose
+    # inflated predictions drove the BIDMC curve sharply negative in the 5-15%
+    # band — a calibration artefact, not a true loss of clinical utility).
     axB = axes[1]
-    dca = pd.read_csv(RES / "03_dca_summary_at_thresholds.csv") \
-            if (RES / "03_dca_summary_at_thresholds.csv").exists() else None
-    if dca is not None:
-        # DCA CSV schema: columns model, threshold, model_nb, treat_all_nb, incremental
-        model_col = "model" if "model" in dca.columns else "cohort"
-        nb_model_col = "model_nb" if "model_nb" in dca.columns else "nb_model"
-        nb_all_col   = "treat_all_nb" if "treat_all_nb" in dca.columns else "nb_all"
-        models_to_plot = [c for c in dca[model_col].unique()
-                           if c in ("bidmc_postopA", "eicu_setC")]
-        for ci, c in enumerate(models_to_plot):
-            sub = dca[dca[model_col] == c].sort_values("threshold")
-            color = COL["rust"] if "bidmc" in c else COL["navy"]
-            label = "BIDMC postop-A" if "bidmc" in c else "eICU Set C"
-            axB.plot(sub["threshold"]*100, sub[nb_model_col], lw=1.8,
-                      color=color, label=f"{label} — model")
-            if ci == 0:
-                axB.plot(sub["threshold"]*100, sub[nb_all_col], lw=1.0,
-                          color=COL["grey"], ls="--", label="Treat all")
-                axB.plot(sub["threshold"]*100, [0]*len(sub),
-                          lw=1.0, color=COL["slate"], ls=":", label="Treat none")
-        axB.axvspan(5, 15, color=COL["soft"], alpha=0.20,
-                     label="Clinical threshold band")
-        axB.set_xlim(0, 30); axB.set_ylim(-0.10, 0.10)
+
+    def net_benefit(y, p, thresholds):
+        y = y.astype(int); n = len(y); prev = y.mean()
+        nb_m, nb_all = [], []
+        for t in thresholds:
+            pos = p >= t
+            tp = np.sum(pos & (y == 1)) / n
+            fp = np.sum(pos & (y == 0)) / n
+            w = t / (1.0 - t)
+            nb_m.append(tp - fp * w)
+            nb_all.append(prev - (1.0 - prev) * w)
+        return np.array(nb_m), np.array(nb_all)
+
+    thr = np.linspace(0.01, 0.30, 60)
+    dca_models = [
+        ("eicu_setC",           "eICU Set C",                COL["navy"]),
+        ("bidmc_postopB_firth", "BIDMC postop-B (deployed)", COL["rust"]),
+    ]
+    for ci, (key, label, color) in enumerate(dca_models):
+        cp = CACHE / f"oof_{key}.npz"
+        if not cp.exists():
+            continue
+        z = np.load(cp); y = z["y"].astype(int); p = z["p"].astype(float)
+        nb_m, nb_all = net_benefit(y, p, thr)
+        axB.plot(thr * 100, nb_m, lw=1.8, color=color, label=f"{label} — model")
+        if ci == 0:
+            axB.plot(thr * 100, nb_all, lw=1.0, color=COL["grey"], ls="--",
+                      label="Treat all")
+            axB.plot(thr * 100, np.zeros_like(thr), lw=1.0, color=COL["slate"],
+                      ls=":", label="Treat none")
+    axB.axvspan(5, 15, color=COL["soft"], alpha=0.20,
+                 label="Clinical threshold band")
+    axB.set_xlim(0, 30); axB.set_ylim(-0.04, 0.10)
     axB.set_xlabel("Probability threshold (%)")
     axB.set_ylabel("Net benefit")
     axB.set_title("Decision-curve net benefit")
@@ -371,8 +411,10 @@ def figure_3():
     # the long labels.
     fig, axes = plt.subplots(1, 2, figsize=(9.5, 6.4),
                               gridspec_kw={"width_ratios": [1.9, 1.0]})
-    plt.subplots_adjust(wspace=0.08, bottom=0.22, top=0.94,
+    plt.subplots_adjust(wspace=0.08, bottom=0.22, top=0.90,
                           left=0.20, right=0.97)
+    fig.suptitle("BIDMC development cohort  ·  postoperative-A feature set",
+                 fontsize=10.5, fontweight="bold", color=COL["navy"], y=0.975)
 
     # Panel A: AUC + CI
     axA = axes[0]
@@ -429,237 +471,229 @@ def figure_3():
     print("[OK] F3_method_battery — JNNP style")
 
 
-# ─── F4 — Conformal (rebuilt native) ────────────────────────
+# ─── F4 — Conformal (rebuilt native, DEPLOYED Firth postop-B) ──────────
 def figure_4():
-    out = pd.read_csv(RES / "25_conformal.csv")
+    # Sourced from the DEPLOYED candidate model (Firth postop-B), not the
+    # BalancedRF conformal base. See results/44_conformal_postopB_firth.csv.
+    out = pd.read_csv(RES / "44_conformal_postopB_firth.csv").sort_values("alpha")
 
-    fig, axes = plt.subplots(1, 2, figsize=(7.0, 4.4))
-    plt.subplots_adjust(wspace=0.34, bottom=0.30, top=0.93)
+    fig, axes = plt.subplots(1, 2, figsize=(7.0, 3.4))
+    plt.subplots_adjust(wspace=0.30, bottom=0.18, top=0.90)
 
-    # Panel A: coverage validation
+    # Panel A: class-conditional coverage validation
     axA = axes[0]
     a_line = np.linspace(0.01, 0.30, 60)
+    # Shade the region at/above the target line: points landing here mean the
+    # coverage guarantee is kept.
+    axA.fill_between(a_line, 1 - a_line, 1.0, color=COL["forest"], alpha=0.08,
+                      lw=0, zorder=0)
+    axA.text(0.295, 0.995, "guarantee met\n(on or above the line)",
+              fontsize=6.6, color=COL["forest"], va="top", ha="right",
+              linespacing=1.2, zorder=1)
     axA.plot(a_line, 1 - a_line, color=COL["grey"], ls="--", lw=0.8,
               label="Target (1−α)")
-    for fset, color, marker in [("postop_A", COL["navy"], "o"),
-                                  ("postop_B", COL["rust"], "s")]:
-        sub = out[out["feature_set"] == fset]
-        axA.plot(sub["alpha"], sub["coverage_mean"], marker=marker,
-                   color=color, lw=1.6, ms=6,
-                   markeredgecolor="black", markeredgewidth=0.4,
-                   label=f"{fset} (empirical)")
-        axA.errorbar(sub["alpha"], sub["coverage_mean"],
-                       yerr=sub["coverage_sd"], fmt="none",
-                       ecolor=color, capsize=2.5, alpha=0.6, lw=0.8)
+    axA.plot(out["alpha"], out["coverage_class1"], marker="o",
+               color=COL["rust"], lw=1.6, ms=6,
+               markeredgecolor="black", markeredgewidth=0.4,
+               label="Seizure class (class 1)")
+    axA.plot(out["alpha"], out["coverage_class0"], marker="s",
+               color=COL["navy"], lw=1.6, ms=6,
+               markeredgecolor="black", markeredgewidth=0.4,
+               label="No-seizure class (class 0)")
     axA.set_xlim(0, 0.30); axA.set_ylim(0.72, 1.00)
     axA.set_xlabel("α (target miscoverage)")
     axA.set_ylabel("Empirical coverage")
-    axA.set_title("Coverage validation")
+    axA.set_title("Class-conditional coverage")
     style_axis(axA, ygrid=True, xgrid=True)
     add_panel_label(axA, "A")
-    # Panel-local legend (lower-left empty region)
     axA.legend(loc="lower left", fontsize=7.5, frameon=False,
                 handlelength=2.0, handletextpad=0.5)
 
-    # Panel B: clinical utility
+    # Panel B: clinical utility (confident decisions)
     axB = axes[1]
-    for fset, color, marker in [("postop_A", COL["navy"], "o"),
-                                  ("postop_B", COL["rust"], "s")]:
-        sub = out[out["feature_set"] == fset]
-        axB.plot(sub["alpha"], sub["rule_out_rate"], marker=marker,
-                   color=color, lw=1.8, ms=6,
-                   markeredgecolor="black", markeredgewidth=0.4,
-                   label=f"{fset} — rule-out")
-        axB.plot(sub["alpha"], sub["rule_in_rate"], marker=marker,
-                   color=color, lw=1.2, ls=":", ms=5,
-                   markeredgecolor="black", markeredgewidth=0.4,
-                   label=f"{fset} — rule-in", alpha=0.7)
-    # Working-point annotation at α=0.10 — placed lower-right where the chart is
-    # empty (rule-in fraction is small there), so it does not overlap the data
-    # lines or the legend.
-    sub_A = out[(out["feature_set"] == "postop_A") & (out["alpha"] == 0.10)]
-    if len(sub_A) > 0:
-        sub_A = sub_A.iloc[0]
+    axB.plot(out["alpha"], out["rule_out_rate"], marker="o",
+               color=COL["navy"], lw=1.8, ms=6,
+               markeredgecolor="black", markeredgewidth=0.4,
+               label="Rule-out")
+    axB.plot(out["alpha"], out["rule_in_rate"], marker="s",
+               color=COL["rust"], lw=1.8, ms=6,
+               markeredgecolor="black", markeredgewidth=0.4,
+               label="Rule-in")
+    # Working-point callout at α=0.10 (90% target coverage): mark the rule-out
+    # and rule-in points and annotate the confident-vs-defer split so the
+    # operating point is readable straight off the figure.
+    sub = out[out["alpha"] == 0.10]
+    if len(sub) > 0:
+        ro = float(sub["rule_out_rate"].iloc[0])
+        ri = float(sub["rule_in_rate"].iloc[0])
+        conf = ro + ri
         axB.axvline(0.10, color=COL["grey"], ls=":", lw=0.7)
-        axB.annotate(f"α = 0.10 (90% coverage):\n"
-                       f"  rule-out = {sub_A['rule_out_rate']:.0%}\n"
-                       f"  rule-in  = {sub_A['rule_in_rate']:.0%}",
-                       xy=(0.10, sub_A["rule_out_rate"]),
-                       xytext=(0.215, 0.03),
-                       fontsize=7.5, fontweight="bold",
-                       bbox=dict(boxstyle="round,pad=0.3",
-                                 facecolor="#fffaf0",
-                                 edgecolor=COL["ochre"], linewidth=0.8),
-                       arrowprops=dict(arrowstyle="->", lw=0.8,
-                                       color=COL["ochre"]))
+        axB.annotate(
+            f"α = 0.10:\n{conf*100:.0f}% confident\n"
+            f"({ro*100:.0f}% rule-out + {ri*100:.0f}% rule-in)\n"
+            f"{(1-conf)*100:.0f}% defer",
+            xy=(0.10, max(ro, ri)), xytext=(0.0405, 0.37),
+            fontsize=6.8, color=COL["slate"], va="top", linespacing=1.3,
+            arrowprops=dict(arrowstyle="->", color=COL["slate"], lw=0.8))
     axB.set_xlim(0, 0.30); axB.set_ylim(0, 0.50)
     axB.set_xlabel("α (target miscoverage)")
     axB.set_ylabel("Fraction of patients")
-    axB.set_title("Clinical utility — confident decisions")
+    axB.set_title("Confident-decision yield")
     style_axis(axB, ygrid=True, xgrid=True)
     add_panel_label(axB, "B")
-
-    # Panel-local legend in the upper-left.
-    from matplotlib.lines import Line2D
-    legend_handles = [
-        Line2D([0],[0], color=COL["navy"], marker="o", lw=1.8,
-                markeredgecolor="black", markeredgewidth=0.4,
-                markerfacecolor=COL["navy"]),
-        Line2D([0],[0], color=COL["rust"], marker="s", lw=1.8,
-                markeredgecolor="black", markeredgewidth=0.4,
-                markerfacecolor=COL["rust"]),
-        Line2D([0],[0], color=COL["slate"], lw=1.8),
-        Line2D([0],[0], color=COL["slate"], lw=1.2, ls=":"),
-    ]
-    legend_labels = [
-        "postop_A (21 features)",
-        "postop_B (18 features, leakage-safe)",
-        "Rule-out — singleton {no seizure}",
-        "Rule-in  — singleton {seizure}",
-    ]
-    axB.legend(legend_handles, legend_labels,
-                loc="upper left", fontsize=7.0, frameon=False,
+    axB.legend(loc="upper left", fontsize=7.5, frameon=False,
                 handlelength=2.0, handletextpad=0.5)
-
-    # Move the prediction-set explanation and the postop_A/B difference note
-    # below the figure (as figure-level text) so they no longer compete with
-    # the working-point callout for space inside the panel.  Wrapped onto
-    # multiple short lines so the text block is ~5 cm narrower than the
-    # full figure width.
-    fig.text(0.14, 0.05,
-             "Prediction-set categories:\n"
-             "    {no seizure}              →  rule-out (skip AED)\n"
-             "    {seizure}                 →  rule-in (target cEEG)\n"
-             "    {seizure, no seizure} →  defer to clinical judgment.",
-             fontsize=7.5, color="#262320", ha="left",
-             family="DejaVu Sans", linespacing=1.5)
-    fig.text(0.14, -0.04,
-             "postop_A and postop_B differ only in postop_B omitting\n"
-             "three variables (AED timing, prophylactic AED, abnormal\n"
-             "EEG) that could be charted after seizure onset.",
-             fontsize=7.0, color=COL["grey"], style="italic", ha="left",
-             family="DejaVu Sans", linespacing=1.4)
-    plt.subplots_adjust(bottom=0.36)
 
     plt.savefig(FIG / "F4_conformal.png")
     plt.savefig(FIG / "F4_conformal.pdf")
     plt.close()
-    print("[OK] F4_conformal — JNNP style")
+    print("[OK] F4_conformal — JNNP style (deployed Firth postop-B)")
 
 
-# ─── F5 — CEA (decision tree + plane + CEAC) ────────────────
+# ─── F5 — CEA: CE plane + scenario acceptability curves ─────
 def figure_5():
-    from PIL import Image
-    tree = FIG / "14_decision_tree.png"
-    plane = FIG / "10_pairwise_plane.png"
-    ceac  = FIG / "10_ceac_pairwise.png"
+    """Cost-effectiveness of the deployable postop-B model as a 2x2:
+    A, cost-effectiveness plane (base case); B-D, acceptability curves under
+    three assumption scenarios showing the optimal strategy is conditional.
+    Plane data: 38_postopB_psa.csv; scenario CEACs: 38c_scenario_ceacs.csv."""
+    from matplotlib.lines import Line2D
+    psa  = pd.read_csv(RES / "38_postopB_psa.csv")
+    scen = pd.read_csv(RES / "38c_scenario_ceacs.csv")
+    labels = {"obs": "Observation", "aed": "Universal AED",
+              "mla": "ML-guided AED", "mlg": "ML-guided cEEG"}
+    cmap = {"obs": COL["grey"], "aed": COL["rust"],
+            "mla": COL["ochre"], "mlg": COL["navy"]}
+    order = ["obs", "aed", "mla", "mlg"]
 
-    # Use a 3-panel layout (A wide on top, B/C side-by-side below) with
-    # JNNP-style panel labels and a soft outer frame.
-    fig = plt.figure(figsize=(7.0, 8.4))
-    gs = fig.add_gridspec(2, 2, height_ratios=[1.4, 1.0],
-                            hspace=0.30, wspace=0.10)
+    fig, axes = plt.subplots(2, 2, figsize=(9.6, 7.6))
+    plt.subplots_adjust(wspace=0.26, hspace=0.46, bottom=0.12,
+                         top=0.92, left=0.085, right=0.975)
+    axA, axB, axC, axD = axes[0, 0], axes[0, 1], axes[1, 0], axes[1, 1]
 
-    axA = fig.add_subplot(gs[0, :])
-    axA.axis("off")
-    if tree.exists():
-        axA.imshow(Image.open(tree))
-    axA.set_title("Decision tree — base-case rollback")
-    add_panel_label(axA, "A", offset=(-0.01, 1.02))
+    # Panel A — CE plane (base case): each active strategy incremental to obs
+    for s in ["aed", "mla", "mlg"]:
+        dq = (psa[f"qaly_{s}"] - psa["qaly_obs"])
+        dc = (psa[f"cost_{s}"] - psa["cost_obs"])
+        axA.scatter(dq, dc, s=3, alpha=0.10, color=cmap[s], edgecolors="none")
+        axA.scatter(dq.mean(), dc.mean(), s=70, color=cmap[s],
+                    edgecolors="black", linewidths=0.5, zorder=5)
+    axA.axhline(0, color=COL["grey"], lw=0.6)
+    axA.axvline(0, color=COL["grey"], lw=0.6)
+    xl = axA.get_xlim()
+    xs = np.array([min(0, xl[0]), max(0, xl[1])])
+    axA.plot(xs, 100_000 * xs, ls="--", color=COL["ochre"], lw=0.9)
+    axA.text(0.97, 0.05, "WTP $100k/QALY", transform=axA.transAxes,
+             ha="right", va="bottom", fontsize=6.6, color=COL["ochre"])
+    axA.set_xlabel("Incremental QALYs vs observation")
+    axA.set_ylabel("Incremental cost vs observation (US$)")
+    axA.set_title("Cost-effectiveness plane (base case)",
+                  fontsize=9.5, fontweight="bold", color=COL["navy"])
+    style_axis(axA, ygrid=True, xgrid=True)
+    add_panel_label(axA, "A")
 
-    axB = fig.add_subplot(gs[1, 0])
-    axB.axis("off")
-    if plane.exists():
-        axB.imshow(Image.open(plane))
-    axB.set_title("Cost-effectiveness plane")
-    add_panel_label(axB, "B", offset=(-0.04, 1.02))
+    # Panels B-D — scenario acceptability curves (winner is assumption-dependent)
+    scen_panels = [
+        (axB, "B", "A_base", "Base case",
+         "cSDH-grounded: AED RRR ~0.15\n(no proven effect), cEEG cost-effective",
+         "mlg"),
+        (axC, "C", "B_ml_aed", "AED works, monitoring costly",
+         "AED RRR ~0.20 with real harm,\ncEEG cost ×2.5",
+         "mla"),
+        (axD, "D", "C_universal", "Optimistic AED",
+         "AED RRR ~0.45, no AED harm",
+         "aed"),
+    ]
+    for ax, lab, key, title, assume, win in scen_panels:
+        sub = scen[scen["scenario"] == key].sort_values("wtp")
+        for s in order:
+            ax.plot(sub["wtp"] / 1000, sub[f"p_{s}"], color=cmap[s],
+                    lw=2.4 if s == win else 1.2,
+                    alpha=1.0 if s == win else 0.5,
+                    zorder=4 if s == win else 2)
+        ax.axvline(100, color=COL["grey"], ls=":", lw=0.7)
+        ax.set_xlim(0, 200); ax.set_ylim(0, 1)
+        ax.set_xlabel("WTP (US$1000/QALY)")
+        ax.set_ylabel("P(strategy optimal)")
+        ax.set_title(title, fontsize=9.5, fontweight="bold", color=COL["navy"])
+        ax.text(0.04, 0.97, assume, transform=ax.transAxes, fontsize=6.4,
+                color=COL["slate"], va="top", ha="left", linespacing=1.25)
+        ax.text(0.96, 0.50, f"→ {labels[win]}", transform=ax.transAxes,
+                fontsize=8.2, fontweight="bold", color=cmap[win],
+                va="center", ha="right")
+        style_axis(ax, ygrid=True, xgrid=True)
+        add_panel_label(ax, lab)
 
-    axC = fig.add_subplot(gs[1, 1])
-    axC.axis("off")
-    if ceac.exists():
-        axC.imshow(Image.open(ceac))
-    axC.set_title("CEAC vs willingness-to-pay")
-    add_panel_label(axC, "C", offset=(-0.04, 1.02))
-
+    handles = [Line2D([0], [0], color=cmap[s], lw=2.4) for s in order]
+    fig.legend(handles, [labels[s] for s in order], loc="lower center",
+               ncol=4, frameon=False, fontsize=8.5, bbox_to_anchor=(0.5, 0.005))
     plt.savefig(FIG / "F5_cea.png")
     plt.savefig(FIG / "F5_cea.pdf")
     plt.close()
-    print("[OK] F5_cea — JNNP style")
+    print("[OK] F5_cea — CE plane + 3 scenario acceptability curves")
 
 
 # ─── F6 — VOI (rebuilt native) ──────────────────────────────
 def figure_6():
-    evppi = pd.read_csv(RES / "16_voi_evppi.csv").sort_values(
-        "evppi_per_patient", ascending=True).reset_index(drop=True)
-    # EVPI vs WTP — recompute from PSA file if available
-    psa_file = RES / "16_voi_psa_tracked.csv"
+    # Decision-sensitivity / value-of-information under the deployable model.
+    # Panel A: one-way net-benefit swings (deterministic). Panel B: two-way
+    # optimal-strategy map over AED efficacy x AED disutility.
+    tor = pd.read_csv(RES / "42_aed_tornado.csv").sort_values("swing")
+    grid = pd.read_csv(RES / "39_aed_harm_threshold.csv")
+    grid = grid[grid["scan"] == "grid"].copy()
 
-    fig, axes = plt.subplots(1, 2, figsize=(7.5, 5.0),
-                              gridspec_kw={"width_ratios": [1.4, 1.0]})
-    plt.subplots_adjust(wspace=0.30, bottom=0.28, top=0.93)
+    fig, (axA, axB) = plt.subplots(1, 2, figsize=(8.6, 4.2),
+                                   gridspec_kw={"width_ratios": [1.5, 1.0]})
+    plt.subplots_adjust(wspace=0.5, left=0.30, right=0.97, bottom=0.16, top=0.90)
 
-    # Panel A: EVPPI tornado
-    axA = axes[0]
-    pos = np.arange(len(evppi))
-    # Highlight top 4 with rust
-    top_n = 4
-    colors = [COL["rust"] if i >= len(evppi) - top_n else COL["navy"]
-              for i in range(len(evppi))]
-    axA.barh(pos, evppi["evppi_per_patient"], color=colors, edgecolor="black",
-              linewidth=0.4)
+    # Panel A — one-way tornado. Colour is DATA-DRIVEN: a parameter is rust if
+    # its plausible range can make universal AED optimal (ML does not win at both
+    # extremes), navy if ML-guided allocation stays optimal across the whole
+    # range. Anchored at the cSDH-grounded base case (RRR 0.15), only AED
+    # efficacy can flip the decision.
+    pos = np.arange(len(tor))
+    can_flip = ~(tor["ml_wins_low"].astype(bool) & tor["ml_wins_high"].astype(bool))
+    colors = [COL["rust"] if f else COL["navy"] for f in can_flip]
+    axA.barh(pos, tor["swing"], color=colors, edgecolor="black", linewidth=0.4)
     axA.set_yticks(pos)
-    axA.set_yticklabels(evppi["parameter"], fontsize=7.5)
-    axA.set_xlabel(r"Per-patient EVPPI (US\$) at WTP \$100k/QALY")
-    axA.set_title("Research-priority ranking")
+    axA.set_yticklabels(tor["parameter"], fontsize=7.5)
+    axA.set_xlabel("Net-benefit swing, ML-guided vs universal AED (US$/patient)")
+    axA.set_title("One-way sensitivity")
     style_axis(axA, ygrid=False, xgrid=True)
     add_panel_label(axA, "A")
 
-    # Panel B: EVPI vs WTP
-    axB = axes[1]
-    STRATEGIES = ["obs", "aed", "mla", "mlg"]
-    if psa_file.exists():
-        psa = pd.read_csv(psa_file)
-        wtp_grid = np.arange(0, 200_001, 5_000)
-        evpis = []
-        for w in wtp_grid:
-            nmb = np.column_stack([
-                w * psa[f"qaly_{s}"].values - psa[f"cost_{s}"].values
-                for s in STRATEGIES
-            ])
-            evpis.append(nmb.max(axis=1).mean() - nmb.mean(axis=0).max())
-        axB.plot(wtp_grid / 1000, evpis, color=COL["indigo"], lw=2.0)
-        # mark common WTP thresholds
-        for w, label_y in [(50, 0.93), (100, 0.85), (150, 0.78)]:
-            axB.axvline(w, color=COL["grey"], ls=":", lw=0.6)
-            axB.text(w, max(evpis) * label_y, f"${w}k", ha="center",
-                       fontsize=7, color=COL["grey"])
-    axB.set_xlabel(r"WTP threshold (\$1000 / QALY)")
-    axB.set_ylabel(r"Per-patient EVPI (US\$)")
-    axB.set_title("Per-patient EVPI")
-    axB.set_xlim(0, 200)
-    style_axis(axB, ygrid=True, xgrid=True)
+    # Panel B — two-way optimal-strategy map
+    rrrs = sorted(grid["aed_rrr"].unique(), reverse=True)      # x
+    us = sorted(grid["param"].unique())                        # y (disutility)
+    Z = np.zeros((len(us), len(rrrs)))
+    for gi, u in enumerate(us):
+        for gj, r in enumerate(rrrs):
+            row = grid[(grid["param"] == u) & (grid["aed_rrr"] == r)]
+            Z[gi, gj] = 1 if (len(row) and row["winner"].iloc[0] != "aed") else 0
+    from matplotlib.colors import ListedColormap
+    axB.imshow(Z, aspect="auto", origin="lower",
+               cmap=ListedColormap([COL["rust"], COL["navy"]]), vmin=0, vmax=1)
+    axB.set_xticks(range(len(rrrs))); axB.set_xticklabels([f"{r:.2f}" for r in rrrs], fontsize=7.5)
+    axB.set_yticks(range(len(us))); axB.set_yticklabels([f"{u:.2f}" for u in us], fontsize=7.5)
+    axB.set_xlabel("AED relative-risk reduction")
+    axB.set_ylabel("AED disutility")
+    axB.set_title("Optimal strategy")
+    for sp in axB.spines.values():
+        sp.set_visible(True)
     add_panel_label(axB, "B")
 
-    # Shared legend / note below the figure
     legend_handles = [
-        mpatches.Patch(facecolor=COL["rust"], edgecolor="black", linewidth=0.4),
         mpatches.Patch(facecolor=COL["navy"], edgecolor="black", linewidth=0.4),
+        mpatches.Patch(facecolor=COL["rust"], edgecolor="black", linewidth=0.4),
     ]
-    legend_labels = [
-        "Top-4 EVPPI — research-priority frontier",
-        "Remaining parameters",
-    ]
-    figure_legend_below(fig, legend_handles, legend_labels, ncol=2,
-                         y=0.08, fontsize=7.5)
-    fig.text(0.5, 0.02,
-             "Population EVPI ≈ $190M over 10 years (40,000-patient annual operative cohort, 3% discount)",
-             ha="center", va="bottom", fontsize=7.5, style="italic",
-             color=COL["slate"])
+    figure_legend_below(fig, legend_handles,
+                        ["ML-guided allocation optimal",
+                         "Universal AED optimal (within this parameter's range / region)"],
+                        ncol=2, y=0.02, fontsize=7.5)
 
     plt.savefig(FIG / "F6_voi.png")
     plt.savefig(FIG / "F6_voi.pdf")
     plt.close()
-    print("[OK] F6_voi — JNNP style")
+    print("[OK] F6_voi — native JNNP (one-way tornado + two-way strategy map)")
 
 
 def main():

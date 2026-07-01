@@ -1,0 +1,6 @@
+configuration,wtp,best,source
+postop-A baseline (current),100000,mlg,16_voi_evpi.csv
+postop-B headline,100000,mlg,38_postopB_psa_summary.csv
+conformal-mapping: universal_aed_defer,100000,mlg,38_conformal_mapping_sensitivity.csv
+conformal-mapping: observation_defer,100000,mlg,38_conformal_mapping_sensitivity.csv
+conformal-mapping: ceeg_defer,100000,mlg,38_conformal_mapping_sensitivity.csv

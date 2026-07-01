@@ -1,9 +1,14 @@
-"""Task 34 — Graphical abstract / pipeline overview figure.
+"""Task 34 — Methods figure (study design and analysis workflow).
 
-A single horizontally-laid-out schematic showing the full analytical
-pipeline: data sources → modelling → conformal decision support →
-cost-effectiveness → value-of-information. Headline numbers are
-annotated inline. Native matplotlib, no AI generation required.
+A single, self-explanatory schematic of WHAT WAS DONE, so a reader grasps the
+whole method at a glance: data sources -> risk model -> conformal decision
+support -> decision analysis. This is a METHODS figure, not a graphical
+abstract: it carries design and procedure only (cohort sizes, model class,
+validation scheme, conformal coverage target, PSA design), never results
+(no AUCs, no cost-effectiveness verdict, no EVPI value, no conformal yield).
+
+Native matplotlib, no AI generation. Filename kept as F0_graphical_abstract.*
+for backward compatibility with the submission/site builders.
 
 Output: figures/F0_graphical_abstract.{png,pdf}  +  github_repo/figures/
 """
@@ -13,101 +18,73 @@ os.environ["OMP_NUM_THREADS"] = "1"
 
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
-import numpy as np
-
 from _shared import FIG, OUT
 
 REPO_FIG = OUT / "github_repo" / "figures"
 REPO_FIG.mkdir(parents=True, exist_ok=True)
 
 COL = {
-    "navy":    "#1F3D5C",
-    "rust":    "#B5532C",
-    "forest":  "#2E6B45",
-    "ochre":   "#B58A2E",
-    "soft":    "#F4EFE6",
-    "grey":    "#6E6E6E",
-    "ink":     "#262320",
+    "navy":   "#1F3D5C",
+    "teal":   "#2E6B5E",
+    "ochre":  "#B58A2E",
+    "rust":   "#B5532C",
+    "cream":  "#F6F2EA",
+    "grey":   "#6E6E6E",
+    "ink":    "#2A2622",
+    "line":   "#9AA0A6",
 }
 
-# Pipeline stages: (title, headline metric, supporting line, fill, outline)
-STAGES = [
-    {
-        "title": "1. Multi-database\ncohort assembly",
-        "metric": "n = 655 + 5,376\n+ 218,244",
-        "sub":   "BIDMC dev · eICU CRD external\nNIS population",
-        "fill":  COL["soft"], "outline": COL["navy"],
-    },
-    {
-        "title": "2. Calibrated\nrisk score",
-        "metric": "Firth LR\nAUC 0.681",
-        "sub":   "3.3× better calibration\n(Brier 0.069 vs 0.228)",
-        "fill":  COL["soft"], "outline": COL["navy"],
-    },
-    {
-        "title": "3. Conformal\ndecision support",
-        "metric": "27% rule-out\n11% rule-in",
-        "sub":   "Class-conditional Mondrian\n90% coverage at α = 0.10",
-        "fill":  COL["soft"], "outline": COL["forest"],
-    },
-    {
-        "title": "4. Cost-effectiveness\nanalysis",
-        "metric": "ML-AED is\ndominant",
-        "sub":   "Cheaper & more QALYs\nthan observation",
-        "fill":  COL["soft"], "outline": COL["rust"],
-    },
-    {
-        "title": "5. Value-of-\ninformation",
-        "metric": "$190 M\npopulation EVPI",
-        "sub":   "Research-priority frontier:\ncEEG cost · prevalence · AED RRR",
-        "fill":  COL["soft"], "outline": COL["ochre"],
-    },
-]
+X0, X1 = 0.45, 9.55          # card left / right edges
 
 
-def draw_stage(ax, x, y, w, h, stage, panel_label):
-    # Outer card
-    box = FancyBboxPatch((x - w/2, y - h/2), w, h,
-                          boxstyle="round,pad=0.04,rounding_size=0.10",
-                          facecolor=stage["fill"], edgecolor=stage["outline"],
-                          linewidth=1.6, zorder=2)
-    ax.add_patch(box)
-    # Top stripe (slightly thinner)
-    stripe_h = 0.34
-    stripe = FancyBboxPatch((x - w/2, y + h/2 - stripe_h), w, stripe_h,
-                             boxstyle="round,pad=0,rounding_size=0.10",
-                             facecolor=stage["outline"], edgecolor="none", zorder=3)
-    ax.add_patch(stripe)
-    # Panel letter in a small white circle on the left of the stripe
-    badge_r = 0.10
-    badge_cx = x - w/2 + 0.22
-    badge_cy = y + h/2 - stripe_h/2
-    circ = mpatches.Circle((badge_cx, badge_cy), badge_r,
-                            facecolor="white", edgecolor="none", zorder=4)
-    ax.add_patch(circ)
-    ax.text(badge_cx, badge_cy, panel_label,
-            ha="center", va="center", fontsize=10, fontweight="bold",
-            color=stage["outline"], zorder=5)
-    # Title in the stripe (centred, offset slightly right of badge)
-    ax.text(x + 0.10, badge_cy, stage["title"],
-            ha="center", va="center", fontsize=9.5, fontweight="bold",
-            color="white", zorder=4, linespacing=1.15)
-    # Headline metric (large, color-matched to stage outline)
-    ax.text(x, y - 0.02, stage["metric"],
-            ha="center", va="center", fontsize=13.5, fontweight="bold",
-            color=stage["outline"], zorder=4, linespacing=1.15)
-    # Supporting line (smaller, ink-coloured)
-    ax.text(x, y - h/2 + 0.38, stage["sub"],
-            ha="center", va="center", fontsize=8.2,
-            color=COL["ink"], zorder=4, linespacing=1.4)
+def card(ax, top, bottom, color, step, title):
+    """Full-width step card with a coloured header bar."""
+    ax.add_patch(FancyBboxPatch(
+        (X0, bottom), X1 - X0, top - bottom,
+        boxstyle="round,pad=0.02,rounding_size=0.10",
+        facecolor=COL["cream"], edgecolor=color, linewidth=1.7, zorder=2))
+    hh = 0.46
+    ax.add_patch(FancyBboxPatch(
+        (X0, top - hh), X1 - X0, hh,
+        boxstyle="round,pad=0,rounding_size=0.10",
+        facecolor=color, edgecolor="none", zorder=3))
+    ax.text(X0 + 0.30, top - hh / 2, step, ha="left", va="center",
+            fontsize=10.5, fontweight="bold", color="white", zorder=4)
+    ax.text(X0 + 1.55, top - hh / 2, title, ha="left", va="center",
+            fontsize=12.5, fontweight="bold", color="white", zorder=4,
+            family="sans-serif")
+    return top - hh
 
 
-def draw_arrow(ax, x0, x1, y, color):
-    ar = FancyArrowPatch((x0, y), (x1, y), arrowstyle="-|>",
-                          mutation_scale=18, color=color, lw=1.8, zorder=1)
-    ax.add_patch(ar)
+def bullet(ax, x, y, text, color, fs=10.3):
+    ax.plot([x], [y], marker="s", ms=5.5, color=color, zorder=4,
+            markeredgecolor="none")
+    ax.text(x + 0.24, y, text, ha="left", va="center", fontsize=fs,
+            color=COL["ink"], zorder=4)
+
+
+def arrow(ax, y_from, y_to):
+    ax.add_patch(FancyArrowPatch(
+        (5.0, y_from), (5.0, y_to), arrowstyle="-|>",
+        mutation_scale=20, color=COL["line"], lw=2.0, zorder=1))
+
+
+def datasource(ax, x0, x1, top, bottom, color, name, role, lines):
+    ax.add_patch(FancyBboxPatch(
+        (x0, bottom), x1 - x0, top - bottom,
+        boxstyle="round,pad=0.02,rounding_size=0.08",
+        facecolor="white", edgecolor=color, linewidth=1.3, zorder=4))
+    xc = (x0 + x1) / 2
+    ax.text(xc, top - 0.32, name, ha="center", va="center",
+            fontsize=11.5, fontweight="bold", color=color, zorder=5)
+    ax.text(xc, top - 0.66, role, ha="center", va="center",
+            fontsize=9.0, style="italic", color=COL["grey"], zorder=5)
+    y = top - 1.06
+    for ln in lines:
+        ax.text(xc, y, ln, ha="center", va="center", fontsize=9.8,
+                color=COL["ink"], zorder=5)
+        y -= 0.36
 
 
 def main():
@@ -117,47 +94,109 @@ def main():
         "pdf.fonttype": 42, "ps.fonttype": 42,
     })
 
-    fig, ax = plt.subplots(figsize=(15, 5.0))
-    ax.set_xlim(0, 15); ax.set_ylim(0, 5)
+    fig, ax = plt.subplots(figsize=(10.5, 13.0))
+    ax.set_xlim(0, 10); ax.set_ylim(0, 13.0)
     ax.axis("off")
 
-    # Top title strip
-    ax.text(0.4, 4.6,
-             "Calibrated, conformally-deployable risk score for postoperative seizure after chronic subdural haematoma evacuation",
-             ha="left", va="center", fontsize=13, fontweight="bold",
-             color=COL["navy"])
-    ax.text(0.4, 4.22,
-             "A proof-of-concept multi-database study with value-of-information analysis",
-             ha="left", va="center", fontsize=10.5, style="italic", color=COL["grey"])
+    # ---- Title -------------------------------------------------------------
+    ax.text(X0, 12.62,
+            "Predicting postoperative seizure after chronic subdural "
+            "haematoma evacuation",
+            ha="left", va="center", fontsize=14.5, fontweight="bold",
+            color=COL["navy"])
+    ax.text(X0, 12.22, "Study design and analysis workflow",
+            ha="left", va="center", fontsize=11.5, style="italic",
+            color=COL["grey"])
 
-    # 5 cards across
-    n = len(STAGES)
-    w, h = 2.55, 1.80
-    span = 14.2; left = 0.4
-    centres = [left + w/2 + i * (span - w) / (n - 1) for i in range(n)]
-    cy = 2.10
-    panel_labels = ["A","B","C","D","E"]
-    for i, s in enumerate(STAGES):
-        draw_stage(ax, centres[i], cy, w, h, s, panel_labels[i])
-    # Arrows
-    for i in range(n - 1):
-        draw_arrow(ax, centres[i] + w/2 + 0.04, centres[i+1] - w/2 - 0.04, cy,
-                    color=COL["grey"])
+    GAP = 0.38   # arrow gap between cards
 
-    # Bottom footer band
-    ax.text(7.5, 0.45,
-             "Twenty-eight reproducible scripts · WCAG 2.2 AA interactive companion site · MIT licensed\n"
-             "github.com/nielspac177/csdh-postop-seizure-risk",
-             ha="center", va="center", fontsize=9, color=COL["grey"],
-             linespacing=1.5)
+    # ---- STEP 1 · DATA SOURCES --------------------------------------------
+    top1, bot1 = 11.80, 8.40
+    body = card(ax, top1, bot1, COL["navy"], "STEP 1", "DATA SOURCES")
+    ax.text((X0 + X1) / 2, body - 0.34,
+            "Outcome:  postoperative seizure after cSDH evacuation",
+            ha="center", va="center", fontsize=10.3, fontweight="bold",
+            color=COL["navy"])
+    ctop, cbot = body - 0.72, bot1 + 0.20
+    datasource(ax, 0.85, 4.85, ctop, cbot, COL["navy"],
+               "BIDMC", "development cohort (single centre)",
+               ["655 cSDH evacuations", "48 postoperative seizures",
+                "model development + internal validation"])
+    datasource(ax, 5.15, 9.15, ctop, cbot, COL["teal"],
+               "eICU-CRD", "external cohort (42 hospitals)",
+               ["3,297 subdural-haematoma ICU stays", "300 seizures",
+                "external evaluation, related population"])
 
-    plt.tight_layout()
+    arrow(ax, bot1, bot1 - GAP)
+
+    # ---- STEP 2 · RISK MODEL ----------------------------------------------
+    top2, bot2 = bot1 - GAP, 5.75
+    body = card(ax, top2, bot2, COL["teal"], "STEP 2", "RISK MODEL")
+    bx, y, dy = 0.95, body - 0.40, 0.42
+    bullet(ax, bx, y, "Firth penalized logistic regression "
+           "(chosen for stable, calibrated estimates at few events)", COL["teal"])
+    bullet(ax, bx, y - dy, "Leakage-safe feature set: 18 variables known at "
+           "the end of evacuation, before the AED / EEG decision", COL["teal"])
+    bullet(ax, bx, y - 2 * dy, "11 model classes compared under nested "
+           "cross-validation; Platt recalibration", COL["teal"])
+    bullet(ax, bx, y - 3 * dy, "External validation by leave-one-hospital-out "
+           "random-effects meta-analysis", COL["teal"])
+
+    arrow(ax, bot2, bot2 - GAP)
+
+    # ---- STEP 3 · CONFORMAL DECISION SUPPORT ------------------------------
+    top3, bot3 = bot2 - GAP, 2.80
+    body = card(ax, top3, bot3, COL["ochre"], "STEP 3",
+                "CONFORMAL DECISION SUPPORT")
+    bx, y, dy = 0.95, body - 0.40, 0.42
+    bullet(ax, bx, y, "Class-conditional (Mondrian) split-conformal "
+           "prediction", COL["ochre"])
+    bullet(ax, bx, y - dy, "90% guaranteed coverage within each class "
+           "(α = 0.10)", COL["ochre"])
+    bullet(ax, bx, y - 2 * dy, "Each patient receives one of three decision "
+           "sets:", COL["ochre"])
+    # three decision-set pills, placed a fixed margin above the card bottom
+    pill_y = bot3 + 0.42
+    pills = [("Rule OUT seizure", COL["teal"]),
+             ("Rule IN seizure", COL["rust"]),
+             ("Defer  (model abstains)", COL["grey"])]
+    px = 1.35
+    for label, c in pills:
+        w = 0.18 + 0.092 * len(label)
+        ax.add_patch(FancyBboxPatch(
+            (px, pill_y - 0.17), w, 0.34,
+            boxstyle="round,pad=0.02,rounding_size=0.14",
+            facecolor="white", edgecolor=c, linewidth=1.5, zorder=4))
+        ax.text(px + w / 2, pill_y, label, ha="center", va="center",
+                fontsize=9.6, fontweight="bold", color=c, zorder=5)
+        px += w + 0.40
+
+    arrow(ax, bot3, bot3 - GAP)
+
+    # ---- STEP 4 · DECISION ANALYSIS ---------------------------------------
+    top4, bot4 = bot3 - GAP, 0.62
+    body = card(ax, top4, bot4, COL["rust"], "STEP 4", "DECISION ANALYSIS")
+    bx, y, dy = 0.95, body - 0.40, 0.42
+    bullet(ax, bx, y, "Cost-effectiveness: decision tree + 10-year Markov "
+           "model", COL["rust"])
+    bullet(ax, bx, y - dy, "Four management strategies compared by "
+           "probabilistic sensitivity analysis (10,000 simulations)", COL["rust"])
+    bullet(ax, bx, y - 2 * dy, "Value of information (EVPI / EVPPI) to rank "
+           "future research priorities", COL["rust"])
+
+    # ---- Footer ------------------------------------------------------------
+    ax.text(5.0, bot4 - 0.40,
+            "Fully reproducible analysis  ·  "
+            "github.com/nielspac177/csdh-postop-seizure-risk  ·  MIT licensed",
+            ha="center", va="center", fontsize=9.2, color=COL["grey"])
+
+    plt.subplots_adjust(left=0.02, right=0.98, top=0.99, bottom=0.01)
     for d in (FIG, REPO_FIG):
         plt.savefig(d / "F0_graphical_abstract.png", dpi=300, bbox_inches="tight")
         plt.savefig(d / "F0_graphical_abstract.pdf", bbox_inches="tight")
     plt.close()
-    print(f"[OK] {FIG / 'F0_graphical_abstract.png'}")
-    print(f"     also written to {REPO_FIG / 'F0_graphical_abstract.png'}")
+    print(f"[OK] methods figure -> {FIG / 'F0_graphical_abstract.png'}")
+    print(f"     also -> {REPO_FIG / 'F0_graphical_abstract.png'}")
 
 
 if __name__ == "__main__":
